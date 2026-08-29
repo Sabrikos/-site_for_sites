@@ -106,3 +106,7 @@ footer {
     background: #d1fae5;
     border-radius: 10px;
 }
+
+.tariff-section {
+    scroll-margin-top: 50px;
+}
