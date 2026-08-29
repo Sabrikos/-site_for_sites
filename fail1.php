@@ -10,26 +10,30 @@ $errors = [];
 
 $services = [
     [
-        'name' => 'Информационный сайт',
+        'name' => 'Лендинг/Одностраничный сайт',
+        'slug' => 'landing',
         'price' => 15000,
         'deadline' => '7 дней',
         'available' => true,
     ],
     [
         'name' => 'Интернет магазин',
+        'slug' => 'shop',
         'price' => 30000,
         'deadline' => '7 дней',
         'available' => true,
     ],
     [
         'name' => 'Доработка сайта',
-        'price' =>5000,
+        'slug' => 'revision',
+        'price' => 5000,
         'deadline' => '7 дней',
         'available' => true,
     ],
-        [
+    [
         'name' => 'Другое',
-        'price' =>10000,
+        'slug' => 'other',
+        'price' => 10000,
         'deadline' => '7 дней',
         'available' => true,
     ],
@@ -63,9 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($selectedService === null) {
         $errors[] = 'Выбранная услуга не найдена';
-        
-
-    } 
+    }
 }
 
 ?>
@@ -73,11 +75,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <title><?= $title ?></title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <header>
         <h1><?= $title ?></h1>
@@ -111,7 +115,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php endif; ?>
 
                         <?php if ($service['available']): ?>
-                            <button type="button">Можно заказать</button>
+                            <a
+                                href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>"
+                                class="service-button">
+                                Подробнее
+                            </a>
                         <?php else: ?>
                             <p>Сейчас недоступно</p>
                         <?php endif; ?>
@@ -130,9 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         type="text"
                         id="customer_name"
                         name="customer_name"
-                        value="<?= htmlspecialchars($customerName) ?>"
-                       
-                    >
+                        value="<?= htmlspecialchars($customerName) ?>">
                 </p>
 
                 <p>
@@ -140,18 +146,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <select
                         id="project_type"
                         name="project_type"
-                        required
-                    >
+                        required>
                         <option value="">Выберите тип сайта</option>
 
                         <?php foreach ($services as $service): ?>
                             <?php if ($service['available']): ?>
                                 <option
                                     value="<?= htmlspecialchars($service['name']) ?>"
-                                    <?php if ($projectType === $service['name']): ?>
-                                        selected
-                                    <?php endif; ?>
-                                >
+                                    <?= $projectType === $service['name'] ? 'selected' : '' ?>>
                                     <?= htmlspecialchars($service['name']) ?>
                                 </option>
                             <?php endif; ?>
@@ -164,8 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <textarea
                         id="project_theme"
                         name="project_theme"
-                        required
-                    ></textarea>
+                        required></textarea>
                 </p>
 
                 <button type="submit">Отправить заявку</button>
@@ -210,6 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <footer>
         <p><?= $author ?></p>
-    </footer>   
+    </footer>
 </body>
+
 </html>
