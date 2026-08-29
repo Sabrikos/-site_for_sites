@@ -1,112 +1,2146 @@
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    color: #1f2937;
-    background: #f3f4f6;
+/* ==================================================
+   ОБЩИЕ НАСТРОЙКИ
+================================================== */
+
+* {
+  box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+
+  font-family: Arial, sans-serif;
+
+  color: #1f2937;
+
+  background: #f3f4f6;
+}
+
+/* ==================================================
+   ОБЫЧНАЯ ШАПКА ГЛАВНОЙ
+================================================== */
+
 header {
-    padding: 60px 20px;
-    text-align: center;
-    color: white;
-    background: linear-gradient(135deg, #111827, #2563eb);
+  padding: 60px 20px;
+
+  text-align: center;
+
+  color: white;
+
+  background: linear-gradient(135deg, #111827, #2563eb);
 }
 
 header h1 {
-    margin: 0 0 15px;
-    font-size: 42px;
+  margin: 0 0 15px;
+
+  font-size: 42px;
 }
 
 header p {
-    margin: 0;
-    font-size: 18px;
+  margin: 0;
+
+  font-size: 18px;
 }
+
+/* ==================================================
+   ОСНОВНОЙ MAIN ГЛАВНОЙ СТРАНИЦЫ
+================================================== */
 
 main {
-    width: 100%;
-    max-width: 1000px;
-    margin: 40px auto;
-    padding: 0 20px;
-    box-sizing: border-box;
+  width: 100%;
+
+  max-width: 1000px;
+
+  margin: 40px auto;
+
+  padding: 0 20px;
 }
+
+/* ==================================================
+   ОБЫЧНЫЕ СЕКЦИИ
+================================================== */
 
 section {
-    margin-bottom: 30px;
-    padding: 25px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-}
+  margin-bottom: 30px;
 
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
+  padding: 25px;
 
-.service-card {
-    padding: 20px;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    background: #ffffff;
+  background: white;
+
+  border-radius: 16px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 h2 {
-    margin-top: 0;
+  margin-top: 0;
 }
 
-.button {
-    text-decoration: none; 
-    color: white; 
-    padding: 12px 18px;
-    border: 0;
-    border-radius: 10px;
-    color: white;
-    background: #2563eb;
-    cursor: pointer;
+/* ==================================================
+   УСЛУГИ НА ГЛАВНОЙ
+================================================== */
+
+.services-grid {
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 20px;
 }
 
-button:hover {
-    background: #1d4ed8;
+.service-card {
+  padding: 20px;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 12px;
+
+  background: white;
 }
+
+/* ==================================================
+   КНОПКИ ГЛАВНОЙ СТРАНИЦЫ
+================================================== */
+
+.button,
+.service-button {
+  display: inline-block;
+
+  padding: 12px 18px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  text-decoration: none;
+
+  color: white;
+
+  background: #2563eb;
+
+  cursor: pointer;
+
+  font-size: 16px;
+
+  transition: 0.2s;
+}
+
+.button:visited,
+.service-button:visited {
+  color: white;
+}
+
+.button:hover,
+.service-button:hover {
+  background: #1d4ed8;
+}
+
+/* ==================================================
+   ОБЫЧНЫЕ BUTTON
+================================================== */
+
+button {
+  font: inherit;
+}
+
+/* ==================================================
+   ФОРМЫ
+================================================== */
 
 input,
 select,
 textarea {
-    width: 100%;
-    margin-top: 6px;
-    padding: 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 10px;
-    box-sizing: border-box;
-    font: inherit;
+  width: 100%;
+
+  margin-top: 6px;
+
+  padding: 12px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 10px;
+
+  font: inherit;
 }
 
 textarea {
-    min-height: 100px;
-    resize: vertical;
+  min-height: 100px;
+
+  resize: vertical;
 }
 
+/* ==================================================
+   ОШИБКИ
+================================================== */
+
+.errors {
+  margin-top: 20px;
+
+  padding: 15px;
+
+  color: #991b1b;
+
+  background: #fee2e2;
+
+  border-radius: 10px;
+}
+
+/* ==================================================
+   УСПЕШНАЯ ЗАЯВКА
+================================================== */
+
+.success {
+  margin-top: 20px;
+
+  padding: 15px;
+
+  color: #065f46;
+
+  background: #d1fae5;
+
+  border-radius: 10px;
+}
+
+/* ==================================================
+   FOOTER
+================================================== */
+
 footer {
+  padding: 25px;
+
+  text-align: center;
+
+  color: #6b7280;
+}
+
+/* ==================================================
+   ШАПКА СТРАНИЦЫ ТАРИФОВ
+================================================== */
+
+.main-header {
+  position: sticky;
+
+  top: 0;
+
+  z-index: 1000;
+
+  padding: 18px 0;
+
+  background: linear-gradient(135deg, #111827, #2563eb);
+}
+
+.container {
+  width: 100%;
+
+  max-width: 1400px;
+
+  margin: 0 auto;
+
+  padding: 0 30px;
+}
+
+.main-header .container {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+}
+
+.logo {
+  color: white;
+
+  text-decoration: none;
+
+  font-size: 24px;
+
+  font-weight: bold;
+}
+
+.logo:visited {
+  color: white;
+}
+
+/* ==================================================
+   ВЕРХНЕЕ МЕНЮ
+================================================== */
+
+.main-header nav {
+  display: flex;
+
+  align-items: center;
+
+  gap: 28px;
+}
+
+.main-header nav a {
+  color: white;
+
+  text-decoration: none;
+
+  font-size: 16px;
+
+  transition: 0.2s;
+}
+
+.main-header nav a:visited {
+  color: white;
+}
+
+.main-header nav a:hover {
+  opacity: 0.75;
+}
+
+.cart-menu-link {
+    position: relative;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    color: white;
+
+    text-decoration: none;
+}
+
+.cart-icon {
+    width: 30px;
+    height: 30px;
+}
+
+.cart-counter {
+    position: absolute;
+
+    top: -8px;
+    right: -12px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 20px;
+    height: 20px;
+
+    padding: 0 5px;
+
+    border-radius: 20px;
+
+    background: #ef4444;
+
+    color: white;
+
+    font-size: 11px;
+    font-weight: bold;
+}
+
+/* ==================================================
+   СЧЁТЧИК КОРЗИНЫ В МЕНЮ
+================================================== */
+
+.cart-menu-link {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+}
+
+.cart-counter {
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  min-width: 23px;
+
+  height: 23px;
+
+  padding: 0 6px;
+
+  border-radius: 20px;
+
+  color: #1d4ed8;
+
+  background: white;
+
+  font-size: 13px;
+
+  font-weight: bold;
+}
+
+/* ==================================================
+   СТРАНИЦА ТАРИФОВ
+================================================== */
+
+main.tariffs-page {
+  max-width: 1400px;
+
+  margin: 45px auto;
+
+  padding: 0 30px;
+}
+
+/* ==================================================
+   ЗАГОЛОВОК СТРАНИЦЫ
+================================================== */
+
+.tariffs-page-header {
+  margin-bottom: 40px;
+}
+
+.tariffs-page-header h1 {
+  margin: 0 0 10px;
+
+  font-size: 42px;
+}
+
+.tariffs-page-header p {
+  margin: 0;
+
+  color: #6b7280;
+
+  font-size: 18px;
+}
+
+/* ==================================================
+   ГЛАВНАЯ СЕТКА
+
+   ЛЕВАЯ ЧАСТЬ = ТАРИФЫ
+   ПРАВАЯ = КОРЗИНА
+================================================== */
+
+.tariffs-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    330px;
+
+  gap: 30px;
+
+  align-items: start;
+}
+
+/* ==================================================
+   ЛЕВАЯ СТОРОНА
+================================================== */
+
+.tariffs-content {
+  min-width: 0;
+}
+
+/* ==================================================
+   ОДНА УСЛУГА
+================================================== */
+
+.service-tariffs {
+  margin-bottom: 45px;
+
+  padding: 30px;
+
+  background: white;
+
+  border-radius: 18px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+
+  scroll-margin-top: 100px;
+}
+
+/* ==================================================
+   НАЗВАНИЕ УСЛУГИ
+================================================== */
+
+.service-title {
+  margin-bottom: 28px;
+}
+
+.service-title h2 {
+  margin: 0 0 8px;
+
+  color: #111827;
+
+  font-size: 30px;
+}
+
+.service-title p {
+  max-width: 800px;
+
+  margin: 0;
+
+  color: #6b7280;
+
+  line-height: 1.6;
+}
+
+/* ==================================================
+   СЕТКА ТАРИФОВ
+================================================== */
+
+.tariffs-grid {
+  display: grid;
+
+  grid-template-columns: repeat(var(--columns, 3), minmax(0, 1fr));
+
+  gap: 20px;
+}
+
+/* ==================================================
+   КАРТОЧКА ТАРИФА
+================================================== */
+
+.tariff-card {
+  min-height: 290px;
+
+  padding: 24px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: space-between;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 14px;
+
+  background: #f9fafb;
+
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s,
+    border-color 0.2s;
+}
+
+.tariff-card:hover {
+  transform: translateY(-4px);
+
+  border-color: #2563eb;
+
+  box-shadow: 0 12px 25px rgba(37, 99, 235, 0.12);
+}
+
+/* ==================================================
+   НАЗВАНИЕ ТАРИФА
+================================================== */
+
+.tariff-card h3 {
+  margin: 0 0 14px;
+
+  color: #111827;
+
+  font-size: 22px;
+}
+
+/* ==================================================
+   ОПИСАНИЕ
+================================================== */
+
+.tariff-description {
+  margin: 0 0 25px;
+
+  color: #6b7280;
+
+  font-size: 15px;
+
+  line-height: 1.6;
+}
+
+/* ==================================================
+   НИЖНЯЯ ЧАСТЬ ТАРИФА
+================================================== */
+
+.tariff-bottom {
+  margin-top: auto;
+}
+
+/* ==================================================
+   ЦЕНА
+================================================== */
+
+.tariff-price {
+  margin: 0 0 18px;
+
+  color: #6b7280;
+}
+
+.tariff-price strong {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #111827;
+
+  font-size: 27px;
+}
+
+/* ==================================================
+   КНОПКА "ВЫБРАТЬ ТАРИФ"
+================================================== */
+
+.tariff-button {
+  width: 100%;
+
+  padding: 13px 15px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  color: white;
+
+  background: #2563eb;
+
+  cursor: pointer;
+
+  font-weight: bold;
+
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.tariff-button:hover {
+  background: #1d4ed8;
+}
+
+/* ==================================================
+   ВЫБРАННЫЙ ТАРИФ
+
+   КНОПКА СТАНОВИТСЯ ЗЕЛЁНОЙ
+================================================== */
+
+.tariff-button.selected {
+  background: #16a34a;
+}
+
+.tariff-button.selected:hover {
+  background: #15803d;
+}
+
+/* ==================================================
+   КОРЗИНА
+================================================== */
+
+.cart {
+  position: sticky;
+
+  top: 100px;
+
+  padding: 25px;
+
+  background: white;
+
+  border-radius: 18px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+  scroll-margin-top: 100px;
+}
+
+.cart h2 {
+  margin: 0 0 7px;
+
+  font-size: 27px;
+}
+
+.cart-subtitle {
+  margin: 0 0 22px;
+
+  color: #6b7280;
+}
+
+/* ==================================================
+   ПУСТАЯ КОРЗИНА
+================================================== */
+
+.cart-empty {
+  padding: 20px 0;
+
+  color: #9ca3af;
+
+  text-align: center;
+
+  font-size: 14px;
+}
+
+/* ==================================================
+   ОДИН ЭЛЕМЕНТ КОРЗИНЫ
+================================================== */
+
+.cart-item {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding: 14px 0;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.cart-item-info {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.cart-item-service {
+  color: #6b7280;
+
+  font-size: 12px;
+}
+
+.cart-item-info strong {
+  color: #111827;
+
+  font-size: 15px;
+}
+
+.cart-item-price {
+  color: #2563eb;
+
+  font-size: 14px;
+
+  font-weight: bold;
+}
+
+/* ==================================================
+   КРЕСТИК УДАЛЕНИЯ
+================================================== */
+
+.cart-remove {
+  width: 30px;
+
+  height: 30px;
+
+  flex-shrink: 0;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 7px;
+
+  color: #991b1b;
+
+  background: #fee2e2;
+
+  cursor: pointer;
+
+  font-size: 20px;
+
+  line-height: 1;
+}
+
+.cart-remove:hover {
+  color: white;
+
+  background: #dc2626;
+}
+
+/* ==================================================
+   ОБЩАЯ ЦЕНА
+================================================== */
+
+.cart-total {
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  margin-top: 25px;
+
+  padding-top: 20px;
+
+  border-top: 2px solid #e5e7eb;
+}
+
+.cart-total span {
+  font-size: 17px;
+}
+
+.cart-total strong {
+  color: #111827;
+
+  font-size: 23px;
+}
+
+/* ==================================================
+   ОФОРМЛЕНИЕ
+================================================== */
+
+.checkout-button {
+  width: 100%;
+
+  margin-top: 22px;
+
+  padding: 14px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  color: white;
+
+  background: #2563eb;
+
+  cursor: pointer;
+
+  font-weight: bold;
+
+  font-size: 15px;
+}
+
+.checkout-button:hover {
+  background: #1d4ed8;
+}
+
+/* ==================================================
+   ОЧИСТИТЬ КОРЗИНУ
+================================================== */
+
+.clear-cart-button {
+  width: 100%;
+
+  margin-top: 10px;
+
+  padding: 11px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 10px;
+
+  color: #6b7280;
+
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.clear-cart-button:hover {
+  color: #991b1b;
+
+  background: #fee2e2;
+
+  border-color: #fecaca;
+}
+
+/* ==================================================
+   ПЛАНШЕТЫ
+================================================== */
+
+@media (max-width: 1100px) {
+  .tariffs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==================================================
+   НЕБОЛЬШИЕ ЭКРАНЫ
+================================================== */
+
+@media (max-width: 850px) {
+  .tariffs-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cart {
+    position: static;
+  }
+}
+
+/* ==================================================
+   ТЕЛЕФОН
+================================================== */
+
+@media (max-width: 600px) {
+  header {
+    padding: 40px 20px;
+  }
+
+  header h1 {
+    font-size: 32px;
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .main-header .container {
+    flex-direction: column;
+
+    gap: 15px;
+  }
+
+  .main-header nav {
+    gap: 15px;
+  }
+
+  main.tariffs-page {
+    margin-top: 30px;
+
+    padding: 0 15px;
+  }
+
+  .tariffs-page-header h1 {
+    font-size: 32px;
+  }
+
+  .service-tariffs {
     padding: 20px;
-    text-align: center;
+
+    scroll-margin-top: 150px;
+  }
+
+  .service-title h2 {
+    font-size: 26px;
+  }
+
+  .tariffs-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tariff-card {
+    min-height: 250px;
+  }
+
+  .cart {
+    padding: 20px;
+  }
+}
+
+/* ==================================================
+   ОБЩИЕ ЗАГОЛОВКИ НОВЫХ СЕКЦИЙ
+================================================== */
+
+.section-heading {
+    margin-bottom: 35px;
+}
+
+.section-label {
+    display: inline-block;
+
+    margin-bottom: 12px;
+
+    color: #2563eb;
+
+    font-size: 13px;
+    font-weight: bold;
+
+    text-transform: uppercase;
+
+    letter-spacing: 2px;
+}
+
+.section-heading h2 {
+    margin: 0 0 12px;
+
+    color: #111827;
+
+    font-size: 34px;
+}
+
+.section-heading > p {
+    max-width: 650px;
+
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 17px;
+
+    line-height: 1.6;
+}
+
+
+/* ==================================================
+   ТЕХНОЛОГИИ
+================================================== */
+
+.technologies-section {
+    padding: 35px;
+
+    margin-bottom: 40px;
+}
+
+.technology-groups {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 20px;
+}
+
+.technology-group {
+    padding: 25px;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    background: #f9fafb;
+}
+
+.technology-group h3 {
+    margin: 0 0 20px;
+
+    color: #6b7280;
+
+    font-size: 13px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1.5px;
+}
+
+.technology-list {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+}
+
+.technology-item {
+    padding: 8px 13px;
+
+    color: #374151;
+
+    background: white;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 30px;
+
+    font-size: 14px;
+
+    transition: 0.2s;
+}
+
+.technology-item:hover {
+    color: white;
+
+    background: #2563eb;
+
+    border-color: #2563eb;
+
+    transform: translateY(-2px);
+}
+
+
+/* ==================================================
+   CMS
+================================================== */
+
+.cms-section {
+    padding: 35px;
+}
+
+.cms-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 20px;
+}
+
+.cms-card {
+    min-height: 190px;
+
+    padding: 25px;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    background: #f9fafb;
+
+    transition: 0.2s;
+}
+
+.cms-card:hover {
+    transform: translateY(-5px);
+
+    border-color: #2563eb;
+
+    box-shadow:
+        0 12px 25px
+        rgba(37, 99, 235, 0.10);
+}
+
+.cms-logo {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 48px;
+    height: 48px;
+
+    margin-bottom: 20px;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #111827,
+            #2563eb
+        );
+
+    border-radius: 12px;
+
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.cms-card h3 {
+    margin: 0 0 10px;
+
+    color: #111827;
+
+    font-size: 21px;
+}
+
+.cms-card p {
+    margin: 0;
+
+    color: #6b7280;
+
+    line-height: 1.5;
+}
+
+
+/* ==================================================
+   ПРОЕКТЫ
+================================================== */
+
+.projects-section {
+    padding: 35px;
+}
+
+.projects-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 22px;
+}
+
+.project-card {
+    overflow: hidden;
+
+    padding: 0;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
+    background: #ffffff;
+
+    transition: 0.2s;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+
+    box-shadow:
+        0 15px 30px
+        rgba(0, 0, 0, 0.08);
+}
+
+.project-preview {
+    height: 220px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    color: white;
+
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.project-preview-one {
+    background:
+        linear-gradient(
+            135deg,
+            #111827,
+            #2563eb
+        );
+}
+
+.project-preview-two {
+    background:
+        linear-gradient(
+            135deg,
+            #2563eb,
+            #60a5fa
+        );
+}
+
+.project-content {
+    padding: 25px;
+}
+
+.project-type {
+    display: inline-block;
+
+    margin-bottom: 10px;
+
+    color: #2563eb;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+}
+
+.project-content h3 {
+    margin: 0 0 12px;
+
+    color: #111827;
+
+    font-size: 24px;
+}
+
+.project-content p {
+    margin: 0 0 20px;
+
+    color: #6b7280;
+
+    line-height: 1.5;
+}
+
+.project-tags {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+}
+
+.project-tags span {
+    padding: 6px 10px;
+
+    color: #4b5563;
+
+    background: #f3f4f6;
+
+    border-radius: 20px;
+
+    font-size: 12px;
+}
+
+.project-coming {
+    min-height: 420px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 35px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #f9fafb,
+            #eff6ff
+        );
+}
+
+.coming-content span {
+    color: #2563eb;
+
+    font-size: 13px;
+
+    text-transform: uppercase;
+
+    font-weight: bold;
+}
+
+.coming-content h3 {
+    margin: 12px 0;
+
+    font-size: 25px;
+}
+
+.coming-content p {
+    color: #6b7280;
+
+    line-height: 1.5;
+}
+
+
+/* ==================================================
+   КОНТАКТЫ
+================================================== */
+
+.contact-section {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1.1fr;
+
+    gap: 50px;
+
+    padding: 45px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #111827,
+            #1e3a8a
+        );
+
+    color: white;
+}
+
+.contact-info h2 {
+    margin: 0 0 18px;
+
+    color: white;
+
+    font-size: 38px;
+}
+
+.contact-description {
+    margin-bottom: 35px;
+
+    color: #d1d5db;
+
+    line-height: 1.7;
+
+    font-size: 17px;
+}
+
+.contact-items {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 20px;
+
+    margin-bottom: 35px;
+}
+
+.contact-item {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+}
+
+.contact-icon {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    color: white;
+
+    background: #2563eb;
+
+    border-radius: 10px;
+
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.contact-item div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.contact-item div span {
+    color: #9ca3af;
+
+    font-size: 12px;
+}
+
+.contact-item strong {
+    color: white;
+}
+
+.contact-benefits {
+    color: #d1d5db;
+}
+
+.contact-benefits p {
+    margin: 10px 0;
+}
+
+
+/* ==================================================
+   ФОРМА В КОНТАКТАХ
+================================================== */
+
+.contact-form-wrapper {
+    padding: 30px;
+
+    background: white;
+
+    border-radius: 16px;
+
+    color: #1f2937;
+}
+
+.contact-form-wrapper h3 {
+    margin: 0 0 25px;
+
+    font-size: 26px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    font-weight: bold;
+
+    font-size: 14px;
+}
+
+.contact-submit {
+    width: 100%;
+
+    padding: 15px;
+
+    border: 0;
+
+    border-radius: 10px;
+
+    color: white;
+
+    background: #2563eb;
+
+    cursor: pointer;
+
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.contact-submit:hover {
+    background: #1d4ed8;
+}
+
+
+/* ==================================================
+   FOOTER
+================================================== */
+
+.main-footer {
+    padding: 55px 40px 25px;
+
+    text-align: left;
+
+    color: #9ca3af;
+
+    background: #111827;
+}
+
+.footer-grid {
+    width: 100%;
+
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        1.5fr 1fr 1fr 1fr;
+
+    gap: 50px;
+}
+
+.footer-logo {
+    display: inline-block;
+
+    margin-bottom: 18px;
+
+    color: white;
+
+    text-decoration: none;
+
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.footer-brand p {
+    max-width: 300px;
+
+    margin: 0;
+
+    line-height: 1.6;
+}
+
+.footer-column {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.footer-column h3 {
+    margin: 0 0 7px;
+
+    color: white;
+
+    font-size: 14px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+}
+
+.footer-column a {
+    color: #9ca3af;
+
+    text-decoration: none;
+
+    transition: 0.2s;
+}
+
+.footer-column a:hover {
+    color: white;
+}
+
+.footer-bottom {
+    max-width: 1200px;
+
+    margin: 45px auto 0;
+
+    padding-top: 20px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    border-top: 1px solid #374151;
+
+    font-size: 13px;
+}
+
+
+/* ==================================================
+   АДАПТАЦИЯ
+================================================== */
+
+@media (max-width: 900px) {
+
+    .technology-groups,
+    .cms-grid,
+    .projects-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+
+    .contact-section {
+        grid-template-columns: 1fr;
+    }
+
+
+    .footer-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .technology-groups,
+    .cms-grid,
+    .projects-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .technologies-section,
+    .cms-section,
+    .projects-section {
+        padding: 22px;
+    }
+
+
+    .contact-section {
+        padding: 25px;
+    }
+
+
+    .contact-info h2 {
+        font-size: 30px;
+    }
+
+
+    .contact-form-wrapper {
+        padding: 22px;
+    }
+
+
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .footer-bottom {
+        flex-direction: column;
+
+        gap: 10px;
+    }
+
+}
+
+/* ==================================================
+   ОТДЕЛЬНАЯ СТРАНИЦА КОРЗИНЫ
+================================================== */
+
+.cart-page {
+    width: 100%;
+    max-width: 1300px;
+
+    margin: 50px auto;
+
+    padding: 0 30px;
+}
+
+
+/* =========================
+   ЗАГОЛОВОК
+========================= */
+
+.cart-page-title {
+    margin-bottom: 35px;
+}
+
+.cart-page-title h1 {
+    margin: 0 0 10px;
+
+    color: #111827;
+
+    font-size: 42px;
+}
+
+.cart-page-title p {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 17px;
+}
+
+
+/* =========================
+   ДВЕ КОЛОНКИ
+========================= */
+
+.cart-page-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        350px;
+
+    gap: 30px;
+
+    align-items: start;
+}
+
+
+/* =========================
+   СПИСОК ТОВАРОВ
+========================= */
+
+.cart-products {
+    padding: 30px;
+}
+
+.cart-products-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+}
+
+.cart-products-header h2 {
+    margin: 0;
+}
+
+.cart-products-header span {
     color: #6b7280;
 }
 
-.errors {
-    padding: 15px;
+
+/* =========================
+   ОДНА УСЛУГА
+========================= */
+
+.cart-product {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    gap: 20px;
+
+    padding: 22px 0;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.cart-product:last-child {
+    border-bottom: 0;
+}
+
+.cart-product-info {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+}
+
+.cart-product-service {
+    color: #2563eb;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+}
+
+.cart-product-info h3 {
+    margin: 0;
+
+    color: #111827;
+
+    font-size: 20px;
+}
+
+
+/* =========================
+   ЦЕНА И УДАЛЕНИЕ
+========================= */
+
+.cart-product-actions {
+    display: flex;
+
+    align-items: center;
+
+    gap: 25px;
+}
+
+.cart-product-actions strong {
+    white-space: nowrap;
+
+    color: #111827;
+
+    font-size: 18px;
+}
+
+.cart-product-remove {
+    padding: 9px 13px;
+
+    border: 0;
+
+    border-radius: 8px;
+
     color: #991b1b;
+
     background: #fee2e2;
-    border-radius: 10px;
+
+    cursor: pointer;
 }
 
-.success {
-    padding: 15px;
-    color: #065f46;
-    background: #d1fae5;
-    border-radius: 10px;
+.cart-product-remove:hover {
+    color: white;
+
+    background: #dc2626;
 }
 
-.tariff-section {
-    scroll-margin-top: 50px;
+
+/* =========================
+   ПУСТАЯ КОРЗИНА
+========================= */
+
+.cart-page-empty {
+    min-height: 350px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+}
+
+.empty-cart-icon {
+    margin-bottom: 15px;
+
+    font-size: 50px;
+}
+
+.cart-page-empty h3 {
+    margin: 0 0 10px;
+
+    font-size: 24px;
+}
+
+.cart-page-empty p {
+    max-width: 400px;
+
+    margin: 0 0 25px;
+
+    color: #6b7280;
+}
+
+.continue-shopping-button {
+    padding: 12px 20px;
+
+    border-radius: 10px;
+
+    color: white;
+
+    background: #2563eb;
+
+    text-decoration: none;
+}
+
+.continue-shopping-button:hover {
+    background: #1d4ed8;
+}
+
+
+/* =========================
+   ИТОГОВЫЙ БЛОК
+========================= */
+
+.cart-summary {
+    position: sticky;
+
+    top: 100px;
+
+    padding: 28px;
+
+    background: white;
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, 0.07);
+}
+
+.cart-summary h2 {
+    margin: 0 0 25px;
+}
+
+.summary-row {
+    display: flex;
+
+    justify-content: space-between;
+
+    color: #6b7280;
+}
+
+.summary-divider {
+    height: 1px;
+
+    margin: 20px 0;
+
+    background: #e5e7eb;
+}
+
+.summary-total {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 25px;
+
+    font-size: 18px;
+}
+
+.summary-total strong {
+    color: #111827;
+
+    font-size: 27px;
+}
+
+
+/* =========================
+   ОФОРМЛЕНИЕ
+========================= */
+
+.cart-order-button {
+    display: block;
+
+    width: 100%;
+
+    padding: 14px;
+
+    text-align: center;
+
+    color: white;
+
+    background: #2563eb;
+
+    border-radius: 10px;
+
+    text-decoration: none;
+
+    font-weight: bold;
+}
+
+.cart-order-button:hover {
+    background: #1d4ed8;
+}
+
+.cart-order-button.disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================
+   ПРОДОЛЖИТЬ ВЫБОР
+========================= */
+
+.cart-back-button {
+    display: block;
+
+    margin-top: 10px;
+
+    padding: 12px;
+
+    text-align: center;
+
+    color: #2563eb;
+
+    border: 1px solid #2563eb;
+
+    border-radius: 10px;
+
+    text-decoration: none;
+}
+
+.cart-back-button:hover {
+    color: white;
+
+    background: #2563eb;
+}
+
+
+/* =========================
+   ОЧИСТИТЬ
+========================= */
+
+.cart-clear-page {
+    width: 100%;
+
+    margin-top: 10px;
+
+    padding: 11px;
+
+    border: 0;
+
+    color: #6b7280;
+
+    background: transparent;
+
+    cursor: pointer;
+}
+
+.cart-clear-page:hover {
+    color: #dc2626;
+
+    background: transparent;
+}
+
+
+/* =========================
+   АДАПТАЦИЯ
+========================= */
+
+@media (max-width: 850px) {
+
+    .cart-page-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .cart-summary {
+        position: static;
+    }
+
+}
+
+
+@media (max-width: 600px) {
+
+    .cart-page {
+        padding: 0 15px;
+
+        margin-top: 30px;
+    }
+
+    .cart-page-title h1 {
+        font-size: 32px;
+    }
+
+    .cart-products {
+        padding: 20px;
+    }
+
+    .cart-product {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+    .cart-product-actions {
+        width: 100%;
+
+        justify-content: space-between;
+    }
+
+}
+
+/* ==================================================
+   HERO ГЛАВНОЙ СТРАНИЦЫ
+================================================== */
+
+.hero-section {
+    margin: 0;
+
+    padding: 100px 30px;
+
+    text-align: center;
+
+    color: white;
+
+    background:
+        linear-gradient(
+            135deg,
+            #111827,
+            #2563eb
+        );
+
+    border-radius: 0;
+
+    box-shadow: none;
+}
+
+
+.hero-section h1 {
+    margin: 0 0 15px;
+
+    font-size: 52px;
+}
+
+
+.hero-section > p {
+    margin: 0 0 30px;
+
+    font-size: 20px;
+
+    color: #dbeafe;
+}
+
+
+.hero-buttons {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 15px;
+
+    flex-wrap: wrap;
+}
+
+
+.hero-main-button,
+.hero-secondary-button {
+    padding: 14px 22px;
+
+    border-radius: 10px;
+
+    text-decoration: none;
+
+    font-weight: bold;
+
+    transition: 0.2s;
+}
+
+
+.hero-main-button {
+    color: #2563eb;
+
+    background: white;
+}
+
+
+.hero-main-button:hover {
+    transform: translateY(-2px);
+}
+
+
+.hero-secondary-button {
+    color: white;
+
+    border: 1px solid rgba(255, 255, 255, 0.5);
+
+    background: transparent;
+}
+
+
+.hero-secondary-button:hover {
+    background: rgba(255, 255, 255, 0.1);
 }

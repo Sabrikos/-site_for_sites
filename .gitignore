@@ -1,0 +1,8 @@
+﻿# Local PHP server logs
+php-server.*.log
+*.log
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
