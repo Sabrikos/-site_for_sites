@@ -1,4 +1,4 @@
-/* ==================================================
+﻿/* ==================================================
    ОБЩИЕ НАСТРОЙКИ
 ================================================== */
 
@@ -2144,8 +2144,11 @@ main.tariffs-page {
 .hero-secondary-button:hover {
     background: rgba(255, 255, 255, 0.1);
 }
+
 /* ==================================================
-   MERGED VISUAL THEME FROM MAIN
+   ОБЩАЯ КОСМИЧЕСКАЯ ТЕМА: MERGE OVERRIDES
+   Сохраняет структуру Саши, но перекрашивает сайт
+   в текущий glassmorphism-стиль.
 ================================================== */
 
 :root {
@@ -2164,8 +2167,6 @@ main.tariffs-page {
 }
 
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
     color: var(--color-text);
     background:
         radial-gradient(circle at 12% 18%, rgba(78, 85, 255, 0.18) 0 2px, transparent 3px),
@@ -2176,44 +2177,66 @@ body {
     min-height: 100vh;
 }
 
-header {
-    width: min(1180px, calc(100% - 48px));
-    margin: 16px auto 0;
-    padding: 58px 28px;
-    text-align: center;
+header,
+.main-header {
     color: var(--color-text);
-    background: rgba(29, 29, 61, 0.76);
+    background: rgba(29, 29, 61, 0.78);
     border-bottom: 2px solid var(--color-border);
-    box-sizing: border-box;
     backdrop-filter: blur(18px);
     box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
 }
 
-header h1 {
-    margin: 0 0 15px;
-    font-size: 42px;
+header h1,
+.hero-section h1,
+.tariffs-page-header h1,
+.cart-page-title h1,
+h2,
+h3,
+.service-title h2,
+.tariff-card h3,
+.cms-card h3,
+.project-content h3,
+.cart h2,
+.cart-summary h2,
+.cart-product-info h3 {
     color: var(--color-heading);
-    letter-spacing: 0.2px;
-    text-shadow: 0 0 22px rgba(123, 130, 255, 0.26);
 }
 
-header p {
-    margin: 0;
-    font-size: 18px;
+header p,
+.tariffs-page-header p,
+.cart-page-title p,
+.service-title p,
+.tariff-description,
+.tariff-price,
+.cart-subtitle,
+.cart-empty,
+.cart-item-service,
+.summary-row,
+.cart-page-empty p,
+.section-heading > p,
+.cms-card p,
+.project-content p,
+.coming-content p,
+footer,
+.main-footer {
     color: var(--color-muted);
 }
 
 main {
     width: min(1180px, calc(100% - 48px));
+    max-width: none;
     margin: 32px auto 56px;
     padding: 0;
-    box-sizing: border-box;
 }
 
-section {
-    position: relative;
-    margin-bottom: 36px;
-    padding: 36px;
+section,
+.service-tariffs,
+.cart,
+.technologies-section,
+.cms-section,
+.projects-section,
+.cart-products,
+.cart-summary {
     background: linear-gradient(135deg, var(--color-panel), rgba(18, 18, 42, 0.62));
     border: 1px solid var(--color-border-soft);
     border-left: 2px solid var(--color-border);
@@ -2225,78 +2248,79 @@ section {
     backdrop-filter: blur(18px);
 }
 
-section::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: radial-gradient(circle at 18% 8%, rgba(216, 213, 255, 0.08), transparent 28%);
-    pointer-events: none;
-}
-
-.services-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
-
-.service-card {
-    padding: 22px;
+.service-card,
+.tariff-card,
+.technology-group,
+.cms-card,
+.project-card,
+.contact-form-wrapper {
+    color: var(--color-text);
+    background: var(--color-panel-light);
     border: 1px solid var(--color-border-soft);
     border-left: 2px solid var(--color-accent);
     border-radius: 8px;
-    background: var(--color-panel-light);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     backdrop-filter: blur(14px);
 }
 
-h2 {
-    margin-top: 0;
-    color: var(--color-heading);
-}
-
-h3 {
-    color: var(--color-heading);
-}
-
-p,
-li,
-label {
-    line-height: 1.65;
+.tariff-card:hover,
+.cms-card:hover,
+.project-card:hover {
+    border-color: var(--color-border);
+    box-shadow: 0 0 34px rgba(78, 85, 255, 0.24);
 }
 
 .button,
-button {
-    text-decoration: none;
-    padding: 12px 20px;
-    border: 1px solid rgba(123, 130, 255, 0.56);
-    border-radius: 999px;
+.service-button,
+.tariff-button,
+.checkout-button,
+.contact-submit,
+.cart-order-button,
+.continue-shopping-button,
+.hero-main-button {
     color: white;
     background: linear-gradient(135deg, var(--color-accent), #3b41d9);
-    cursor: pointer;
+    border: 1px solid rgba(123, 130, 255, 0.56);
     box-shadow: 0 0 22px rgba(78, 85, 255, 0.28);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .button:hover,
-button:hover {
+.service-button:hover,
+.tariff-button:hover,
+.checkout-button:hover,
+.contact-submit:hover,
+.cart-order-button:hover,
+.continue-shopping-button:hover,
+.hero-main-button:hover {
+    color: white;
     background: linear-gradient(135deg, var(--color-accent-light), var(--color-accent-pink));
     box-shadow: 0 0 30px rgba(123, 130, 255, 0.45);
     transform: translateY(-1px);
 }
 
+.hero-secondary-button,
+.cart-back-button,
+.clear-cart-button {
+    color: var(--color-heading);
+    background: rgba(28, 28, 58, 0.38);
+    border: 1px solid var(--color-border-soft);
+}
+
+.hero-secondary-button:hover,
+.cart-back-button:hover,
+.clear-cart-button:hover {
+    color: white;
+    background: rgba(78, 85, 255, 0.18);
+    border-color: var(--color-border);
+}
+
 input,
 select,
 textarea {
-    width: 100%;
-    margin-top: 6px;
-    padding: 12px 14px;
-    border: 1px solid var(--color-border-soft);
-    border-radius: 8px;
     color: var(--color-text);
     background: rgba(13, 13, 35, 0.58);
-    box-sizing: border-box;
-    font: inherit;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 8px;
     backdrop-filter: blur(12px);
 }
 
@@ -2308,19 +2332,57 @@ textarea:focus {
     box-shadow: 0 0 0 3px rgba(78, 85, 255, 0.18);
 }
 
-textarea {
-    min-height: 100px;
-    resize: vertical;
+.section-label,
+.project-type,
+.cart-product-service,
+.cart-item-price {
+    color: var(--color-accent-light);
 }
 
-footer {
-    padding: 24px;
-    text-align: center;
-    color: var(--color-muted);
+.technology-item,
+.project-tags span {
+    color: var(--color-text);
+    background: rgba(13, 13, 35, 0.5);
+    border: 1px solid var(--color-border-soft);
+}
+
+.technology-item:hover {
+    color: white;
+    background: var(--color-accent);
+    border-color: var(--color-border);
+}
+
+.cms-logo,
+.project-preview-one,
+.project-preview-two,
+.hero-section,
+.contact-section {
+    background: linear-gradient(135deg, rgba(78, 85, 255, 0.95), rgba(179, 92, 255, 0.82));
+}
+
+.project-coming {
+    background: linear-gradient(135deg, rgba(28, 28, 58, 0.72), rgba(18, 18, 42, 0.62));
+}
+
+.cart-product,
+.cart-item {
+    border-bottom-color: var(--color-border-soft);
+}
+
+.cart-total,
+.footer-bottom {
+    border-top-color: var(--color-border-soft);
+}
+
+.tariff-price strong,
+.cart-total strong,
+.summary-total strong,
+.cart-product-actions strong,
+.cart-item-info strong {
+    color: var(--color-heading);
 }
 
 .errors {
-    padding: 15px;
     color: var(--color-heading);
     background: rgba(179, 92, 255, 0.14);
     border: 1px solid rgba(179, 92, 255, 0.48);
@@ -2330,15 +2392,10 @@ footer {
 }
 
 .success {
-    padding: 15px;
     color: var(--color-heading);
     background: rgba(78, 85, 255, 0.16);
     border: 1px solid rgba(123, 130, 255, 0.5);
     border-left: 2px solid var(--color-accent-light);
     border-radius: 8px;
     backdrop-filter: blur(14px);
-}
-
-.tariff-section {
-    scroll-margin-top: 50px;
 }
