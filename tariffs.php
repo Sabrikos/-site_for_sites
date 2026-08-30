@@ -894,6 +894,7 @@ $services = [
     </script>
 
 
+    <script src="cursor-stars.js"></script>
 </body>
 
 </html>

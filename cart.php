@@ -570,6 +570,7 @@ $title = 'Корзина | WebStart Studio';
 </script>
 
 
+    <script src="cursor-stars.js"></script>
 </body>
 
 </html>

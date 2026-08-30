@@ -2399,3 +2399,41 @@ textarea:focus {
     border-radius: 8px;
     backdrop-filter: blur(14px);
 }
+
+/* ==================================================
+   ИСПРАВЛЕНИЕ ЗАГОЛОВКОВ В СТЕКЛЯННЫХ СЕКЦИЯХ
+================================================== */
+
+.section-heading h2,
+.technologies-section .section-heading h2 {
+    color: var(--color-heading);
+}
+
+.section-heading > p,
+.technologies-section .section-heading > p {
+    color: var(--color-text);
+}
+
+
+
+/* ==================================================
+   ЗВЁЗДНЫЙ ФОН НА CANVAS
+   Лёгкая версия без тяжёлых CSS-масок и задержек.
+================================================== */
+
+body {
+    position: relative;
+    overflow-x: hidden;
+}
+
+.stars-canvas {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+body > *:not(.stars-canvas) {
+    position: relative;
+    z-index: 1;
+}
