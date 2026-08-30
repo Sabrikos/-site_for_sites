@@ -3,6 +3,8 @@ $title = 'WebStart Studio';
 $subtitle = 'Продвигаем ваш бизнес в сети';
 $author = 'Команда WebStart Studio';
 $customerName = '';
+$customerPhone = '';
+$customerEmail = '';
 $projectType = '';
 $projectTheme = '';
 $selectedService = null;
@@ -41,11 +43,28 @@ $services = [
 #обработка формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerName = trim($_POST['customer_name'] ?? '');
+    $customerPhone = trim($_POST['customer_phone'] ?? '');
+    $customerEmail = trim($_POST['customer_email'] ?? '');
     $projectType = trim($_POST['project_type'] ?? '');
     $projectTheme = trim($_POST['project_theme'] ?? '');
 
     if ($customerName === '') {
         $errors[] = 'Введите имя';
+    }
+
+    if ($customerPhone === '') {
+        $errors[] = 'Введите номер телефона';
+    }
+
+    if ($customerEmail === '') {
+        $errors[] = 'Введите электронную почту';
+    }
+
+    if (
+        $customerEmail !== ''
+        && !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)
+    ) {
+        $errors[] = 'Введите корректный адрес электронной почты';
     }
 
     if ($projectType === '') {
@@ -86,86 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <header class="main-header">
 
-        <div class="container">
+        <?php include 'header.php'; ?>
 
-            <a
-                href="index.php"
-                class="logo">
-                WebStart Studio
-            </a>
-
-
-            <nav>
-
-                <a href="index.php">
-                    Главная
-                </a>
-
-                <a href="#services">
-                    Услуги
-                </a>
-
-                <a href="tariffs.php">
-                    Тарифы
-                </a>
-
-                <a href="#technologies">
-                    Технологии
-                </a>
-
-                <a href="#projects">
-                    Проекты
-                </a>
-
-                <a href="#application">
-                    Контакты
-                </a>
-
-
-                <a
-                    href="cart.php"
-                    class="cart-menu-link"
-                    aria-label="Корзина">
-
-                    <svg
-                        class="cart-icon"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
-
-                        <path
-                            d="M3 3H5L7.2 14.2C7.4 15.2 8.3 16 9.4 16H17.5C18.5 16 19.4 15.3 19.7 14.3L21 8H6"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round" />
-
-                        <circle
-                            cx="10"
-                            cy="20"
-                            r="1.5"
-                            fill="currentColor" />
-
-                        <circle
-                            cx="18"
-                            cy="20"
-                            r="1.5"
-                            fill="currentColor" />
-
-                    </svg>
-
-
-                    <span
-                        class="cart-counter"
-                        id="cartCounter">
-                        0
-                    </span>
-
-                </a>
-
-            </nav>
-
-        </div>
 
     </header>
 
@@ -732,6 +673,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             name="customer_name"
                             placeholder="Как к вам обращаться?"
                             value="<?= htmlspecialchars($customerName) ?>">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="customer_phone">
+                            Номер телефона
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="customer_phone"
+                            name="customer_phone"
+                            placeholder="+7 (___) ___-__-__"
+                            autocomplete="tel"
+                            value="<?= htmlspecialchars($customerPhone) ?>"
+                            required>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="customer_email">
+                            Электронная почта
+                        </label>
+
+                        <input
+                            type="email"
+                            id="customer_email"
+                            name="customer_email"
+                            placeholder="example@mail.ru"
+                            autocomplete="email"
+                            value="<?= htmlspecialchars($customerEmail) ?>"
+                            required>
 
                     </div>
 
