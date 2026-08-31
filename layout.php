@@ -20,7 +20,6 @@ function renderHeader()
                 WebStart Studio
             </a>
 
-
             <nav>
 
                 <a href="index.php">
@@ -55,6 +54,10 @@ function renderHeader()
                     class="cart-menu-link"
                     aria-label="Корзина"
                 >
+                <a
+                    href="cart.php"
+                    class="cart-menu-link"
+                    aria-label="Корзина">
 
                     <svg
                         class="cart-icon"
@@ -63,6 +66,7 @@ function renderHeader()
                         xmlns="http://www.w3.org/2000/svg"
                     >
 
+                        xmlns="http://www.w3.org/2000/svg">
                         <path
                             d="M3 3H5L7.2 14.2C7.4 15.2 8.3 16 9.4 16H17.5C18.5 16 19.4 15.3 19.7 14.3L21 8H6"
                             stroke="currentColor"
@@ -70,6 +74,7 @@ function renderHeader()
                             stroke-linecap="round"
                             stroke-linejoin="round"
                         />
+                            stroke-linejoin="round" />
 
                         <circle
                             cx="10"
@@ -77,6 +82,7 @@ function renderHeader()
                             r="1.5"
                             fill="currentColor"
                         />
+                            fill="currentColor" />
 
                         <circle
                             cx="18"
@@ -92,6 +98,13 @@ function renderHeader()
                         class="cart-counter"
                         id="cartCounter"
                     >
+                            fill="currentColor" />
+
+                    </svg>
+
+                    <span
+                        class="cart-counter"
+                        id="cartCounter">
                         0
                     </span>
 
@@ -102,6 +115,53 @@ function renderHeader()
         </div>
 
     </header>
+
+
+    <script>
+        document.addEventListener(
+            'DOMContentLoaded',
+            function() {
+
+                const cartCounter =
+                    document.getElementById('cartCounter');
+
+                if (!cartCounter) {
+                    return;
+                }
+
+                let cart = [];
+
+                try {
+
+                    cart =
+                        JSON.parse(
+                            localStorage.getItem('webstartCart')
+                        ) || [];
+
+                } catch (error) {
+
+                    cart = [];
+
+                }
+
+                if (cart.length > 0) {
+
+                    cartCounter.textContent =
+                        cart.length;
+
+                    cartCounter.style.display =
+                        'flex';
+
+                } else {
+
+                    cartCounter.style.display =
+                        'none';
+
+                }
+
+            }
+        );
+    </script>
 
 <?php
 }
@@ -309,3 +369,4 @@ function renderFooter()
 
 <?php
 }
+

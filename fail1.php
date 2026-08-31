@@ -102,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-
     <?php renderHeader(); ?>
 
     <section class="hero-section">
@@ -810,6 +809,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            function updateHeaderCartCounter() {
+
+                const cartCounter =
+                    document.getElementById('cartCounter');
+
+                if (!cartCounter) {
+                    return;
+                }
+
+                let cart = [];
+
+                try {
+                    cart =
+                        JSON.parse(
+                            localStorage.getItem('webstartCart')
+                        ) || [];
+                } catch (error) {
+                    cart = [];
+                }
+
+                cartCounter.textContent = cart.length;
+
+            }
+
+            updateHeaderCartCounter();
+
+        });
+    </script>
 
     <script src="cursor-stars.js"></script>
 </body>
