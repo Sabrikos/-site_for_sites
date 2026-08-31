@@ -1,4 +1,6 @@
 <?php
+
+require_once 'layout.php';
 $title = 'WebStart Studio';
 $subtitle = 'Продвигаем ваш бизнес в сети';
 $author = 'Команда WebStart Studio';
@@ -102,13 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-
-    <header class="main-header">
-
-        <?php include 'header.php'; ?>
-
-
-    </header>
+    <?php renderHeader(); ?>
 
     <section class="hero-section">
 
@@ -815,115 +811,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </section>
     </main>
 
-    <footer class="main-footer">
-
-        <div class="footer-grid">
-
-
-            <div class="footer-brand">
-
-                <a
-                    href="index.php"
-                    class="footer-logo">
-                    WebStart Studio
-                </a>
-
-                <p>
-                    Создаём сайты, интернет-магазины,
-                    Telegram-ботов и AI-решения для бизнеса.
-                </p>
-
-            </div>
-
-
-
-            <div class="footer-column">
-
-                <h3>
-                    Услуги
-                </h3>
-
-                <a href="tariffs.php#landing">
-                    Лендинги
-                </a>
-
-                <a href="tariffs.php#shop">
-                    Интернет-магазины
-                </a>
-
-                <a href="tariffs.php#revision">
-                    Доработка сайтов
-                </a>
-
-                <a href="tariffs.php#ai">
-                    AI-решения
-                </a>
-
-            </div>
-
-
-
-            <div class="footer-column">
-
-                <h3>
-                    Студия
-                </h3>
-
-                <a href="#technologies">
-                    Технологии
-                </a>
-
-                <a href="#projects">
-                    Наши проекты
-                </a>
-
-                <a href="#application">
-                    Контакты
-                </a>
-
-            </div>
-
-
-
-            <div class="footer-column">
-
-                <h3>
-                    Связаться
-                </h3>
-
-                <a href="#">
-                    Telegram
-                </a>
-
-                <a href="#">
-                    ВКонтакте
-                </a>
-
-                <a href="mailto:webstart@example.ru">
-                    webstart@example.ru
-                </a>
-
-            </div>
-
-
-        </div>
-
-
-
-        <div class="footer-bottom">
-
-            <span>
-                © <?= date('Y') ?> WebStart Studio
-            </span>
-
-            <span>
-                Разработка цифровых решений
-            </span>
-
-        </div>
-
-    </footer>
-
+    <?php renderFooter(); ?>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
 
