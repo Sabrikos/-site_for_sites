@@ -1,4 +1,5 @@
 <?php
+require_once 'layout.php';
 
 $title = 'Тарифы | WebStart Studio';
 
@@ -212,8 +213,7 @@ $services = [
 
 <body>
 
-    <?php include 'header.php'; ?>
-
+    <?php renderHeader(); ?>
 
 
     <!-- ============================
@@ -453,13 +453,7 @@ $services = [
 
 
 
-    <footer>
-
-        <p>
-            Команда WebStart Studio
-        </p>
-
-    </footer>
+    <?php renderFooter(); ?>
 
 
 
@@ -822,7 +816,6 @@ $services = [
 
             }
         );
-
     </script>
 
 
