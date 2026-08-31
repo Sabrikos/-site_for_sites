@@ -1,5 +1,10 @@
 <?php
 
+
+/* ==================================================
+   ШАПКА САЙТА
+================================================== */
+
 function renderHeader()
 {
 ?>
@@ -10,9 +15,11 @@ function renderHeader()
 
             <a
                 href="index.php"
-                class="logo">
+                class="logo"
+            >
                 WebStart Studio
             </a>
+
 
             <nav>
 
@@ -40,40 +47,51 @@ function renderHeader()
                     Контакты
                 </a>
 
+
+                <!-- Корзина -->
+
                 <a
                     href="cart.php"
                     class="cart-menu-link"
-                    aria-label="Корзина">
+                    aria-label="Корзина"
+                >
 
                     <svg
                         class="cart-icon"
                         viewBox="0 0 24 24"
                         fill="none"
-                        xmlns="http://www.w3.org/2000/svg">
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+
                         <path
                             d="M3 3H5L7.2 14.2C7.4 15.2 8.3 16 9.4 16H17.5C18.5 16 19.4 15.3 19.7 14.3L21 8H6"
                             stroke="currentColor"
                             stroke-width="2"
                             stroke-linecap="round"
-                            stroke-linejoin="round" />
+                            stroke-linejoin="round"
+                        />
 
                         <circle
                             cx="10"
                             cy="20"
                             r="1.5"
-                            fill="currentColor" />
+                            fill="currentColor"
+                        />
 
                         <circle
                             cx="18"
                             cy="20"
                             r="1.5"
-                            fill="currentColor" />
+                            fill="currentColor"
+                        />
 
                     </svg>
 
+
                     <span
                         class="cart-counter"
-                        id="cartCounter">
+                        id="cartCounter"
+                    >
                         0
                     </span>
 
@@ -85,57 +103,14 @@ function renderHeader()
 
     </header>
 
-
-    <script>
-        document.addEventListener(
-            'DOMContentLoaded',
-            function() {
-
-                const cartCounter =
-                    document.getElementById('cartCounter');
-
-                if (!cartCounter) {
-                    return;
-                }
-
-                let cart = [];
-
-                try {
-
-                    cart =
-                        JSON.parse(
-                            localStorage.getItem('webstartCart')
-                        ) || [];
-
-                } catch (error) {
-
-                    cart = [];
-
-                }
-
-                if (cart.length > 0) {
-
-                    cartCounter.textContent =
-                        cart.length;
-
-                    cartCounter.style.display =
-                        'flex';
-
-                } else {
-
-                    cartCounter.style.display =
-                        'none';
-
-                }
-
-            }
-        );
-    </script>
-
 <?php
 }
 
 
+
+/* ==================================================
+   ПОДВАЛ САЙТА
+================================================== */
 
 function renderFooter()
 {
@@ -145,11 +120,15 @@ function renderFooter()
 
         <div class="footer-grid">
 
+
+            <!-- Левая часть -->
+
             <div class="footer-brand">
 
                 <a
                     href="index.php"
-                    class="footer-logo">
+                    class="footer-logo"
+                >
                     WebStart Studio
                 </a>
 
@@ -160,6 +139,9 @@ function renderFooter()
 
             </div>
 
+
+
+            <!-- Услуги -->
 
             <div class="footer-column">
 
@@ -186,6 +168,9 @@ function renderFooter()
             </div>
 
 
+
+            <!-- Студия -->
+
             <div class="footer-column">
 
                 <h3>
@@ -206,6 +191,9 @@ function renderFooter()
 
             </div>
 
+
+
+            <!-- Контакты -->
 
             <div class="footer-column">
 
@@ -230,6 +218,9 @@ function renderFooter()
         </div>
 
 
+
+        <!-- Нижняя строка -->
+
         <div class="footer-bottom">
 
             <span>
@@ -243,6 +234,78 @@ function renderFooter()
         </div>
 
     </footer>
+
+
+
+    <!-- ==================================================
+         ОБЩИЙ СКРИПТ СЧЁТЧИКА КОРЗИНЫ
+    ================================================== -->
+
+    <script>
+
+        function updateHeaderCartCounter() {
+
+            const cartCounter =
+                document.getElementById('cartCounter');
+
+
+            if (!cartCounter) {
+                return;
+            }
+
+
+            let cart = [];
+
+
+            try {
+
+                cart =
+                    JSON.parse(
+                        localStorage.getItem('webstartCart')
+                    ) || [];
+
+            } catch (error) {
+
+                cart = [];
+
+            }
+
+
+            if (cart.length > 0) {
+
+                cartCounter.textContent =
+                    cart.length;
+
+                cartCounter.style.display =
+                    'flex';
+
+            } else {
+
+                cartCounter.textContent =
+                    '0';
+
+                cartCounter.style.display =
+                    'none';
+
+            }
+
+        }
+
+
+        updateHeaderCartCounter();
+
+
+        /*
+            Если корзина изменилась в другой вкладке
+            браузера, число тоже обновится.
+        */
+
+        window.addEventListener(
+            'storage',
+            updateHeaderCartCounter
+        );
+
+    </script>
 
 <?php
 }

@@ -1,9 +1,7 @@
 <?php
-
 require_once 'layout.php';
 $title = 'WebStart Studio';
 $subtitle = 'Продвигаем ваш бизнес в сети';
-$author = 'Команда WebStart Studio';
 $customerName = '';
 $customerPhone = '';
 $customerEmail = '';
@@ -104,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
+
     <?php renderHeader(); ?>
 
     <section class="hero-section">
@@ -165,9 +164,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php endif; ?>
 
                         <?php if ($service['available']): ?>
-                            <a class="button"
-                                href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>"
-                                class="service-button">
+                            <a class="button service-button"
+                                href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>">
                                 Подробнее
                             </a>
                         <?php else: ?>
@@ -812,39 +810,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            function updateHeaderCartCounter() {
-
-                const cartCounter =
-                    document.getElementById('cartCounter');
-
-                if (!cartCounter) {
-                    return;
-                }
-
-                let cart = [];
-
-                try {
-                    cart =
-                        JSON.parse(
-                            localStorage.getItem('webstartCart')
-                        ) || [];
-                } catch (error) {
-                    cart = [];
-                }
-
-                cartCounter.textContent = cart.length;
-
-            }
-
-            updateHeaderCartCounter();
-
-        });
-    </script>
 
     <script src="cursor-stars.js"></script>
 </body>
 
 </html>
+
