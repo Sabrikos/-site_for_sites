@@ -1,5 +1,7 @@
 <?php
-require_once 'layout.php';
+
+require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/bd.php';
 $title = 'WebStart Studio';
 $subtitle = 'Продвигаем ваш бизнес в сети';
 $customerName = '';
@@ -10,36 +12,45 @@ $projectTheme = '';
 $selectedService = null;
 $errors = [];
 
-$services = [
-    [
-        'name' => 'Лендинг/Одностраничный сайт',
-        'slug' => 'landing',
-        'price' => 15000,
-        'deadline' => '7 дней',
-        'available' => true,
-    ],
-    [
-        'name' => 'Интернет магазин',
-        'slug' => 'shop',
-        'price' => 30000,
-        'deadline' => '7 дней',
-        'available' => true,
-    ],
-    [
-        'name' => 'Доработка сайта',
-        'slug' => 'revision',
-        'price' => 5000,
-        'deadline' => '7 дней',
-        'available' => true,
-    ],
-    [
-        'name' => 'Другое',
-        'slug' => 'other',
-        'price' => 10000,
-        'deadline' => '7 дней',
-        'available' => true,
-    ],
-];
+$sql = "
+
+    SELECT
+
+        s.id,
+        s.name,
+        s.slug,
+        s.description,
+        s.deadline,
+
+        MIN(t.price) AS price
+
+    FROM services s
+
+    JOIN tariffs t
+        ON t.service_id = s.id
+
+    WHERE
+        s.active = 1
+        AND t.active = 1
+
+    GROUP BY
+        s.id,
+        s.name,
+        s.slug,
+        s.description,
+        s.deadline
+
+    ORDER BY s.id
+
+";
+
+
+$stmt = $pdo->query($sql);
+
+$services = $stmt->fetchAll();
+
+
+
 #обработка формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerName = trim($_POST['customer_name'] ?? '');
@@ -47,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerEmail = trim($_POST['customer_email'] ?? '');
     $projectType = trim($_POST['project_type'] ?? '');
     $projectTheme = trim($_POST['project_theme'] ?? '');
+    $personalDataConsent = isset($_POST['personal_data_consent']);
 
     if ($customerName === '') {
         $errors[] = 'Введите имя';
@@ -73,6 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($projectTheme === '') {
         $errors[] = 'Опишите тему проекта';
+    }
+
+    if (!$personalDataConsent) {
+        $errors[] = 'Подтвердите согласие на обработку персональных данных';
     }
 
     if (empty($errors)) {
@@ -102,7 +118,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 
 <body>
-
     <?php renderHeader(); ?>
 
     <section class="hero-section">
@@ -161,6 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
     </section>
+
     <main>
         <section>
             <h2>О студии</h2>
@@ -177,28 +193,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <h2>Наши услуги</h2>
 
-            <div class="services-grid">
+            <div class='services-grid'>
 
                 <?php foreach ($services as $service): ?>
-                    <article class="service-card">
-                        <h3><?= $service['name'] ?></h3>
-                        <p>Цена: от <?= $service['price'] ?> ₽</p>
-                        <p>Срок: <?= $service['deadline'] ?></p>
+                    <article class='service-card'>
+                        <h3><?= htmlspecialchars($service['name']) ?></h3>
+                        <p>&#1062;&#1077;&#1085;&#1072;: &#1086;&#1090; <?= number_format((int) $service['price'], 0, '', ' ') ?> &#8381;</p>
+                        <p>&#1057;&#1088;&#1086;&#1082;: <?= htmlspecialchars($service['deadline'] ?? '') ?></p>
 
-                        <?php if ($service['price'] >= 30000): ?>
-                            <p>Категория: крупный проект</p>
+                        <?php if ((int) $service['price'] >= 30000): ?>
+                            <p>&#1050;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1103;: &#1082;&#1088;&#1091;&#1087;&#1085;&#1099;&#1081; &#1087;&#1088;&#1086;&#1077;&#1082;&#1090;</p>
                         <?php else: ?>
-                            <p>Категория: стартовый проект</p>
+                            <p>&#1050;&#1072;&#1090;&#1077;&#1075;&#1086;&#1088;&#1080;&#1103;: &#1089;&#1090;&#1072;&#1088;&#1090;&#1086;&#1074;&#1099;&#1081; &#1087;&#1088;&#1086;&#1077;&#1082;&#1090;</p>
                         <?php endif; ?>
 
-                        <?php if ($service['available']): ?>
-                            <a class="button service-button"
-                                href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>">
-                                Подробнее
-                            </a>
-                        <?php else: ?>
-                            <p>Сейчас недоступно</p>
-                        <?php endif; ?>
+                        <a class='button service-button'
+                            href='tariffs.php#<?= htmlspecialchars($service['slug']) ?>'>
+                            &#1055;&#1086;&#1076;&#1088;&#1086;&#1073;&#1085;&#1077;&#1077;
+                        </a>
                     </article>
                 <?php endforeach; ?>
             </div>
@@ -751,17 +763,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                             <?php foreach ($services as $service): ?>
 
-                                <?php if ($service['available']): ?>
+                                <option
+                                    value="<?= htmlspecialchars($service['name']) ?>"
+                                    <?= $projectType === $service['name'] ? 'selected' : '' ?>>
 
-                                    <option
-                                        value="<?= htmlspecialchars($service['name']) ?>"
-                                        <?= $projectType === $service['name'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($service['name']) ?>
 
-                                        <?= htmlspecialchars($service['name']) ?>
-
-                                    </option>
-
-                                <?php endif; ?>
+                                </option>
 
                             <?php endforeach; ?>
 
@@ -784,6 +792,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     </div>
 
+                    <label class="form-consent">
+                        <input type="checkbox" name="personal_data_consent" value="1" required>
+                        <span>Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</span>
+                    </label>
 
                     <button
                         type="submit"
@@ -838,9 +850,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
-
-    <script src="cursor-stars.js?v=protected-hero-1"></script>
+<script src="cursor-stars.js?v=protected-hero-1"></script>
 </body>
 
 </html>
+
+
 
