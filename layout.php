@@ -52,21 +52,14 @@ function renderHeader()
                 <a
                     href="cart.php"
                     class="cart-menu-link"
-                    aria-label="Корзина"
+                    aria-label="&#1050;&#1086;&#1088;&#1079;&#1080;&#1085;&#1072;"
                 >
-                <a
-                    href="cart.php"
-                    class="cart-menu-link"
-                    aria-label="Корзина">
-
                     <svg
                         class="cart-icon"
                         viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                     >
-
-                        xmlns="http://www.w3.org/2000/svg">
                         <path
                             d="M3 3H5L7.2 14.2C7.4 15.2 8.3 16 9.4 16H17.5C18.5 16 19.4 15.3 19.7 14.3L21 8H6"
                             stroke="currentColor"
@@ -74,42 +67,17 @@ function renderHeader()
                             stroke-linecap="round"
                             stroke-linejoin="round"
                         />
-                            stroke-linejoin="round" />
-
-                        <circle
-                            cx="10"
-                            cy="20"
-                            r="1.5"
-                            fill="currentColor"
-                        />
-                            fill="currentColor" />
-
-                        <circle
-                            cx="18"
-                            cy="20"
-                            r="1.5"
-                            fill="currentColor"
-                        />
-
+                        <circle cx="10" cy="20" r="1.5" fill="currentColor" />
+                        <circle cx="18" cy="20" r="1.5" fill="currentColor" />
                     </svg>
-
 
                     <span
                         class="cart-counter"
                         id="cartCounter"
                     >
-                            fill="currentColor" />
-
-                    </svg>
-
-                    <span
-                        class="cart-counter"
-                        id="cartCounter">
                         0
                     </span>
-
                 </a>
-
             </nav>
 
         </div>
