@@ -101,7 +101,7 @@ function adminOrdersEscape(?string $value): string
             <?php foreach ($orders as $order): ?>
                 <article class="cart-product">
                     <div class="cart-product-info">
-                        <h2>Заказ №<?= (int) $order['id'] ?></h2>
+                        <h2><a href="order.php?id=<?= (int) $order['id'] ?>">Заказ №<?= (int) $order['id'] ?></a></h2>
                         <p><?= adminOrdersEscape($order['customer_name']) ?></p>
                         <p><?= adminOrdersEscape($order['phone']) ?>, <?= adminOrdersEscape($order['email']) ?></p>
                         <p><?= adminOrdersEscape($order['items']) ?></p>
@@ -121,6 +121,7 @@ function adminOrdersEscape(?string $value): string
                                 <?php endforeach; ?>
                             </select>
                             <button type="submit">Сохранить</button>
+                            <a href="order.php?id=<?= (int) $order['id'] ?>">Открыть</a>
                         </form>
                     </div>
                 </article>

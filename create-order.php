@@ -18,10 +18,16 @@ $customerName = trim((string) ($_POST['customer_name'] ?? ''));
 $customerPhone = trim((string) ($_POST['customer_phone'] ?? ''));
 $customerEmail = trim((string) ($_POST['customer_email'] ?? ''));
 $projectComment = trim((string) ($_POST['project_comment'] ?? ''));
+$personalDataConsent = isset($_POST['personal_data_consent']);
 
 function e(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+}
+
+function textLength(string $value): int
+{
+    return function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : strlen($value);
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,16 +38,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Срок действия формы истёк. Обновите страницу и повторите отправку.';
     }
 
-    if ($customerName === '') {
-        $errors[] = 'Введите имя.';
+    if ($customerName === '' || textLength($customerName) < 2 || textLength($customerName) > 150) {
+        $errors[] = 'Введите имя от 2 до 150 символов.';
     }
 
-    if ($customerPhone === '') {
-        $errors[] = 'Введите номер телефона.';
+    if ($customerPhone === '' || !preg_match('/^[0-9+()\-\s]{7,30}$/u', $customerPhone)) {
+        $errors[] = 'Введите корректный номер телефона.';
     }
 
     if ($customerEmail === '' || !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
         $errors[] = 'Введите корректный email.';
+    }
+
+    if (textLength($projectComment) > 1000) {
+        $errors[] = 'Комментарий не должен быть длиннее 1000 символов.';
+    }
+
+    if (!$personalDataConsent) {
+        $errors[] = 'Подтвердите согласие на обработку персональных данных.';
     }
 
     $cart = json_decode(
@@ -212,12 +226,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="form-group">
                         <label for="customer_name">Имя</label>
-                        <input type="text" id="customer_name" name="customer_name" value="<?= e($customerName) ?>" required>
+                        <input type="text" id="customer_name" name="customer_name" value="<?= e($customerName) ?>" minlength="2" maxlength="150" required>
                     </div>
 
                     <div class="form-group">
                         <label for="customer_phone">Телефон</label>
-                        <input type="tel" id="customer_phone" name="customer_phone" value="<?= e($customerPhone) ?>" required>
+                        <input type="tel" id="customer_phone" name="customer_phone" value="<?= e($customerPhone) ?>" maxlength="30" required>
                     </div>
 
                     <div class="form-group">
@@ -227,8 +241,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="form-group">
                         <label for="project_comment">Комментарий</label>
-                        <textarea id="project_comment" name="project_comment"><?= e($projectComment) ?></textarea>
+                        <textarea id="project_comment" name="project_comment" maxlength="1000"><?= e($projectComment) ?></textarea>
                     </div>
+
+                    <label class="form-consent">
+                        <input type="checkbox" name="personal_data_consent" value="1" required>
+                        <span>Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</span>
+                    </label>
 
                     <button type="submit" class="contact-submit">Отправить заявку</button>
                 </form>
@@ -244,10 +263,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const cart = JSON.parse(localStorage.getItem('webstartCart') || '[]');
     const orderItems = document.getElementById('orderItems');
     const emptyOrder = document.getElementById('emptyOrder');
-
-    function tariffId(item) {
-        return String(item.tariff_id ?? item.id ?? '');
-    }
 
     function tariffName(item) {
         return item.tariff ?? item.name ?? '';
@@ -266,6 +281,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             orderItems.appendChild(row);
         });
     }
+
+    <?php if ($successOrderId !== null): ?>
+        localStorage.removeItem('webstartCart');
+        if (typeof updateHeaderCartCounter === 'function') {
+            updateHeaderCartCounter();
+        }
+        if (orderItems) {
+            orderItems.innerHTML = '';
+        }
+        if (emptyOrder) {
+            emptyOrder.style.display = 'block';
+        }
+    <?php endif; ?>
 </script>
+<script src="cursor-stars.js"></script>
 </body>
 </html>

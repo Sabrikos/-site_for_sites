@@ -10,30 +10,43 @@ if (!empty($_SESSION['admin_id'])) {
     exit;
 }
 
+if (empty($_SESSION['login_csrf'])) {
+    $_SESSION['login_csrf'] = bin2hex(random_bytes(32));
+}
+
 $error = '';
 $username = trim((string) ($_POST['username'] ?? ''));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $token = (string) ($_POST['csrf_token'] ?? '');
     $password = (string) ($_POST['password'] ?? '');
-    $statement = $pdo->prepare(
-        'SELECT id, username, password_hash
-         FROM admins
-         WHERE username = ?
-         LIMIT 1'
-    );
-    $statement->execute([$username]);
-    $admin = $statement->fetch();
 
-    if ($admin && password_verify($password, $admin['password_hash'])) {
-        session_regenerate_id(true);
-        $_SESSION['admin_id'] = (int) $admin['id'];
-        $_SESSION['admin_username'] = $admin['username'];
-        $_SESSION['admin_csrf'] = bin2hex(random_bytes(32));
-        header('Location: orders.php');
-        exit;
+    if (!hash_equals($_SESSION['login_csrf'], $token)) {
+        $error = 'Срок действия формы истёк. Обновите страницу и попробуйте снова.';
+    } else {
+        $statement = $pdo->prepare(
+            'SELECT id, username, password_hash
+             FROM admins
+             WHERE username = ?
+             LIMIT 1'
+        );
+        $statement->execute([$username]);
+        $admin = $statement->fetch();
+
+        if ($admin && password_verify($password, $admin['password_hash'])) {
+            session_regenerate_id(true);
+            unset($_SESSION['login_csrf']);
+            $_SESSION['admin_id'] = (int) $admin['id'];
+            $_SESSION['admin_username'] = $admin['username'];
+            $_SESSION['admin_csrf'] = bin2hex(random_bytes(32));
+            header('Location: orders.php');
+            exit;
+        }
+
+        $error = 'Неверный логин или пароль.';
     }
 
-    $error = 'Неверный логин или пароль.';
+    $_SESSION['login_csrf'] = bin2hex(random_bytes(32));
 }
 
 function adminEscape(string $value): string
@@ -60,6 +73,7 @@ function adminEscape(string $value): string
         <?php endif; ?>
 
         <form method="post">
+            <input type="hidden" name="csrf_token" value="<?= adminEscape($_SESSION['login_csrf']) ?>">
             <div class="form-group">
                 <label for="username">Логин</label>
                 <input id="username" name="username" value="<?= adminEscape($username) ?>" required>

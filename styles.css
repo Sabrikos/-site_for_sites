@@ -1,4 +1,4 @@
-﻿/* ==================================================
+/* ==================================================
    ОБЩИЕ НАСТРОЙКИ
 ================================================== */
 
@@ -2436,4 +2436,22 @@ body {
 body > *:not(.stars-canvas) {
     position: relative;
     z-index: 1;
+}
+
+.form-consent {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin: 16px 0;
+    color: var(--color-muted);
+    line-height: 1.5;
+}
+
+.form-consent input {
+    width: auto;
+    margin-top: 4px;
+}
+
+.form-consent a {
+    color: var(--color-accent-light);
 }

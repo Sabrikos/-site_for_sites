@@ -58,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerEmail = trim($_POST['customer_email'] ?? '');
     $projectType = trim($_POST['project_type'] ?? '');
     $projectTheme = trim($_POST['project_theme'] ?? '');
+    $personalDataConsent = isset($_POST['personal_data_consent']);
 
     if ($customerName === '') {
         $errors[] = 'Введите имя';
@@ -84,6 +85,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($projectTheme === '') {
         $errors[] = 'Опишите тему проекта';
+    }
+
+    if (!$personalDataConsent) {
+        $errors[] = 'Подтвердите согласие на обработку персональных данных';
     }
 
     if (empty($errors)) {
@@ -758,6 +763,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     </div>
 
+                    <label class="form-consent">
+                        <input type="checkbox" name="personal_data_consent" value="1" required>
+                        <span>Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</span>
+                    </label>
 
                     <button
                         type="submit"
