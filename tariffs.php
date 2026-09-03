@@ -1,190 +1,79 @@
 <?php
-require_once 'layout.php';
+require_once __DIR__ . '/bd.php';
+require_once __DIR__ . '/layout.php';
 
 $title = 'Тарифы | WebStart Studio';
 
-$services = [
+/*
+    Получаем услуги из базы данных
+*/
 
-    [
-        'name' => 'Лендинг',
-        'slug' => 'landing',
-        'columns' => 3,
+$servicesStatement = $pdo->query("
 
-        'description' =>
-        'Одностраничные сайты для продвижения товара, услуги или компании.',
+    SELECT
 
-        'tariffs' => [
+        id,
+        name,
+        slug,
+        description
 
-            [
-                'id' => 'landing-start',
-                'name' => 'Старт',
-                'description' =>
-                'Простой лендинг для небольшой услуги или начинающего бизнеса.',
-                'price' => 15000,
-            ],
+    FROM services
 
-            [
-                'id' => 'landing-business',
-                'name' => 'Бизнес',
-                'description' =>
-                'Расширенный лендинг с дополнительными блоками, формами и анимациями.',
-                'price' => 22000,
-            ],
+    WHERE active = 1
 
-            [
-                'id' => 'landing-premium',
-                'name' => 'Премиум',
-                'description' =>
-                'Индивидуальный лендинг с уникальным дизайном и расширенным функционалом.',
-                'price' => 30000,
-            ],
+    ORDER BY id
 
-        ],
-    ],
+");
+
+$services =
+    $servicesStatement->fetchAll();
 
 
-    [
-        'name' => 'Интернет-магазин',
-        'slug' => 'shop',
-        'columns' => 3,
 
-        'description' =>
-        'Сайты для продажи товаров через интернет.',
+/*
+    Получаем тарифы из базы данных
+*/
 
-        'tariffs' => [
+$tariffsStatement = $pdo->query("
 
-            [
-                'id' => 'shop-start',
-                'name' => 'Старт',
-                'description' =>
-                'Небольшой каталог товаров, корзина и форма оформления заказа.',
-                'price' => 30000,
-            ],
+    SELECT
 
-            [
-                'id' => 'shop-business',
-                'name' => 'Бизнес',
-                'description' =>
-                'Полноценный интернет-магазин с каталогом, корзиной и онлайн-оплатой.',
-                'price' => 45000,
-            ],
+        id,
+        service_id,
+        name,
+        description,
+        price
 
-            [
-                'id' => 'shop-premium',
-                'name' => 'Премиум',
-                'description' =>
-                'Большой интернет-магазин с индивидуальным дизайном и интеграциями.',
-                'price' => 65000,
-            ],
+    FROM tariffs
 
-        ],
-    ],
+    WHERE active = 1
+
+    ORDER BY service_id, id
+
+");
 
 
-    [
-        'name' => 'Доработка сайта',
-        'slug' => 'revision',
-        'columns' => 3,
-
-        'description' =>
-        'Исправление ошибок и добавление нового функционала на существующий сайт.',
-
-        'tariffs' => [
-
-            [
-                'id' => 'revision-small',
-                'name' => 'Мелкая доработка',
-                'description' =>
-                'Изменение текста, дизайна или отдельных элементов сайта.',
-                'price' => 5000,
-            ],
-
-            [
-                'id' => 'revision-business',
-                'name' => 'Расширенная доработка',
-                'description' =>
-                'Добавление новых страниц, блоков и функций.',
-                'price' => 10000,
-            ],
-
-            [
-                'id' => 'revision-complex',
-                'name' => 'Комплексная доработка',
-                'description' =>
-                'Большое обновление структуры, дизайна и функциональности сайта.',
-                'price' => 20000,
-            ],
-
-        ],
-    ],
+$tariffs =
+    $tariffsStatement->fetchAll();
 
 
-    /*
-        ============================
-        ИИ-РЕШЕНИЯ
-        ============================
-    */
 
-    [
-        'name' => 'ИИ-решения',
-        'slug' => 'ai',
-        'columns' => 3,
+/*
+    Разделяем тарифы по услугам
+*/
 
-        'description' =>
-        'Разработка Telegram-ботов, AI-ассистентов и внедрение искусственного интеллекта в сайты и сервисы.',
-
-        'tariffs' => [
-
-            [
-                'id' => 'ai-telegram',
-                'name' => 'Telegram-бот',
-                'description' =>
-                'Telegram-бот для автоматизации заявок, ответов клиентам, уведомлений и других задач.',
-                'price' => 10000,
-            ],
-
-            [
-                'id' => 'ai-assistant',
-                'name' => 'AI-ассистент',
-                'description' =>
-                'Умный помощник на базе нейросети, способный отвечать клиентам и работать с вашей информацией.',
-                'price' => 20000,
-            ],
-
-            [
-                'id' => 'ai-business',
-                'name' => 'AI для бизнеса',
-                'description' =>
-                'Интеграция AI в сайт, Telegram-бота или внутренний сервис компании.',
-                'price' => 30000,
-            ],
-
-        ],
-    ],
+$tariffsByService = [];
 
 
-    [
-        'name' => 'Другое',
-        'slug' => 'other',
-        'columns' => 3,
+foreach ($tariffs as $tariff) {
 
-        'description' =>
-        'Если подходящего варианта нет среди наших основных услуг.',
+    $serviceId =
+        $tariff['service_id'];
 
-        'tariffs' => [
 
-            [
-                'id' => 'other-individual',
-                'name' => 'Индивидуальный проект',
-                'description' =>
-                'Расскажите о вашей задаче, и мы подберём подходящий вариант разработки.',
-                'price' => 10000,
-            ],
-
-        ],
-    ],
-
-];
+    $tariffsByService[$serviceId][] =
+        $tariff;
+}
 
 ?>
 
@@ -213,7 +102,7 @@ $services = [
 
 <body>
 
-<?php renderHeader(); ?>
+    <?php renderHeader(); ?>
 
 
     <!-- ============================
@@ -274,13 +163,19 @@ $services = [
 
                         <!-- Тарифы -->
 
+                        <?php
+
+                        $serviceTariffs =
+                            $tariffsByService[$service['id']] ?? [];
+
+                        ?>
+
                         <div
                             class="tariffs-grid"
-                            style="--columns: <?= (int) $service['columns'] ?>;">
+                            style="--columns: 3;">
 
 
-                            <?php foreach ($service['tariffs'] as $tariff): ?>
-
+                            <?php foreach ($serviceTariffs as $tariff): ?>
 
                                 <article class="tariff-card">
 
@@ -473,6 +368,14 @@ $services = [
             localStorage.getItem('webstartCart')
         ) || [];
 
+        function getTariffId(item) {
+            return String(item.tariff_id ?? item.id);
+        }
+
+        function getTariffName(item) {
+            return item.tariff ?? item.name ?? '';
+        }
+
 
 
         const buttons =
@@ -528,7 +431,7 @@ $services = [
         function tariffIsSelected(id) {
 
             return cart.some(
-                item => item.id === id
+                item => getTariffId(item) === String(id)
             );
 
         }
@@ -595,7 +498,7 @@ $services = [
                         </span>
 
                         <strong>
-                            ${item.name}
+                            ${getTariffName(item)}
                         </strong>
 
                         <span class="cart-item-price">
@@ -607,7 +510,7 @@ $services = [
 
                     <button
                         class="cart-remove"
-                        data-id="${item.id}"
+                        data-id="${getTariffId(item)}"
                         type="button"
                     >
                         ×
@@ -694,7 +597,7 @@ $services = [
 
 
                             cart = cart.filter(
-                                item => item.id !== id
+                                item => getTariffId(item) !== String(id)
                             );
 
 
@@ -737,7 +640,7 @@ $services = [
 
 
                         cart = cart.filter(
-                            item => item.id !== id
+                            item => getTariffId(item) !== String(id)
                         );
 
 
@@ -750,11 +653,11 @@ $services = [
 
                         cart.push({
 
-                            id: id,
+                            tariff_id: id,
 
                             service: this.dataset.service,
 
-                            name: this.dataset.name,
+                            tariff: this.dataset.name,
 
                             price: Number(this.dataset.price)
 
@@ -816,7 +719,6 @@ $services = [
 
             }
         );
-
     </script>
 
 

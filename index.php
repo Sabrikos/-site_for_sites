@@ -1,2 +1,2 @@
 ﻿<?php
-require __DIR__ . '/fail1.php';
+require __DIR__ . '/home.php';

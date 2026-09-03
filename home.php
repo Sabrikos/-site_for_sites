@@ -1,6 +1,7 @@
 <?php
 
-require_once 'layout.php';
+require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/bd.php';
 $title = 'WebStart Studio';
 $subtitle = 'Продвигаем ваш бизнес в сети';
 $author = 'Команда WebStart Studio';
@@ -12,36 +13,45 @@ $projectTheme = '';
 $selectedService = null;
 $errors = [];
 
-$services = [
-    [
-        'name' => 'Лендинг/Одностраничный сайт',
-        'slug' => 'landing',
-        'price' => 15000,
-        'deadline' => '7 дней',
-        'available' => true,
-    ],
-    [
-        'name' => 'Интернет магазин',
-        'slug' => 'shop',
-        'price' => 30000,
-        'deadline' => '7 дней',
-        'available' => true,
-    ],
-    [
-        'name' => 'Доработка сайта',
-        'slug' => 'revision',
-        'price' => 5000,
-        'deadline' => '7 дней',
-        'available' => true,
-    ],
-    [
-        'name' => 'Другое',
-        'slug' => 'other',
-        'price' => 10000,
-        'deadline' => '7 дней',
-        'available' => true,
-    ],
-];
+$sql = "
+
+    SELECT
+
+        s.id,
+        s.name,
+        s.slug,
+        s.description,
+        s.deadline,
+
+        MIN(t.price) AS price
+
+    FROM services s
+
+    JOIN tariffs t
+        ON t.service_id = s.id
+
+    WHERE
+        s.active = 1
+        AND t.active = 1
+
+    GROUP BY
+        s.id,
+        s.name,
+        s.slug,
+        s.description,
+        s.deadline
+
+    ORDER BY s.id
+
+";
+
+
+$stmt = $pdo->query($sql);
+
+$services = $stmt->fetchAll();
+
+
+
 #обработка формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerName = trim($_POST['customer_name'] ?? '');
@@ -153,27 +163,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="services-grid">
 
                 <?php foreach ($services as $service): ?>
-                    <article class="service-card">
-                        <h3><?= $service['name'] ?></h3>
-                        <p>Цена: от <?= $service['price'] ?> ₽</p>
-                        <p>Срок: <?= $service['deadline'] ?></p>
 
-                        <?php if ($service['price'] >= 30000): ?>
-                            <p>Категория: крупный проект</p>
-                        <?php else: ?>
-                            <p>Категория: стартовый проект</p>
-                        <?php endif; ?>
+                    <option
+                        value="<?= htmlspecialchars($service['name']) ?>"
+                        <?= $projectType === $service['name'] ? 'selected' : '' ?>>
 
-                        <?php if ($service['available']): ?>
-                            <a class="button"
-                                href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>"
-                                class="service-button">
-                                Подробнее
-                            </a>
-                        <?php else: ?>
-                            <p>Сейчас недоступно</p>
-                        <?php endif; ?>
-                    </article>
+                        <?= htmlspecialchars($service['name']) ?>
+
+                    </option>
+
                 <?php endforeach; ?>
             </div>
         </section>
@@ -725,17 +723,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                             <?php foreach ($services as $service): ?>
 
-                                <?php if ($service['available']): ?>
+                                <option
+                                    value="<?= htmlspecialchars($service['name']) ?>"
+                                    <?= $projectType === $service['name'] ? 'selected' : '' ?>>
 
-                                    <option
-                                        value="<?= htmlspecialchars($service['name']) ?>"
-                                        <?= $projectType === $service['name'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($service['name']) ?>
 
-                                        <?= htmlspecialchars($service['name']) ?>
-
-                                    </option>
-
-                                <?php endif; ?>
+                                </option>
 
                             <?php endforeach; ?>
 

@@ -255,7 +255,7 @@ $title = 'Корзина | WebStart Studio';
 
 
             <a
-                href="index.php#application"
+                href="create-order.php"
                 class="cart-order-button"
                 id="cartOrderButton"
             >
@@ -308,6 +308,14 @@ $title = 'Корзина | WebStart Studio';
         JSON.parse(
             localStorage.getItem('webstartCart')
         ) || [];
+
+    function getTariffId(item) {
+        return String(item.tariff_id ?? item.id);
+    }
+
+    function getTariffName(item) {
+        return item.tariff ?? item.name ?? '';
+    }
 
 
     const cartPageItems =
@@ -426,7 +434,7 @@ $title = 'Корзина | WebStart Studio';
                         </span>
 
                         <h3>
-                            ${item.name}
+                            ${getTariffName(item)}
                         </h3>
 
                     </div>
@@ -441,7 +449,7 @@ $title = 'Корзина | WebStart Studio';
                         <button
                             type="button"
                             class="cart-product-remove"
-                            data-id="${item.id}"
+                            data-id="${getTariffId(item)}"
                         >
                             Удалить
                         </button>
@@ -505,8 +513,8 @@ $title = 'Корзина | WebStart Studio';
                         cart =
                             cart.filter(
 
-                                item =>
-                                    item.id !== id
+                                    item =>
+                                    getTariffId(item) !== String(id)
 
                             );
 

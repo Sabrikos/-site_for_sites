@@ -2,6 +2,9 @@
 php-server.*.log
 *.log
 
+# Local database configuration
+bd.php
+
 # OS/editor noise
 .DS_Store
 Thumbs.db
