@@ -206,7 +206,7 @@ $services = [
 
     <link
         rel="stylesheet"
-        href="styles.css">
+        href="styles.css?v=hero-title-white-1">
 
 </head>
 
@@ -819,7 +819,7 @@ $services = [
     </script>
 
 
-    <script src="cursor-stars.js"></script>
+    <script src="cursor-stars.js?v=protected-hero-1"></script>
 </body>
 
 </html>

@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title><?= $title ?></title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=hero-title-white-1">
 </head>
 
 <body>
@@ -107,32 +107,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <section class="hero-section">
 
-        <h1>
-            <?= htmlspecialchars($title) ?>
-        </h1>
+        <div class="hero-content">
 
-        <p>
-            <?= htmlspecialchars($subtitle) ?>
-        </p>
+            <span class="hero-label">
+                Веб-студия для бизнеса
+            </span>
 
-        <div class="hero-buttons">
+            <h1>
+                Создаём сайты, которые помогают продавать
+            </h1>
 
-            <a
-                href="#services"
-                class="hero-main-button">
-                Наши услуги
-            </a>
+            <p>
+                Разрабатываем лендинги, интернет-магазины и сервисы под задачи компании:
+                продумываем структуру, делаем удобный интерфейс и помогаем превратить
+                посетителя в заявку.
+            </p>
 
-            <a
-                href="tariffs.php"
-                class="hero-secondary-button">
-                Посмотреть тарифы
-            </a>
+            <div class="hero-buttons">
+
+                <a
+                    href="#application"
+                    class="hero-main-button">
+                    Обсудить проект
+                </a>
+
+                <a
+                    href="tariffs.php"
+                    class="hero-secondary-button">
+                    Смотреть тарифы
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+            <div class="hero-orbit hero-orbit-one"></div>
+            <div class="hero-orbit hero-orbit-two"></div>
+
+            <div class="hero-planet"></div>
+
+            <div class="hero-rocket">
+                🚀
+            </div>
+
+            <div class="hero-tech hero-tech-html">HTML</div>
+            <div class="hero-tech hero-tech-css">CSS</div>
+            <div class="hero-tech hero-tech-php">PHP</div>
+            <div class="hero-tech hero-tech-js">JS</div>
+            <div class="hero-tech hero-tech-cpp">C++</div>
+            <div class="hero-tech hero-tech-ts">TypeScript</div>
 
         </div>
 
     </section>
-
     <main>
         <section>
             <h2>О студии</h2>
@@ -811,7 +839,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php renderFooter(); ?>
 
-    <script src="cursor-stars.js"></script>
+    <script src="cursor-stars.js?v=protected-hero-1"></script>
 </body>
 
 </html>

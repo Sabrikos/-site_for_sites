@@ -1,4 +1,4 @@
-﻿/* ==================================================
+/* ==================================================
    ОБЩИЕ НАСТРОЙКИ
 ================================================== */
 
@@ -2436,4 +2436,984 @@ body {
 body > *:not(.stars-canvas) {
     position: relative;
     z-index: 1;
+}
+/* ==================================================
+   HERO AS PART OF THE STAR BACKGROUND
+   Hero and content blocks use different layer rules.
+================================================== */
+
+.hero-section {
+    position: relative;
+    overflow: visible;
+    margin: 0;
+    padding: 118px 30px 132px;
+    background:
+        radial-gradient(circle at 22% 18%, rgba(123, 130, 255, 0.34), transparent 34%),
+        radial-gradient(circle at 78% 22%, rgba(179, 92, 255, 0.30), transparent 36%),
+        linear-gradient(
+            135deg,
+            rgba(78, 85, 255, 0.58) 0%,
+            rgba(129, 76, 219, 0.46) 42%,
+            rgba(17, 17, 39, 0.22) 72%,
+            rgba(17, 17, 39, 0) 100%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(78, 85, 255, 0.30) 0%,
+            rgba(121, 78, 219, 0.24) 48%,
+            rgba(17, 17, 39, 0.08) 76%,
+            rgba(17, 17, 39, 0) 100%
+        );
+    border: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    outline: 0;
+    box-shadow: none;
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: auto !important;
+}
+
+.hero-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(17, 17, 39, 0) 0%,
+            rgba(17, 17, 39, 0.10) 58%,
+            var(--color-space) 100%
+        );
+}
+
+.hero-section::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 140px;
+    z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(
+        180deg,
+        var(--color-space) 0%,
+        rgba(17, 17, 39, 0.72) 18%,
+        rgba(17, 17, 39, 0.34) 52%,
+        rgba(17, 17, 39, 0) 100%
+    );
+}
+
+.hero-section > * {
+    position: relative;
+    z-index: 4;
+}
+
+.main-header,
+header.main-header {
+    position: relative;
+    z-index: 5 !important;
+    border-bottom: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+/* ==================================================
+   STAR BACKGROUND LAYER
+   Canvas is above hero background, but below all info blocks.
+================================================== */
+
+.stars-canvas {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2 !important;
+    pointer-events: none !important;
+}
+
+body > *:not(.stars-canvas) {
+    position: relative;
+    z-index: auto !important;
+}
+
+/* ==================================================
+   OPAQUE INFORMATION BLOCKS
+   Same sizes/layout as before, only transparency is removed.
+================================================== */
+
+main > section,
+main .service-tariffs,
+main .cart,
+main .technologies-section,
+main .cms-section,
+main .projects-section,
+main .contact-section,
+main .cart-products,
+main .cart-summary {
+    position: relative;
+    z-index: 4 !important;
+    opacity: 1 !important;
+    background-color: #151532 !important;
+    background-image: linear-gradient(135deg, #1a1a3d 0%, #12122c 100%) !important;
+    border: 1px solid var(--color-border-soft);
+    border-left: 2px solid var(--color-border);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 24px 80px rgba(0, 0, 0, 0.32),
+        0 0 28px rgba(78, 85, 255, 0.08);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+main .service-card,
+main .tariff-card,
+main .technology-group,
+main .cms-card,
+main .project-card,
+main .contact-form-wrapper,
+main .cart-product,
+main .cart-item,
+main .cart-summary {
+    position: relative;
+    z-index: 5 !important;
+    opacity: 1 !important;
+    background-color: #222247 !important;
+    background-image: none !important;
+    border: 1px solid var(--color-border-soft);
+    border-left: 2px solid var(--color-accent);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.main-footer,
+footer {
+    position: relative;
+    z-index: 5 !important;
+}
+/* ==================================================
+   SMOOTH HEADER TO HERO TRANSITION
+   Only the top menu gets this fade layer.
+================================================== */
+
+.main-header,
+header.main-header {
+    overflow: visible;
+}
+
+.main-header .container,
+header.main-header .container {
+    position: relative;
+    z-index: 2;
+}
+
+.main-header::after,
+header.main-header::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    height: 135px;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(
+        180deg,
+        rgba(29, 29, 61, 0.92) 0%,
+        rgba(29, 29, 61, 0.58) 32%,
+        rgba(20, 20, 48, 0.26) 66%,
+        rgba(17, 17, 39, 0) 100%
+    );
+}
+/* ==================================================
+   HEADER INNER BOTTOM FADE
+   The menu itself now fades into the hero at the bottom.
+================================================== */
+
+.main-header,
+header.main-header {
+    background: linear-gradient(
+        180deg,
+        rgba(29, 29, 61, 0.98) 0%,
+        rgba(29, 29, 61, 0.94) 48%,
+        rgba(29, 29, 61, 0.68) 74%,
+        rgba(29, 29, 61, 0.18) 100%
+    ) !important;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.main-header::after,
+header.main-header::after {
+    top: calc(100% - 1px);
+    height: 110px;
+    background: linear-gradient(
+        180deg,
+        rgba(29, 29, 61, 0.18) 0%,
+        rgba(25, 25, 58, 0.12) 35%,
+        rgba(17, 17, 39, 0) 100%
+    ) !important;
+}
+/* ==================================================
+   HEADER AND HERO AS ONE VISUAL AREA
+   Only the menu colors/fade are adjusted here.
+================================================== */
+
+.main-header,
+header.main-header {
+    background: linear-gradient(
+        180deg,
+        rgba(29, 29, 61, 0.72) 0%,
+        rgba(42, 39, 92, 0.54) 54%,
+        rgba(78, 85, 255, 0.16) 100%
+    ) !important;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+.main-header::after,
+header.main-header::after {
+    top: calc(100% - 1px);
+    height: 120px;
+    background: linear-gradient(
+        180deg,
+        rgba(78, 85, 255, 0.16) 0%,
+        rgba(72, 65, 160, 0.12) 36%,
+        rgba(17, 17, 39, 0) 100%
+    ) !important;
+}
+/* ==================================================
+   FLOATING HEADER AFTER SCROLL
+   Only the top menu changes after 500px scroll.
+================================================== */
+
+.main-header {
+    transition:
+        transform 0.28s ease,
+        background 0.28s ease,
+        box-shadow 0.28s ease;
+}
+
+.main-header.is-floating {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    z-index: 1000 !important;
+    transform: translateY(0);
+    animation: headerSlideDown 0.28s ease both;
+    box-shadow: 0 18px 55px rgba(0, 0, 0, 0.34);
+}
+
+.main-header.is-floating::after {
+    height: 56px;
+}
+
+@keyframes headerSlideDown {
+    from {
+        transform: translateY(-100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+/* ==================================================
+   SMOOTHER FLOATING HEADER
+   Prevents page jump when the menu becomes fixed.
+================================================== */
+
+body {
+    --floating-header-height: 0px;
+}
+
+body.header-is-floating {
+    padding-top: var(--floating-header-height);
+}
+
+.main-header {
+    will-change: transform;
+}
+
+.main-header.is-floating {
+    animation: headerSlideDownSmooth 0.46s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+@keyframes headerSlideDownSmooth {
+    from {
+        transform: translate3d(0, -115%, 0);
+        opacity: 0.4;
+    }
+
+    55% {
+        opacity: 1;
+    }
+
+    to {
+        transform: translate3d(0, 0, 0);
+        opacity: 1;
+    }
+}
+/* ==================================================
+   HERO LANDING LAYOUT
+   Only the first screen layout is changed here.
+================================================== */
+
+.hero-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+    align-items: center;
+    gap: 70px;
+    min-height: 720px;
+    padding: 118px max(72px, calc((100vw - 1500px) / 2)) 132px;
+    text-align: left;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 4;
+    max-width: 760px;
+}
+
+.hero-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    color: var(--color-accent-light);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+}
+
+.hero-label::before {
+    content: "";
+    width: 38px;
+    height: 1px;
+    background: var(--color-accent);
+    box-shadow: 0 0 16px rgba(123, 130, 255, 0.65);
+}
+
+.hero-section h1 {
+    max-width: 760px;
+    margin: 0;
+    color: var(--color-heading);
+    font-size: clamp(56px, 6vw, 104px);
+    line-height: 0.96;
+    letter-spacing: -0.07em;
+}
+
+.hero-section > p,
+.hero-content > p {
+    max-width: 650px;
+    margin: 34px 0 0;
+    color: var(--color-muted);
+    font-size: clamp(20px, 1.7vw, 30px);
+    line-height: 1.55;
+}
+
+.hero-buttons {
+    justify-content: flex-start;
+    gap: 18px;
+    margin-top: 42px;
+}
+
+.hero-main-button,
+.hero-secondary-button {
+    min-width: 210px;
+    padding: 20px 30px;
+    border-radius: 999px;
+    text-align: center;
+    font-size: 18px;
+}
+
+.hero-visual {
+    position: relative;
+    z-index: 4;
+    min-height: 480px;
+    display: grid;
+    place-items: center;
+}
+
+.hero-visual::before {
+    content: "";
+    position: absolute;
+    width: 430px;
+    height: 430px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 42% 36%, rgba(216, 213, 255, 0.95) 0 5%, transparent 6%),
+        radial-gradient(circle at 50% 50%, rgba(78, 85, 255, 0.38), transparent 58%);
+    filter: blur(1px);
+    opacity: 0.9;
+}
+
+.hero-planet {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.42), transparent 22%),
+        linear-gradient(135deg, rgba(78, 85, 255, 0.96), rgba(179, 92, 255, 0.84));
+    box-shadow:
+        inset -26px -30px 60px rgba(11, 11, 29, 0.42),
+        0 0 70px rgba(123, 130, 255, 0.34);
+}
+
+.hero-rocket {
+    position: relative;
+    z-index: 2;
+    font-size: 132px;
+    transform: rotate(-18deg);
+    filter: drop-shadow(0 24px 34px rgba(0, 0, 0, 0.38));
+}
+
+.hero-orbit {
+    position: absolute;
+    border: 1px solid rgba(216, 213, 255, 0.22);
+    border-radius: 50%;
+    transform: rotate(-18deg);
+}
+
+.hero-orbit-one {
+    width: 430px;
+    height: 150px;
+}
+
+.hero-orbit-two {
+    width: 520px;
+    height: 210px;
+    opacity: 0.55;
+}
+
+.hero-tech {
+    position: absolute;
+    z-index: 3;
+    padding: 12px 16px;
+    color: var(--color-heading);
+    font-size: 14px;
+    font-weight: 800;
+    border: 1px solid rgba(123, 130, 255, 0.56);
+    border-radius: 999px;
+    background: #222247;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.24);
+}
+
+.hero-tech-html {
+    top: 96px;
+    right: 84px;
+}
+
+.hero-tech-css {
+    top: 56px;
+    left: 112px;
+}
+
+.hero-tech-php {
+    bottom: 112px;
+    left: 86px;
+}
+
+.hero-tech-js {
+    right: 104px;
+    bottom: 86px;
+}
+
+@media (max-width: 980px) {
+    .hero-section {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        min-height: auto;
+        padding: 96px 28px 110px;
+    }
+
+    .hero-visual {
+        min-height: 360px;
+    }
+}
+
+@media (max-width: 640px) {
+    .hero-section h1 {
+        font-size: 46px;
+    }
+
+    .hero-main-button,
+    .hero-secondary-button {
+        width: 100%;
+    }
+
+    .hero-visual {
+        transform: scale(0.82);
+        transform-origin: center top;
+    }
+}
+/* ==================================================
+   HERO FITS FIRST SCREEN
+   Compact first screen so text and buttons are visible without scroll.
+================================================== */
+
+.hero-section {
+    gap: 52px;
+    min-height: calc(100vh - 84px);
+    padding-top: 72px;
+    padding-bottom: 74px;
+}
+
+.hero-label {
+    margin-bottom: 20px;
+    font-size: 12px;
+}
+
+.hero-section h1 {
+    max-width: 680px;
+    font-size: clamp(44px, 4.45vw, 78px);
+    line-height: 1.02;
+    letter-spacing: -0.055em;
+}
+
+.hero-content > p {
+    max-width: 610px;
+    margin-top: 24px;
+    font-size: clamp(18px, 1.35vw, 24px);
+    line-height: 1.48;
+}
+
+.hero-buttons {
+    margin-top: 30px;
+}
+
+.hero-main-button,
+.hero-secondary-button {
+    min-width: 190px;
+    padding: 17px 26px;
+    font-size: 17px;
+}
+
+.hero-visual {
+    min-height: 390px;
+}
+
+.hero-visual::before {
+    width: 360px;
+    height: 360px;
+}
+
+.hero-planet {
+    width: 235px;
+    height: 235px;
+}
+
+.hero-rocket {
+    font-size: 110px;
+}
+
+.hero-orbit-one {
+    width: 360px;
+    height: 126px;
+}
+
+.hero-orbit-two {
+    width: 430px;
+    height: 172px;
+}
+
+.hero-tech {
+    padding: 10px 14px;
+    font-size: 13px;
+}
+
+.hero-tech-html {
+    top: 72px;
+    right: 74px;
+}
+
+.hero-tech-css {
+    top: 42px;
+    left: 96px;
+}
+
+.hero-tech-php {
+    bottom: 88px;
+    left: 78px;
+}
+
+.hero-tech-js {
+    right: 90px;
+    bottom: 68px;
+}
+
+@media (max-width: 980px) {
+    .hero-section {
+        min-height: auto;
+        padding-top: 64px;
+        padding-bottom: 76px;
+    }
+}
+/* ==================================================
+   HERO WIDE ORBIT ANIMATION
+   Only the right hero illustration is affected.
+================================================== */
+
+.hero-visual {
+    --orbit-width: 620px;
+    --orbit-height: 245px;
+    overflow: visible;
+}
+
+.hero-orbit-one {
+    width: var(--orbit-width);
+    height: var(--orbit-height);
+    border-color: rgba(216, 213, 255, 0.28);
+}
+
+.hero-orbit-two {
+    width: calc(var(--orbit-width) + 82px);
+    height: calc(var(--orbit-height) + 58px);
+    border-color: rgba(123, 130, 255, 0.16);
+    opacity: 0.75;
+}
+
+.hero-tech {
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    offset-position: 50% 50%;
+    offset-anchor: center;
+    offset-path: ellipse(calc(var(--orbit-width) / 2) calc(var(--orbit-height) / 2) at 50% 50%);
+    offset-rotate: 0deg;
+    animation: heroTechOrbit 18s linear infinite;
+    box-shadow:
+        0 14px 36px rgba(0, 0, 0, 0.24),
+        0 0 22px rgba(123, 130, 255, 0.18);
+}
+
+.hero-tech-html {
+    animation-delay: 0s;
+}
+
+.hero-tech-css {
+    animation-delay: -4.5s;
+}
+
+.hero-tech-php {
+    animation-delay: -9s;
+}
+
+.hero-tech-js {
+    animation-delay: -13.5s;
+}
+
+@keyframes heroTechOrbit {
+    from {
+        offset-distance: 0%;
+        transform: rotate(-18deg);
+    }
+
+    to {
+        offset-distance: 100%;
+        transform: rotate(-18deg);
+    }
+}
+
+@media (max-width: 980px) {
+    .hero-visual {
+        --orbit-width: 520px;
+        --orbit-height: 205px;
+    }
+}
+
+@media (max-width: 640px) {
+    .hero-visual {
+        --orbit-width: 420px;
+        --orbit-height: 170px;
+    }
+}
+/* ==================================================
+   HERO TECH BADGES ON VISIBLE ORBIT
+   Badges follow the same rotated ellipse as the drawn ring.
+================================================== */
+
+.hero-tech {
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    offset-path: none !important;
+    offset-position: normal !important;
+    offset-anchor: auto !important;
+    animation: heroTechOrbitOnVisibleRing 18s linear infinite !important;
+}
+
+.hero-tech-html {
+    animation-delay: 0s !important;
+}
+
+.hero-tech-css {
+    animation-delay: -4.5s !important;
+}
+
+.hero-tech-php {
+    animation-delay: -9s !important;
+}
+
+.hero-tech-js {
+    animation-delay: -13.5s !important;
+}
+
+@keyframes heroTechOrbitOnVisibleRing {
+    0% {
+        transform: translate(calc(-50% + 295px), calc(-50% - 96px)) rotate(-18deg);
+    }
+
+    6.25% {
+        transform: translate(calc(-50% + 287px), calc(-50% - 44px)) rotate(-18deg);
+    }
+
+    12.5% {
+        transform: translate(calc(-50% + 235px), calc(-50% + 15px)) rotate(-18deg);
+    }
+
+    18.75% {
+        transform: translate(calc(-50% + 148px), calc(-50% + 71px)) rotate(-18deg);
+    }
+
+    25% {
+        transform: translate(calc(-50% + 38px), calc(-50% + 117px)) rotate(-18deg);
+    }
+
+    31.25% {
+        transform: translate(calc(-50% - 78px), calc(-50% + 144px)) rotate(-18deg);
+    }
+
+    37.5% {
+        transform: translate(calc(-50% - 182px), calc(-50% + 150px)) rotate(-18deg);
+    }
+
+    43.75% {
+        transform: translate(calc(-50% - 258px), calc(-50% + 133px)) rotate(-18deg);
+    }
+
+    50% {
+        transform: translate(calc(-50% - 295px), calc(-50% + 96px)) rotate(-18deg);
+    }
+
+    56.25% {
+        transform: translate(calc(-50% - 287px), calc(-50% + 44px)) rotate(-18deg);
+    }
+
+    62.5% {
+        transform: translate(calc(-50% - 235px), calc(-50% - 15px)) rotate(-18deg);
+    }
+
+    68.75% {
+        transform: translate(calc(-50% - 148px), calc(-50% - 71px)) rotate(-18deg);
+    }
+
+    75% {
+        transform: translate(calc(-50% - 38px), calc(-50% - 117px)) rotate(-18deg);
+    }
+
+    81.25% {
+        transform: translate(calc(-50% + 78px), calc(-50% - 144px)) rotate(-18deg);
+    }
+
+    87.5% {
+        transform: translate(calc(-50% + 182px), calc(-50% - 150px)) rotate(-18deg);
+    }
+
+    93.75% {
+        transform: translate(calc(-50% + 258px), calc(-50% - 133px)) rotate(-18deg);
+    }
+
+    100% {
+        transform: translate(calc(-50% + 295px), calc(-50% - 96px)) rotate(-18deg);
+    }
+}
+/* ==================================================
+   HERO ORBIT DEPTH AND EXTRA TECH BADGES
+   Badges move behind the planet on the far side of the orbit.
+================================================== */
+
+.hero-orbit {
+    z-index: 1;
+}
+
+.hero-planet {
+    z-index: 4;
+}
+
+.hero-rocket {
+    z-index: 6;
+}
+
+.hero-tech {
+    padding: 13px 19px !important;
+    font-size: 15px !important;
+    z-index: 7;
+    animation: heroTechOrbitWithDepth 24s linear infinite !important;
+}
+
+.hero-tech-html {
+    animation-delay: 0s !important;
+}
+
+.hero-tech-css {
+    animation-delay: -4s !important;
+}
+
+.hero-tech-php {
+    animation-delay: -8s !important;
+}
+
+.hero-tech-js {
+    animation-delay: -12s !important;
+}
+
+.hero-tech-cpp {
+    animation-delay: -16s !important;
+}
+
+.hero-tech-ts {
+    animation-delay: -20s !important;
+}
+
+@keyframes heroTechOrbitWithDepth {
+    0% {
+        z-index: 3;
+        transform: translate(calc(-50% + 295px), calc(-50% - 96px)) rotate(-18deg);
+    }
+
+    6.25% {
+        z-index: 3;
+        transform: translate(calc(-50% + 287px), calc(-50% - 44px)) rotate(-18deg);
+    }
+
+    12.5% {
+        z-index: 3;
+        transform: translate(calc(-50% + 235px), calc(-50% + 15px)) rotate(-18deg);
+    }
+
+    18.75% {
+        z-index: 7;
+        transform: translate(calc(-50% + 148px), calc(-50% + 71px)) rotate(-18deg);
+    }
+
+    25% {
+        z-index: 7;
+        transform: translate(calc(-50% + 38px), calc(-50% + 117px)) rotate(-18deg);
+    }
+
+    31.25% {
+        z-index: 7;
+        transform: translate(calc(-50% - 78px), calc(-50% + 144px)) rotate(-18deg);
+    }
+
+    37.5% {
+        z-index: 7;
+        transform: translate(calc(-50% - 182px), calc(-50% + 150px)) rotate(-18deg);
+    }
+
+    43.75% {
+        z-index: 7;
+        transform: translate(calc(-50% - 258px), calc(-50% + 133px)) rotate(-18deg);
+    }
+
+    50% {
+        z-index: 7;
+        transform: translate(calc(-50% - 295px), calc(-50% + 96px)) rotate(-18deg);
+    }
+
+    56.25% {
+        z-index: 7;
+        transform: translate(calc(-50% - 287px), calc(-50% + 44px)) rotate(-18deg);
+    }
+
+    62.5% {
+        z-index: 3;
+        transform: translate(calc(-50% - 235px), calc(-50% - 15px)) rotate(-18deg);
+    }
+
+    68.75% {
+        z-index: 3;
+        transform: translate(calc(-50% - 148px), calc(-50% - 71px)) rotate(-18deg);
+    }
+
+    75% {
+        z-index: 3;
+        transform: translate(calc(-50% - 38px), calc(-50% - 117px)) rotate(-18deg);
+    }
+
+    81.25% {
+        z-index: 3;
+        transform: translate(calc(-50% + 78px), calc(-50% - 144px)) rotate(-18deg);
+    }
+
+    87.5% {
+        z-index: 3;
+        transform: translate(calc(-50% + 182px), calc(-50% - 150px)) rotate(-18deg);
+    }
+
+    93.75% {
+        z-index: 3;
+        transform: translate(calc(-50% + 258px), calc(-50% - 133px)) rotate(-18deg);
+    }
+
+    100% {
+        z-index: 3;
+        transform: translate(calc(-50% + 295px), calc(-50% - 96px)) rotate(-18deg);
+    }
+}
+/* ==================================================
+   HERO CONTENT ABOVE STAR CANVAS
+   Text and the right planet stay above background stars.
+================================================== */
+
+.hero-section {
+    position: relative;
+    z-index: 3 !important;
+    isolation: isolate;
+}
+
+.hero-section::before {
+    z-index: 1 !important;
+}
+
+.hero-section::after {
+    z-index: 2 !important;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 8 !important;
+}
+
+.hero-visual {
+    position: relative;
+    z-index: 6 !important;
+}
+
+.hero-orbit {
+    z-index: 2;
+}
+
+.hero-planet {
+    z-index: 5 !important;
+}
+
+.hero-rocket {
+    z-index: 6 !important;
+}
+/* ==================================================
+   HERO TITLE WHITE
+   Only the main hero headline becomes pure white.
+================================================== */
+
+.hero-content h1 {
+    color: #ffffff !important;
 }

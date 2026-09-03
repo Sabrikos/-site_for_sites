@@ -1,7 +1,8 @@
-﻿(() => {
+(() => {
     const STAR_COUNT = 360;
     const ACTIVE_RADIUS = 170;
     const MAX_DEVICE_PIXEL_RATIO = 1.5;
+    const EXCLUDE_PADDING = 12;
 
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d', { alpha: true });
@@ -88,6 +89,38 @@
         return `rgba(179, 92, 255, ${alpha})`;
     }
 
+    function getProtectedHeroAreas() {
+        const selectors = [
+            '.hero-label',
+            '.hero-content h1',
+            '.hero-content > p',
+            '.hero-buttons',
+            '.hero-planet',
+            '.hero-rocket',
+        ];
+
+        return selectors
+            .map((selector) => document.querySelector(selector))
+            .filter(Boolean)
+            .map((element) => element.getBoundingClientRect())
+            .filter((rect) => rect.bottom >= 0 && rect.top <= height)
+            .map((rect) => ({
+                left: rect.left - EXCLUDE_PADDING,
+                right: rect.right + EXCLUDE_PADDING,
+                top: rect.top - EXCLUDE_PADDING,
+                bottom: rect.bottom + EXCLUDE_PADDING,
+            }));
+    }
+
+    function isInsideProtectedArea(x, y, protectedAreas) {
+        return protectedAreas.some((area) => (
+            x >= area.left &&
+            x <= area.right &&
+            y >= area.top &&
+            y <= area.bottom
+        ));
+    }
+
     function drawStar(star, screenY) {
         const dx = star.x - mouseX;
         const dy = screenY - mouseY;
@@ -120,13 +153,20 @@
         const scrollTop = window.scrollY;
         const topLimit = scrollTop - 40;
         const bottomLimit = scrollTop + height + 40;
+        const protectedAreas = getProtectedHeroAreas();
 
         for (const star of stars) {
             if (star.y < topLimit || star.y > bottomLimit) {
                 continue;
             }
 
-            drawStar(star, star.y - scrollTop);
+            const screenY = star.y - scrollTop;
+
+            if (isInsideProtectedArea(star.x, screenY, protectedAreas)) {
+                continue;
+            }
+
+            drawStar(star, screenY);
         }
 
         frameId = null;

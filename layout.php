@@ -305,6 +305,44 @@ function renderFooter()
             updateHeaderCartCounter
         );
 
+
+
+        function updateFloatingHeader() {
+
+            const header =
+                document.querySelector('.main-header');
+
+            if (!header) {
+                return;
+            }
+
+            document.body.style.setProperty(
+                '--floating-header-height',
+                `${header.offsetHeight}px`
+            );
+
+            if (window.scrollY >= 450) {
+                document.body.classList.add('header-is-floating');
+                header.classList.add('is-floating');
+                return;
+            }
+
+            if (window.scrollY <= 5) {
+                header.classList.remove('is-floating');
+                document.body.classList.remove('header-is-floating');
+            }
+
+        }
+
+
+        updateFloatingHeader();
+
+
+        window.addEventListener(
+            'scroll',
+            updateFloatingHeader,
+            { passive: true }
+        );
     </script>
 
 <?php
