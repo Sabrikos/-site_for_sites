@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title><?= $title ?></title>
-    <link rel="stylesheet" href="styles.css?v=hero-code-canvas-1">
+    <link rel="stylesheet" href="styles.css?v=hero-label-glow-1">
 </head>
 
 <body>
@@ -129,13 +129,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </span>
 
             <h1>
-                Создаём сайты, которые помогают продавать
+                Разрабатываем сайты, которые помогают продавать
             </h1>
 
             <p>
-                Разрабатываем лендинги, интернет-магазины и сервисы под задачи компании:
-                продумываем структуру, делаем удобный интерфейс и помогаем превратить
-                посетителя в заявку.
+               Продумываем дизайн, функционал и путь клиента с фокусом на результат.
             </p>
 
             <div class="hero-buttons">

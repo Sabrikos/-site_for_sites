@@ -3869,3 +3869,15 @@ body.header-is-floating {
     border-radius: inherit;
     pointer-events: none;
 }
+
+/* ==================================================
+   HERO LABEL SOFT GLOW
+   Subtle glow for the small intro label only.
+================================================== */
+
+.hero-label {
+    color: rgba(178, 187, 255, 0.94) !important;
+    text-shadow:
+        0 0 8px rgba(114, 126, 255, 0.34),
+        0 0 18px rgba(151, 92, 255, 0.20) !important;
+}
