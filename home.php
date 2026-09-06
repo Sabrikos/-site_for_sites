@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title><?= $title ?></title>
-    <link rel="stylesheet" href="styles.css?v=hero-title-white-1">
+    <link rel="stylesheet" href="styles.css?v=hero-code-canvas-1">
 </head>
 
 <body>
@@ -160,8 +160,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="hero-orbit hero-orbit-one"></div>
             <div class="hero-orbit hero-orbit-two"></div>
 
-            <div class="hero-planet"></div>
+            <div class="hero-planet">
+                <svg class="sphere-code-map" viewBox="0 0 260 260" aria-hidden="true" focusable="false">
+                    <defs>
+                        <path id="sphere-code-path-1" d="M18 20 C76 38 184 38 242 20" />
+                        <path id="sphere-code-path-2" d="M10 36 C72 60 188 60 250 36" />
+                        <path id="sphere-code-path-3" d="M6 54 C70 84 190 84 254 54" />
+                        <path id="sphere-code-path-4" d="M4 76 C68 110 192 110 256 76" />
+                        <path id="sphere-code-path-5" d="M2 100 C66 136 194 136 258 100" />
+                        <path id="sphere-code-path-6" d="M0 126 C65 164 195 164 260 126" />
+                        <path id="sphere-code-path-7" d="M2 150 C66 186 194 186 258 150" />
+                        <path id="sphere-code-path-8" d="M4 174 C68 208 192 208 256 174" />
+                        <path id="sphere-code-path-9" d="M6 196 C70 226 190 226 254 196" />
+                        <path id="sphere-code-path-10" d="M10 216 C72 240 188 240 250 216" />
+                        <path id="sphere-code-path-11" d="M18 236 C76 252 184 252 242 236" />
+                    </defs>
 
+                    <g class="sphere-code-lines">
+                        <text><textPath href="#sphere-code-path-1" startOffset="0">deploy(); require_once 'layout.php'; renderHeader();</textPath></text>
+                        <text><textPath href="#sphere-code-path-2" startOffset="0">const page = createLanding(); validateForm(); sendRequest();</textPath></text>
+                        <text><textPath href="#sphere-code-path-3" startOffset="0">function buildSite($service, $tariff){ return $orderId; }</textPath></text>
+                        <text><textPath href="#sphere-code-path-4" startOffset="0">SELECT name, price FROM tariffs WHERE active = 1;</textPath></text>
+                        <text><textPath href="#sphere-code-path-5" startOffset="0">if ($errors === []) { createOrder($customer, $project); }</textPath></text>
+                        <text><textPath href="#sphere-code-path-6" startOffset="0">$pdo-&gt;prepare($sql); $stmt-&gt;execute(); fetchAll();</textPath></text>
+                        <text><textPath href="#sphere-code-path-7" startOffset="0">class WebStartProject { public function launch(): bool {} }</textPath></text>
+                        <text><textPath href="#sphere-code-path-8" startOffset="0">addToCart(serviceId); localStorage.setItem('webstartCart', cart);</textPath></text>
+                        <text><textPath href="#sphere-code-path-9" startOffset="0">try { connectDatabase(); } catch (PDOException $error) {}</textPath></text>
+                        <text><textPath href="#sphere-code-path-10" startOffset="0">foreach ($services as $service) { renderCard($service); }</textPath></text>
+                        <text><textPath href="#sphere-code-path-11" startOffset="0">git commit -m 'ship feature'; git push origin Kseha;</textPath></text>
+                    </g>
+                </svg>
+            </div>
             <div class="hero-rocket">
                 🚀
             </div>
@@ -850,7 +879,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
-<script src="cursor-stars.js?v=protected-hero-1"></script>
+<script src="cursor-stars.js?v=stars-light-1"></script>
+<script src="sphere-code-loop.js?v=canvas-render-2"></script>
 </body>
 
 </html>

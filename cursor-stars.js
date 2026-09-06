@@ -1,7 +1,7 @@
 (() => {
-    const STAR_COUNT = 360;
+    const STAR_COUNT = 240;
     const ACTIVE_RADIUS = 170;
-    const MAX_DEVICE_PIXEL_RATIO = 1.5;
+    const MAX_DEVICE_PIXEL_RATIO = 1;
     const EXCLUDE_PADDING = 12;
 
     const canvas = document.createElement('canvas');

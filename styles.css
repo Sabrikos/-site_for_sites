@@ -3417,3 +3417,455 @@ body.header-is-floating {
 .hero-content h1 {
     color: #ffffff !important;
 }
+/* ==================================================
+   HERO CODE SPHERE
+   The rocket is hidden; the planet becomes a curved hacker-style code screen.
+================================================== */
+
+.hero-rocket {
+    display: none !important;
+}
+
+.hero-planet {
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.30), transparent 0 18%),
+        radial-gradient(circle at 50% 52%, rgba(98, 107, 255, 0.92) 0%, rgba(86, 74, 223, 0.88) 42%, rgba(63, 38, 142, 0.98) 100%) !important;
+    box-shadow:
+        inset -34px -38px 70px rgba(7, 7, 24, 0.58),
+        inset 26px 22px 56px rgba(146, 151, 255, 0.20),
+        0 0 78px rgba(123, 130, 255, 0.38) !important;
+}
+
+.hero-planet::before {
+    content:
+        "const site = launch();  <html>  css.grid()  php->order();  mysql.query();  ai.optimize();  js.animate();\A"
+        "function build(){ return lead; }  npm run dev  bitrix.init();  ui.render();  fetch('/order');\A"
+        "010101  class Landing extends Project  $price = calc();  SELECT * FROM tariffs;  deploy();\A"
+        "if(user.click){ createOrder(); }  responsive=true;  cache.clear();  form.validate();\A"
+        "while(idea){ prototype(); test(); ship(); }  console.log('WebStart');  git push;\A"
+        "<section> services </section>  const conversion = grow();  backend.connect();";
+    position: absolute;
+    top: 50%;
+    left: -55%;
+    z-index: 2;
+    width: 215%;
+    color: rgba(231, 235, 255, 0.92);
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 2.15;
+    letter-spacing: 0.08em;
+    white-space: pre;
+    text-transform: uppercase;
+    text-shadow:
+        0 0 8px rgba(216, 213, 255, 0.52),
+        0 0 18px rgba(82, 96, 255, 0.38);
+    opacity: 0.74;
+    transform: perspective(420px) rotateY(-24deg) rotateX(7deg) translate3d(-12%, -50%, 0);
+    animation: sphereCodeRun 8s linear infinite;
+}
+
+.hero-planet::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.34), transparent 0 17%),
+        radial-gradient(circle at 72% 72%, rgba(0, 0, 0, 0.42), transparent 0 42%),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.13), transparent 24%, transparent 68%, rgba(0, 0, 0, 0.34)),
+        repeating-linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 9px);
+    box-shadow: inset 0 0 34px rgba(255, 255, 255, 0.08);
+}
+
+@keyframes sphereCodeRun {
+    from {
+        transform: perspective(420px) rotateY(-24deg) rotateX(7deg) translate3d(-26%, -50%, 0);
+    }
+
+    to {
+        transform: perspective(420px) rotateY(-24deg) rotateX(7deg) translate3d(8%, -50%, 0);
+    }
+}
+/* ==================================================
+   HERO CURVED CODE SPHERE
+   Code rows fill the whole ball and imitate spherical perspective.
+================================================== */
+
+.hero-planet {
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.hero-planet::before {
+    content: "" !important;
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    width: auto;
+    color: transparent;
+    font-size: 0;
+    line-height: 0;
+    opacity: 1;
+    transform: none;
+    animation: none;
+    background:
+        radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.36), transparent 0 16%),
+        radial-gradient(ellipse at 52% 48%, transparent 0 38%, rgba(16, 12, 58, 0.18) 62%, rgba(5, 5, 22, 0.46) 100%),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.16), transparent 22%, transparent 67%, rgba(0, 0, 0, 0.34));
+    pointer-events: none;
+}
+
+.hero-planet::after {
+    z-index: 4;
+}
+
+.sphere-code {
+    position: absolute;
+    inset: 9% 6%;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    pointer-events: none;
+    transform: perspective(520px) rotateY(-27deg) rotateX(8deg) rotateZ(-2deg);
+    transform-origin: center;
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 0 58%, transparent 76%);
+    mask-image: radial-gradient(circle at 50% 50%, #000 0 58%, transparent 76%);
+}
+
+.sphere-code span {
+    display: block;
+    width: var(--row-width);
+    margin-left: var(--row-shift);
+    overflow: hidden;
+    color: rgba(235, 239, 255, 0.90);
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.10em;
+    white-space: nowrap;
+    text-transform: uppercase;
+    text-shadow:
+        0 0 7px rgba(216, 213, 255, 0.56),
+        0 0 16px rgba(82, 96, 255, 0.34);
+    opacity: 0.78;
+}
+
+.sphere-code span::before {
+    content: attr(style);
+    display: none;
+}
+
+.sphere-code span::after {
+    content: "  ::  " attr(class) "  const web = launch();  html css php js mysql bitrix api deploy git push  ";
+}
+
+.sphere-code span {
+    animation: sphereCodeRowRun var(--row-speed) linear infinite;
+}
+
+.sphere-code span:nth-child(even) {
+    animation-direction: reverse;
+    opacity: 0.66;
+}
+
+.sphere-code span:nth-child(1),
+.sphere-code span:nth-child(9) {
+    transform: scaleX(0.68);
+    opacity: 0.42;
+}
+
+.sphere-code span:nth-child(2),
+.sphere-code span:nth-child(8) {
+    transform: scaleX(0.82);
+    opacity: 0.55;
+}
+
+.sphere-code span:nth-child(4),
+.sphere-code span:nth-child(5),
+.sphere-code span:nth-child(6) {
+    font-size: 11px;
+    opacity: 0.86;
+}
+
+@keyframes sphereCodeRowRun {
+    from {
+        text-indent: -85px;
+    }
+
+    to {
+        text-indent: 85px;
+    }
+}
+/* ==================================================
+   HERO SPHERICAL SVG CODE PATHS
+   Code moves left-to-right along curved latitude lines.
+================================================== */
+
+.sphere-code {
+    display: none !important;
+}
+
+.sphere-code-map {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.sphere-code-map text {
+    fill: rgba(236, 239, 255, 0.84);
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow:
+        0 0 7px rgba(216, 213, 255, 0.58),
+        0 0 16px rgba(82, 96, 255, 0.32);
+}
+
+.sphere-code-lines text:nth-child(1),
+.sphere-code-lines text:nth-child(8) {
+    opacity: 0.38;
+    font-size: 8px;
+}
+
+.sphere-code-lines text:nth-child(2),
+.sphere-code-lines text:nth-child(7) {
+    opacity: 0.56;
+    font-size: 9px;
+}
+
+.sphere-code-lines text:nth-child(3),
+.sphere-code-lines text:nth-child(6) {
+    opacity: 0.72;
+    font-size: 10px;
+}
+
+.sphere-code-lines text:nth-child(4),
+.sphere-code-lines text:nth-child(5) {
+    opacity: 0.90;
+    font-size: 11px;
+}
+/* ==================================================
+   HERO FULL-WIDTH SPHERICAL CODE PATHS
+   Code starts near the left sphere edge and reaches the right edge.
+================================================== */
+
+.sphere-code-map {
+    inset: 0 !important;
+}
+
+.sphere-code-map text {
+    font-size: 9.5px !important;
+    letter-spacing: 0.7px !important;
+}
+
+.sphere-code-lines text:nth-child(1),
+.sphere-code-lines text:nth-child(11) {
+    opacity: 0.34 !important;
+    font-size: 6.8px !important;
+}
+
+.sphere-code-lines text:nth-child(2),
+.sphere-code-lines text:nth-child(10) {
+    opacity: 0.48 !important;
+    font-size: 7.6px !important;
+}
+
+.sphere-code-lines text:nth-child(3),
+.sphere-code-lines text:nth-child(9) {
+    opacity: 0.62 !important;
+    font-size: 8.4px !important;
+}
+
+.sphere-code-lines text:nth-child(4),
+.sphere-code-lines text:nth-child(8) {
+    opacity: 0.76 !important;
+    font-size: 9.1px !important;
+}
+
+.sphere-code-lines text:nth-child(5),
+.sphere-code-lines text:nth-child(6),
+.sphere-code-lines text:nth-child(7) {
+    opacity: 0.92 !important;
+    font-size: 10px !important;
+}
+/* ==================================================
+   HERO SPHERE PERFORMANCE FIX
+   SVG text keeps curved paths, but moves with cheaper transform animation.
+================================================== */
+
+.sphere-code-map text {
+    will-change: transform;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: sphereSvgCodeSlide 7.8s linear infinite;
+}
+
+.sphere-code-lines text:nth-child(1),
+.sphere-code-lines text:nth-child(11) {
+    animation-duration: 10.2s !important;
+}
+
+.sphere-code-lines text:nth-child(2),
+.sphere-code-lines text:nth-child(10) {
+    animation-duration: 9.4s !important;
+}
+
+.sphere-code-lines text:nth-child(3),
+.sphere-code-lines text:nth-child(9) {
+    animation-duration: 8.7s !important;
+}
+
+.sphere-code-lines text:nth-child(4),
+.sphere-code-lines text:nth-child(8) {
+    animation-duration: 8.1s !important;
+}
+
+.sphere-code-lines text:nth-child(5),
+.sphere-code-lines text:nth-child(7) {
+    animation-duration: 7.5s !important;
+}
+
+.sphere-code-lines text:nth-child(6) {
+    animation-duration: 7.1s !important;
+}
+
+@keyframes sphereSvgCodeSlide {
+    from {
+        transform: translate3d(-82px, 0, 0);
+    }
+
+    to {
+        transform: translate3d(34px, 0, 0);
+    }
+}
+/* ==================================================
+   HERO SPHERE PERSPECTIVE FIX
+   Text moves along its SVG paths again, not as a flat transformed layer.
+================================================== */
+
+.sphere-code-map text {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto !important;
+}
+
+.sphere-code-map textPath {
+    dominant-baseline: middle;
+}
+/* ==================================================
+   HERO SPHERE SMOOTH SVG PATH ANIMATION
+   Same speed for all code lines, lighter painting, same curved paths.
+================================================== */
+
+.sphere-code-map text {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto !important;
+    filter: none !important;
+    text-shadow: none !important;
+    text-rendering: optimizeSpeed;
+    shape-rendering: optimizeSpeed;
+    fill: rgba(238, 241, 255, 0.78) !important;
+}
+
+.sphere-code-map textPath {
+    dominant-baseline: middle;
+}
+
+.sphere-code-lines text:nth-child(1),
+.sphere-code-lines text:nth-child(11) {
+    opacity: 0.30 !important;
+}
+
+.sphere-code-lines text:nth-child(2),
+.sphere-code-lines text:nth-child(10) {
+    opacity: 0.42 !important;
+}
+
+.sphere-code-lines text:nth-child(3),
+.sphere-code-lines text:nth-child(9) {
+    opacity: 0.56 !important;
+}
+
+.sphere-code-lines text:nth-child(4),
+.sphere-code-lines text:nth-child(8) {
+    opacity: 0.70 !important;
+}
+
+.sphere-code-lines text:nth-child(5),
+.sphere-code-lines text:nth-child(6),
+.sphere-code-lines text:nth-child(7) {
+    opacity: 0.84 !important;
+}
+/* ==================================================
+   HERO SPHERE SEAMLESS CODE LOOP
+   Long repeated text hides the SVG animation reset point.
+================================================== */
+
+.sphere-code-map text {
+    word-spacing: 8px;
+}
+/* ==================================================
+   HERO SPHERE STABLE SEAMLESS LOOP
+   Keeps path movement, equal speed, lighter text rendering.
+================================================== */
+
+.sphere-code-map text {
+    text-shadow: none !important;
+    filter: none !important;
+    paint-order: normal;
+}
+
+.sphere-code-map textPath {
+    dominant-baseline: middle;
+}
+/* ==================================================
+   HERO SPHERE SEAMLESS JS CODE LOOP
+   Different code phrases move endlessly along the existing curved paths.
+================================================== */
+
+.sphere-code-map text {
+    animation: none !important;
+    transform: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+}
+
+.sphere-code-map animate {
+    display: none !important;
+}
+
+.sphere-code-map textPath {
+    dominant-baseline: middle;
+}
+/* ==================================================
+   HERO SPHERE CANVAS CODE RENDERER
+   Curved code is painted on canvas for smoother animation.
+================================================== */
+
+.sphere-code-map-source .sphere-code-lines {
+    display: none !important;
+}
+
+.sphere-code-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    pointer-events: none;
+}

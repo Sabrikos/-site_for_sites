@@ -24,7 +24,7 @@ $title = 'Корзина | WebStart Studio';
 
     <link
         rel="stylesheet"
-        href="styles.css?v=hero-title-white-1"
+        href="styles.css?v=hero-code-canvas-1"
     >
 
 </head>
@@ -480,7 +480,7 @@ $title = 'Корзина | WebStart Studio';
 </script>
 
 
-    <script src="cursor-stars.js?v=protected-hero-1"></script>
+    <script src="cursor-stars.js?v=stars-light-1"></script>
 </body>
 
 </html>
