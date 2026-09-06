@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/layout.php';
 
-$title = 'Корзина | WebStart Studio';
+$title = 'Корзина | Vega Studio';
 
 ?>
 
@@ -24,7 +24,7 @@ $title = 'Корзина | WebStart Studio';
 
     <link
         rel="stylesheet"
-        href="styles.css?v=hero-code-canvas-1"
+        href="styles.css?v=brand-vega-1"
     >
 
 </head>
@@ -207,9 +207,7 @@ $title = 'Корзина | WebStart Studio';
 <script>
 
     let cart =
-        JSON.parse(
-            localStorage.getItem('webstartCart')
-        ) || [];
+        JSON.parse(localStorage.getItem('webstartCart') || '[]');
 
     function getTariffId(item) {
         return String(item.tariff_id ?? item.id);
@@ -258,10 +256,7 @@ $title = 'Корзина | WebStart Studio';
 
     function saveCart() {
 
-        localStorage.setItem(
-            'webstartCart',
-            JSON.stringify(cart)
-        );
+        localStorage.setItem('webstartCart', JSON.stringify(cart));
 
     }
 
@@ -480,7 +475,7 @@ $title = 'Корзина | WebStart Studio';
 </script>
 
 
-    <script src="cursor-stars.js?v=stars-light-1"></script>
+    <script src="cursor-stars.js?v=footer-mask-1"></script>
 </body>
 
 </html>

@@ -112,6 +112,38 @@
             }));
     }
 
+    function getProtectedFooterAreas() {
+        const footer = document.querySelector('.main-footer');
+
+        if (!footer) {
+            return [];
+        }
+
+        const footerRect = footer.getBoundingClientRect();
+
+        if (footerRect.bottom < 0 || footerRect.top > height) {
+            return [];
+        }
+
+        const footerBottom = footer.querySelector('.footer-bottom');
+        const lunarSurface = footer.querySelector('.footer-lunar-svg');
+        const protectedTopCandidates = [footerRect.top + footerRect.height * 0.55];
+
+        if (footerBottom) {
+            protectedTopCandidates.push(footerBottom.getBoundingClientRect().top - 18);
+        }
+
+        if (lunarSurface) {
+            protectedTopCandidates.push(lunarSurface.getBoundingClientRect().top - 22);
+        }
+
+        return [{
+            left: footerRect.left,
+            right: footerRect.right,
+            top: Math.min(...protectedTopCandidates),
+            bottom: footerRect.bottom,
+        }];
+    }
     function isInsideProtectedArea(x, y, protectedAreas) {
         return protectedAreas.some((area) => (
             x >= area.left &&
@@ -153,7 +185,7 @@
         const scrollTop = window.scrollY;
         const topLimit = scrollTop - 40;
         const bottomLimit = scrollTop + height + 40;
-        const protectedAreas = getProtectedHeroAreas();
+        const protectedAreas = getProtectedHeroAreas().concat(getProtectedFooterAreas());
 
         for (const star of stars) {
             if (star.y < topLimit || star.y > bottomLimit) {

@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/bd.php';
-$title = 'WebStart Studio';
+$title = 'Vega Studio';
 $subtitle = 'Продвигаем ваш бизнес в сети';
 $customerName = '';
 $customerPhone = '';
@@ -114,13 +114,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title><?= $title ?></title>
-    <link rel="stylesheet" href="styles.css?v=hero-label-glow-1">
+    <link rel="stylesheet" href="styles.css?v=brand-vega-1">
 </head>
 
 <body>
     <?php renderHeader(); ?>
 
     <section class="hero-section">
+
+        <svg class="hero-background-lines" viewBox="0 0 1440 720" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path class="hero-bg-line hero-bg-line-main" d="M-120 196 C110 104 260 250 440 168 C650 72 770 244 960 158 C1138 78 1268 148 1560 92" />
+            <path class="hero-bg-line hero-bg-line-soft" d="M-90 328 C116 252 316 374 500 288 C684 204 816 330 1010 256 C1168 196 1308 268 1530 220" />
+            <path class="hero-bg-line hero-bg-line-low" d="M-130 508 C126 406 312 574 548 462 C754 364 902 524 1110 430 C1270 356 1380 452 1534 386" />
+            <path class="hero-bg-line hero-bg-line-orbit hero-bg-line-orbit-one" d="M820 360 C930 262 1110 248 1236 320 C1364 394 1286 500 1108 502 C926 506 770 458 820 360" />
+            <path class="hero-bg-line hero-bg-line-orbit hero-bg-line-orbit-two" d="M908 240 C1018 198 1166 204 1278 272 C1376 332 1332 420 1190 438 C1038 456 878 398 852 318 C838 276 864 256 908 240" />
+        </svg>
 
         <div class="hero-content">
 
@@ -181,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <text><textPath href="#sphere-code-path-4" startOffset="0">SELECT name, price FROM tariffs WHERE active = 1;</textPath></text>
                         <text><textPath href="#sphere-code-path-5" startOffset="0">if ($errors === []) { createOrder($customer, $project); }</textPath></text>
                         <text><textPath href="#sphere-code-path-6" startOffset="0">$pdo-&gt;prepare($sql); $stmt-&gt;execute(); fetchAll();</textPath></text>
-                        <text><textPath href="#sphere-code-path-7" startOffset="0">class WebStartProject { public function launch(): bool {} }</textPath></text>
+                        <text><textPath href="#sphere-code-path-7" startOffset="0">class VegaProject { public function launch(): bool {} }</textPath></text>
                         <text><textPath href="#sphere-code-path-8" startOffset="0">addToCart(serviceId); localStorage.setItem('webstartCart', cart);</textPath></text>
                         <text><textPath href="#sphere-code-path-9" startOffset="0">try { connectDatabase(); } catch (PDOException $error) {}</textPath></text>
                         <text><textPath href="#sphere-code-path-10" startOffset="0">foreach ($services as $service) { renderCard($service); }</textPath></text>
@@ -641,7 +649,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
 
                             <strong>
-                                webstart@example.ru
+                                vega@example.ru
                             </strong>
 
                         </div>
@@ -662,7 +670,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
 
                             <strong>
-                                @webstart
+                                @vegastudio
                             </strong>
 
                         </div>
@@ -683,7 +691,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
 
                             <strong>
-                                WebStart Studio
+                                Vega Studio
                             </strong>
 
                         </div>
@@ -877,7 +885,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
-<script src="cursor-stars.js?v=stars-light-1"></script>
+<script src="cursor-stars.js?v=footer-mask-1"></script>
 <script src="sphere-code-loop.js?v=canvas-render-2"></script>
 </body>
 

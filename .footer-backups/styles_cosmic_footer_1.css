@@ -3883,27 +3883,27 @@ body.header-is-floating {
 }
 /* ==================================================
    MOON SURFACE FOOTER
-   Full cosmic illustration footer with SVG lunar terrain.
+   Premium one-piece cosmic footer with planets, waves and lunar ground.
 ================================================== */
 
 .main-footer {
     position: relative;
     z-index: 5 !important;
-    min-height: 760px;
-    margin-top: 92px;
-    padding: 128px 40px 330px;
+    min-height: 560px;
+    margin-top: 90px;
+    padding: 94px 40px 34px;
     overflow: hidden;
     isolation: isolate;
     color: #c8c6e7;
     background-color: #111127 !important;
     background-image:
-        radial-gradient(circle at 18% 18%, rgba(78, 85, 255, 0.14) 0 2px, transparent 3px),
-        radial-gradient(circle at 39% 11%, rgba(216, 213, 255, 0.30) 0 1px, transparent 2px),
-        radial-gradient(circle at 66% 16%, rgba(179, 92, 255, 0.20) 0 2px, transparent 3px),
-        radial-gradient(circle at 88% 24%, rgba(123, 130, 255, 0.26) 0 2px, transparent 3px),
-        linear-gradient(180deg, #0b0b1d 0%, #111127 42%, #151532 72%, #181832 100%) !important;
-    border-top: 1px solid rgba(117, 126, 255, 0.18);
-    box-shadow: inset 0 1px 0 rgba(216, 213, 255, 0.05);
+        radial-gradient(circle at 16% 18%, rgba(78, 85, 255, 0.20) 0 2px, transparent 3px),
+        radial-gradient(circle at 36% 12%, rgba(216, 213, 255, 0.34) 0 1px, transparent 2px),
+        radial-gradient(circle at 62% 20%, rgba(179, 92, 255, 0.26) 0 2px, transparent 3px),
+        radial-gradient(circle at 84% 14%, rgba(123, 130, 255, 0.28) 0 2px, transparent 3px),
+        linear-gradient(180deg, #111127 0%, #151532 46%, #181832 100%) !important;
+    border-top: 1px solid rgba(117, 126, 255, 0.22);
+    box-shadow: inset 0 1px 0 rgba(216, 213, 255, 0.06);
 }
 
 .main-footer::before,
@@ -3915,7 +3915,10 @@ body.header-is-floating {
 .footer-stars-layer,
 .footer-atmosphere-lines,
 .footer-planet,
-.footer-lunar-svg {
+.footer-moon-landscape,
+.footer-moon-ridge,
+.moon-crater,
+.moon-rock {
     position: absolute;
     pointer-events: none;
 }
@@ -3925,210 +3928,221 @@ body.header-is-floating {
     z-index: 0;
     overflow: hidden;
     background:
-        radial-gradient(ellipse at 50% 34%, rgba(78, 85, 255, 0.15) 0%, transparent 44%),
-        radial-gradient(ellipse at 78% 24%, rgba(179, 92, 255, 0.14) 0%, transparent 38%),
-        radial-gradient(ellipse at 14% 38%, rgba(123, 130, 255, 0.10) 0%, transparent 42%);
+        radial-gradient(ellipse at 50% 38%, rgba(78, 85, 255, 0.16) 0%, transparent 44%),
+        radial-gradient(ellipse at 80% 24%, rgba(179, 92, 255, 0.16) 0%, transparent 38%),
+        radial-gradient(ellipse at 20% 34%, rgba(123, 130, 255, 0.12) 0%, transparent 40%);
 }
 
 .footer-stars-layer {
     inset: 0 0 34%;
-    z-index: 1;
     opacity: 0.84;
     background-image:
-        radial-gradient(circle at 6% 24%, rgba(216, 213, 255, 0.72) 0 1px, transparent 2px),
-        radial-gradient(circle at 12% 64%, rgba(123, 130, 255, 0.82) 0 1px, transparent 2px),
-        radial-gradient(circle at 22% 32%, rgba(179, 92, 255, 0.66) 0 1px, transparent 2px),
-        radial-gradient(circle at 32% 72%, rgba(216, 213, 255, 0.64) 0 1px, transparent 2px),
-        radial-gradient(circle at 45% 18%, rgba(123, 130, 255, 0.76) 0 1px, transparent 2px),
+        radial-gradient(circle at 8% 24%, rgba(216, 213, 255, 0.72) 0 1px, transparent 2px),
+        radial-gradient(circle at 14% 58%, rgba(123, 130, 255, 0.80) 0 1px, transparent 2px),
+        radial-gradient(circle at 25% 32%, rgba(179, 92, 255, 0.68) 0 1px, transparent 2px),
+        radial-gradient(circle at 34% 68%, rgba(216, 213, 255, 0.66) 0 1px, transparent 2px),
+        radial-gradient(circle at 48% 22%, rgba(123, 130, 255, 0.76) 0 1px, transparent 2px),
         radial-gradient(circle at 58% 58%, rgba(216, 213, 255, 0.74) 0 1px, transparent 2px),
-        radial-gradient(circle at 72% 28%, rgba(179, 92, 255, 0.68) 0 1px, transparent 2px),
-        radial-gradient(circle at 84% 52%, rgba(216, 213, 255, 0.70) 0 1px, transparent 2px),
+        radial-gradient(circle at 73% 30%, rgba(179, 92, 255, 0.66) 0 1px, transparent 2px),
+        radial-gradient(circle at 88% 48%, rgba(216, 213, 255, 0.70) 0 1px, transparent 2px),
         radial-gradient(circle at 94% 18%, rgba(78, 85, 255, 0.80) 0 2px, transparent 3px);
 }
 
 .footer-atmosphere-lines {
-    left: -5%;
-    right: -5%;
-    top: 22px;
-    z-index: 2;
-    width: 110%;
-    height: 355px;
+    left: -4%;
+    right: -4%;
+    top: 18px;
+    width: 108%;
+    height: 330px;
+    z-index: 1;
+    opacity: 0.34;
     fill: none;
-    opacity: 0.36;
     stroke-linecap: round;
 }
 
+.footer-atmosphere-lines path {
+    stroke: rgba(123, 130, 255, 0.36);
+    stroke-width: 2;
+}
+
 .footer-atmosphere-lines path:nth-child(1) {
-    stroke: rgba(123, 130, 255, 0.42);
-    stroke-width: 2.1;
+    stroke: rgba(123, 130, 255, 0.44);
 }
 
 .footer-atmosphere-lines path:nth-child(2) {
-    stroke: rgba(179, 92, 255, 0.32);
-    stroke-width: 1.5;
+    stroke: rgba(179, 92, 255, 0.34);
+    stroke-width: 1.4;
 }
 
 .footer-atmosphere-lines path:nth-child(3) {
     stroke: rgba(78, 85, 255, 0.28);
-    stroke-width: 1.25;
+    stroke-width: 1.2;
 }
 
 .footer-planet {
-    z-index: 3;
+    z-index: 2;
     border-radius: 50%;
-    filter: drop-shadow(0 24px 42px rgba(0, 0, 0, 0.28));
+    filter: drop-shadow(0 20px 38px rgba(0, 0, 0, 0.26));
 }
 
 .footer-planet-large {
-    top: 44px;
+    top: 38px;
     right: 18%;
-    width: 104px;
-    height: 104px;
+    width: 92px;
+    height: 92px;
     background:
-        radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.25), transparent 0 18%),
-        repeating-linear-gradient(110deg, rgba(255, 255, 255, 0.08) 0 7px, transparent 8px 18px),
-        linear-gradient(135deg, #b35cff 0%, #7b82ff 50%, #4e55ff 100%);
+        radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.24), transparent 0 18%),
+        linear-gradient(135deg, #b35cff 0%, #7b82ff 48%, #4e55ff 100%);
 }
 
 .footer-planet-large::after {
     content: "";
     position: absolute;
-    left: -38px;
-    right: -38px;
-    top: 42px;
-    height: 23px;
-    border: 4px solid rgba(216, 213, 255, 0.30);
-    border-left-color: rgba(179, 92, 255, 0.38);
-    border-right-color: rgba(123, 130, 255, 0.36);
+    left: -28px;
+    right: -28px;
+    top: 38px;
+    height: 18px;
+    border: 3px solid rgba(216, 213, 255, 0.30);
+    border-left-color: rgba(179, 92, 255, 0.34);
+    border-right-color: rgba(123, 130, 255, 0.34);
     border-radius: 50%;
     transform: rotate(-17deg);
 }
 
 .footer-planet-small {
-    top: 116px;
-    left: 12.5%;
-    width: 62px;
-    height: 62px;
+    top: 86px;
+    left: 14%;
+    width: 58px;
+    height: 58px;
     background:
-        radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.30), transparent 0 18%),
-        repeating-radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.10) 0 4px, transparent 5px 12px),
+        radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.28), transparent 0 18%),
+        repeating-linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0 7px, transparent 8px 15px),
         linear-gradient(135deg, #7b82ff, #b35cff);
     opacity: 0.82;
 }
 
 .footer-planet-dot {
-    top: 150px;
-    right: 8%;
+    top: 106px;
+    right: 9%;
     width: 24px;
     height: 24px;
     background: linear-gradient(135deg, #d8d5ff, #b35cff);
     opacity: 0.86;
 }
 
-.footer-lunar-svg {
+.footer-moon-landscape {
     left: 0;
     right: 0;
     bottom: 0;
+    height: 235px;
+    z-index: 1;
+    background-color: #181832;
+    background-image:
+        radial-gradient(ellipse at 18% 84%, rgba(78, 85, 255, 0.18) 0%, transparent 28%),
+        radial-gradient(ellipse at 82% 78%, rgba(179, 92, 255, 0.12) 0%, transparent 30%),
+        linear-gradient(180deg, #222247 0%, #181832 42%, #101024 100%);
+    clip-path: polygon(
+        0 26%, 4% 18%, 9% 24%, 15% 14%, 22% 21%, 29% 12%,
+        37% 20%, 46% 10%, 55% 18%, 64% 11%, 72% 20%, 81% 13%,
+        90% 21%, 96% 15%, 100% 18%, 100% 100%, 0 100%
+    );
+}
+
+.footer-moon-ridge {
+    left: -4%;
+    right: -4%;
+    bottom: 108px;
+    height: 74px;
+    z-index: 1;
+    opacity: 0.68;
+    background: #222247;
+    clip-path: polygon(
+        0 72%, 7% 44%, 16% 62%, 26% 30%, 35% 57%, 43% 38%,
+        52% 64%, 63% 28%, 73% 60%, 84% 36%, 93% 58%, 100% 40%,
+        100% 100%, 0 100%
+    );
+}
+
+.footer-moon-ridge-back {
+    bottom: 126px;
+    opacity: 0.38;
+    background: #2a2a55;
+    transform: scaleX(1.05);
+}
+
+.footer-moon-ridge-front {
+    bottom: 98px;
+    opacity: 0.56;
+    background: #1a1a3d;
+}
+
+.moon-crater {
+    z-index: 3;
+    border-radius: 50%;
+    background:
+        radial-gradient(ellipse at 50% 58%, rgba(5, 6, 18, 0.62) 0 42%, rgba(5, 6, 18, 0.22) 43% 56%, transparent 57%),
+        radial-gradient(ellipse at 48% 24%, rgba(205, 210, 231, 0.14) 0 16%, transparent 17%);
+    box-shadow:
+        inset 0 5px 7px rgba(205, 210, 231, 0.10),
+        inset 0 -8px 11px rgba(5, 6, 18, 0.44),
+        0 3px 0 rgba(205, 210, 231, 0.07);
+    transform: rotate(var(--crater-angle, 0deg)) scaleY(0.34);
+}
+
+.moon-crater-1 { left: 6%; bottom: 72px; width: 104px; height: 50px; --crater-angle: 3deg; }
+.moon-crater-2 { left: 18%; bottom: 35px; width: 148px; height: 66px; --crater-angle: -6deg; }
+.moon-crater-3 { left: 38%; bottom: 78px; width: 82px; height: 38px; --crater-angle: -2deg; }
+.moon-crater-4 { left: 50%; bottom: 42px; width: 116px; height: 54px; --crater-angle: 4deg; }
+.moon-crater-5 { right: 25%; bottom: 72px; width: 136px; height: 58px; --crater-angle: 2deg; }
+.moon-crater-6 { right: 10%; bottom: 42px; width: 94px; height: 42px; --crater-angle: -5deg; }
+.moon-crater-7 { right: 4%; bottom: 96px; width: 58px; height: 26px; --crater-angle: 6deg; }
+.moon-crater-8 { left: 30%; bottom: 102px; width: 48px; height: 22px; --crater-angle: -4deg; }
+
+.moon-rock {
     z-index: 4;
-    width: 100%;
-    height: 430px;
-}
-
-.moon-back {
-    fill: #222247;
-    opacity: 0.78;
-}
-
-.moon-middle {
-    fill: #1a1a3d;
-    opacity: 0.95;
-}
-
-.moon-front {
-    fill: #181832;
-}
-
-.moon-highlight {
-    fill: none;
-    stroke: rgba(205, 210, 231, 0.13);
-    stroke-width: 9;
-    stroke-linecap: round;
+    width: 18px;
+    height: 12px;
+    border-radius: 58% 42% 48% 52%;
+    background: #0b0b1d;
+    box-shadow: 0 4px 0 rgba(216, 213, 255, 0.05);
     opacity: 0.72;
 }
 
-.crater-outer {
-    fill: rgba(34, 34, 71, 0.96);
-    stroke: rgba(205, 210, 231, 0.13);
-    stroke-width: 5;
-}
-
-.crater-rim {
-    fill: rgba(24, 24, 50, 0.88);
-    stroke: rgba(205, 210, 231, 0.15);
-    stroke-width: 4;
-}
-
-.crater-inner {
-    fill: rgba(5, 6, 18, 0.58);
-}
-
-.crater-shadow {
-    fill: rgba(5, 6, 18, 0.36);
-}
-
-.svg-crater-small .crater-outer {
-    stroke-width: 3;
-}
-
-.svg-crater-small .crater-inner {
-    fill: rgba(5, 6, 18, 0.50);
-}
-
-.moon-rock-shape {
-    fill: #0b0b1d;
-    opacity: 0.72;
-}
+.moon-rock-1 { left: 33%; bottom: 54px; transform: rotate(-14deg); }
+.moon-rock-2 { right: 36%; bottom: 34px; transform: rotate(9deg) scale(0.82); }
+.moon-rock-3 { right: 17%; bottom: 92px; transform: rotate(-8deg) scale(0.72); }
 
 .main-footer .footer-grid {
     position: relative;
-    z-index: 6;
-    max-width: 1320px;
-    padding: 0;
-    background: none !important;
-    border: 0 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+    z-index: 3;
+    padding: 32px 36px 30px;
+    border: 1px solid rgba(117, 126, 255, 0.18);
+    border-radius: 22px;
+    background: linear-gradient(135deg, rgba(21, 21, 50, 0.84), rgba(18, 18, 42, 0.74));
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
 }
 
 .main-footer .footer-bottom {
     position: relative;
-    z-index: 6;
-    max-width: 1320px;
-    margin-top: 74px;
-    padding-top: 22px;
-    border-top: 1px solid rgba(117, 126, 255, 0.26);
+    z-index: 3;
+    margin-top: 34px;
+    padding-top: 18px;
+    border-top-color: rgba(117, 126, 255, 0.24);
 }
 
 .main-footer .footer-logo {
     color: #ffffff;
-    font-size: 29px;
-    letter-spacing: -0.045em;
-    text-shadow: 0 0 20px rgba(123, 130, 255, 0.22);
-}
-
-.main-footer .footer-brand p {
-    max-width: 360px;
-    color: #aaa8cf;
-    font-size: 16px;
+    font-size: 26px;
+    letter-spacing: -0.04em;
+    text-shadow: 0 0 18px rgba(123, 130, 255, 0.22);
 }
 
 .main-footer .footer-column h3 {
     color: #d8d5ff;
-    letter-spacing: 0.13em;
+    letter-spacing: 0.12em;
 }
 
+.main-footer .footer-brand p,
 .main-footer .footer-column a,
 .main-footer .footer-bottom {
     color: #aaa8cf;
@@ -4141,68 +4155,45 @@ body.header-is-floating {
 
 @media (max-width: 1024px) {
     .main-footer {
-        min-height: 790px;
-        padding: 100px 32px 310px;
-    }
-
-    .footer-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 34px 52px;
+        min-height: 610px;
+        padding-top: 78px;
     }
 
     .footer-planet-large {
         right: 10%;
-        width: 82px;
-        height: 82px;
+        width: 78px;
+        height: 78px;
     }
 
     .footer-planet-small {
-        left: 7%;
-        width: 50px;
-        height: 50px;
+        left: 8%;
+        width: 48px;
+        height: 48px;
     }
 
-    .footer-lunar-svg {
-        height: 390px;
+    .main-footer .footer-grid {
+        padding: 28px;
     }
 }
 
 @media (max-width: 768px) {
     .main-footer {
-        min-height: 900px;
+        min-height: 760px;
         margin-top: 64px;
-        padding: 78px 20px 280px;
-    }
-
-    .footer-grid {
-        grid-template-columns: 1fr;
-        gap: 28px;
-    }
-
-    .footer-bottom {
-        flex-direction: column;
-        gap: 10px;
+        padding: 58px 20px 28px;
     }
 
     .footer-atmosphere-lines {
-        top: 18px;
-        height: 250px;
+        top: 10px;
+        height: 220px;
         opacity: 0.24;
     }
 
     .footer-planet-large {
-        top: 26px;
-        right: 8%;
-        width: 58px;
-        height: 58px;
-    }
-
-    .footer-planet-large::after {
-        left: -20px;
-        right: -20px;
-        top: 24px;
-        height: 13px;
-        border-width: 2px;
+        top: 30px;
+        right: 7%;
+        width: 56px;
+        height: 56px;
     }
 
     .footer-planet-small,
@@ -4210,150 +4201,18 @@ body.header-is-floating {
         display: none;
     }
 
-    .footer-lunar-svg {
-        height: 320px;
-    }
-}
-/* ==================================================
-   FOOTER VERTICAL POSITION TUNING
-   Only moves footer content lower and planets slightly higher.
-================================================== */
-
-.main-footer {
-    min-height: 840px;
-    padding-top: 198px;
-}
-
-.footer-planet-large {
-    top: 36px;
-}
-
-.footer-planet-small {
-    top: 108px;
-}
-
-.footer-planet-dot {
-    top: 142px;
-}
-
-@media (max-width: 1024px) {
-    .main-footer {
-        min-height: 860px;
-        padding-top: 160px;
+    .footer-moon-landscape {
+        height: 210px;
     }
 
-    .footer-planet-large {
-        top: 36px;
+    .main-footer .footer-grid {
+        padding: 24px 22px;
+        border-radius: 18px;
+        background: rgba(21, 21, 50, 0.88);
     }
 
-    .footer-planet-small {
-        top: 108px;
-    }
-}
-
-@media (max-width: 768px) {
-    .main-footer {
-        min-height: 940px;
-        padding-top: 118px;
-    }
-
-    .footer-planet-large {
-        top: 18px;
-    }
-}
-/* ==================================================
-   HERO BACKGROUND ORBITAL LINES
-   Subtle SVG lines behind content, echoing footer atmosphere.
-================================================== */
-
-.hero-background-lines {
-    position: absolute;
-    inset: 0;
-    z-index: 3 !important;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-    pointer-events: none;
-    opacity: 0.82;
-}
-
-.hero-bg-line {
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    vector-effect: non-scaling-stroke;
-}
-
-.hero-bg-line-main {
-    stroke: rgba(123, 130, 255, 0.16);
-    stroke-width: 1.5px;
-}
-
-.hero-bg-line-soft {
-    stroke: rgba(179, 92, 255, 0.12);
-    stroke-width: 1px;
-    opacity: 0.86;
-}
-
-.hero-bg-line-low {
-    stroke: rgba(78, 85, 255, 0.11);
-    stroke-width: 1px;
-    opacity: 0.72;
-}
-
-.hero-bg-line-orbit {
-    transform-box: fill-box;
-    transform-origin: center;
-}
-
-.hero-bg-line-orbit-one {
-    stroke: rgba(216, 213, 255, 0.10);
-    stroke-width: 1px;
-    opacity: 0.78;
-}
-
-.hero-bg-line-orbit-two {
-    stroke: rgba(123, 130, 255, 0.14);
-    stroke-width: 1.25px;
-    opacity: 0.70;
-}
-
-.hero-content,
-.hero-visual {
-    position: relative;
-}
-
-@media (max-width: 1024px) {
-    .hero-background-lines {
-        opacity: 0.58;
-    }
-
-    .hero-bg-line-main,
-    .hero-bg-line-soft,
-    .hero-bg-line-low {
-        transform: translateX(-8%);
-    }
-
-    .hero-bg-line-orbit-two {
-        opacity: 0.42;
-    }
-}
-
-@media (max-width: 768px) {
-    .hero-background-lines {
-        opacity: 0.36;
-    }
-
-    .hero-bg-line-soft,
-    .hero-bg-line-orbit-two {
+    .moon-crater-1,
+    .moon-crater-5 {
         display: none;
-    }
-
-    .hero-bg-line-main {
-        stroke-width: 1px;
-    }
-
-    .hero-bg-line-low {
-        opacity: 0.46;
     }
 }

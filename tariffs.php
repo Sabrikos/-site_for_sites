@@ -2,7 +2,7 @@
 require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/layout.php';
 
-$title = 'Тарифы | WebStart Studio';
+$title = 'Тарифы | Vega Studio';
 
 /*
     Получаем услуги из базы данных
@@ -95,7 +95,7 @@ foreach ($tariffs as $tariff) {
 
     <link
         rel="stylesheet"
-        href="styles.css?v=hero-code-canvas-1">
+        href="styles.css?v=brand-vega-1">
 
 </head>
 
@@ -364,9 +364,7 @@ foreach ($tariffs as $tariff) {
         останутся даже после обновления страницы.
     */
 
-        let cart = JSON.parse(
-            localStorage.getItem('webstartCart')
-        ) || [];
+        let cart = JSON.parse(localStorage.getItem('webstartCart') || '[]');
 
         function getTariffId(item) {
             return String(item.tariff_id ?? item.id);
@@ -415,10 +413,7 @@ foreach ($tariffs as $tariff) {
 
         function saveCart() {
 
-            localStorage.setItem(
-                'webstartCart',
-                JSON.stringify(cart)
-            );
+            localStorage.setItem('webstartCart', JSON.stringify(cart));
 
         }
 
@@ -722,7 +717,7 @@ foreach ($tariffs as $tariff) {
     </script>
 
 
-    <script src="cursor-stars.js?v=stars-light-1"></script>
+    <script src="cursor-stars.js?v=footer-mask-1"></script>
 </body>
 
 </html>

@@ -11,7 +11,7 @@ if (empty($_SESSION['order_csrf'])) {
     $_SESSION['order_csrf'] = bin2hex(random_bytes(32));
 }
 
-$title = 'Оформление заявки | WebStart Studio';
+$title = 'Оформление заявки | Vega Studio';
 $errors = [];
 $successOrderId = null;
 $customerName = trim((string) ($_POST['customer_name'] ?? ''));

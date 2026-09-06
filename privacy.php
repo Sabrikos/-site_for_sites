@@ -1,6 +1,6 @@
 <?php
 
-$title = 'Политика конфиденциальности | WebStart Studio';
+$title = 'Политика конфиденциальности | Vega Studio';
 
 function e(string $value): string
 {
