@@ -16,8 +16,18 @@ function renderHeader()
             <a
                 href="index.php"
                 class="logo"
+                aria-label="Vega Studio — на главную"
             >
-                Vega Studio
+                <img
+                    src="assets/images/vega-logo.png"
+                    alt=""
+                    class="logo-image"
+                    aria-hidden="true"
+                >
+                <span class="logo-name">
+                    <span class="logo-name-vega">Vega</span>
+                    <span class="logo-name-studio">Studio</span>
+                </span>
             </a>
 
 

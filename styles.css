@@ -266,6 +266,77 @@ footer {
 }
 
 /* ==================================================
+   LOGO IMAGE
+================================================== */
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.logo:hover {
+  opacity: 0.9;
+}
+
+.logo-image {
+  display: block;
+  width: auto;
+  height: 36px;
+  flex: 0 0 auto;
+  object-fit: contain;
+}
+
+.logo-name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  white-space: nowrap;
+  font-family: Inter, Arial, sans-serif;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.logo-name-vega {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.logo-name-studio {
+  color: #c8c6e7;
+  font-weight: 500;
+}
+
+@media (max-width: 1100px) {
+  .logo {
+    gap: 8px;
+  }
+
+  .logo-image {
+    height: 34px;
+  }
+
+  .logo-name {
+    font-size: 23px;
+  }
+}
+
+@media (max-width: 600px) {
+  .logo {
+    gap: 8px;
+  }
+
+  .logo-image {
+    height: 32px;
+  }
+
+  .logo-name {
+    font-size: 21px;
+  }
+}
+/* ==================================================
    ВЕРХНЕЕ МЕНЮ
 ================================================== */
 

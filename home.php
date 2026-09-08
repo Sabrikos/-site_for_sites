@@ -115,6 +115,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <title><?= $title ?></title>
     <link rel="stylesheet" href="styles.css?v=brand-vega-1">
+
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=cursor-2">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=cursor-2">
+    <link rel="apple-touch-icon" href="assets/images/favicon-512.png?v=cursor-2">
 </head>
 
 <body>
