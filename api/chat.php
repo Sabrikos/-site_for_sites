@@ -97,7 +97,7 @@ try {
             $reply = (new AiAssistant($pdo))->reply($id, $message, $allowApi);
         } catch (Throwable $error) {
             appLog('Assistant failed', ['type' => get_class($error)]);
-            $reply = ['text' => 'Не удалось подготовить ответ. Могу позвать администратора WebStart Studio.', 'offered' => true];
+            $reply = ['text' => 'Не удалось подготовить ответ. Могу позвать администратора Vega Studio.', 'offered' => true];
         }
         $handoff = $service->finishMessage($id, $pending['key'], $reply);
     }

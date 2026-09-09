@@ -38,7 +38,7 @@ final class ChatService
         if (!$conversation) {
             $this->pdo->prepare('INSERT INTO chat_conversations (session_key) VALUES (?)')->execute([$sessionKey]);
             $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
-            $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я виртуальный помощник WebStart Studio. Расскажите, какой проект вы планируете.');
+            $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я виртуальный помощник Vega Studio. Расскажите, какой проект вы планируете.');
         }
         $this->pdo->prepare('INSERT IGNORE INTO chat_assistant_state (conversation_id) VALUES (?)')->execute([$conversation['id']]);
         return $conversation;
@@ -99,7 +99,7 @@ final class ChatService
     {
         $this->pdo->prepare("UPDATE chat_conversations SET status = 'waiting_human' WHERE id = ?")->execute([$id]);
         $this->clearGeneration($id);
-        $this->add($id, 'bot', 'Конечно. Я передал диалог администратору WebStart Studio. Как только он подключится, вы сможете продолжить разговор здесь.');
+        $this->add($id, 'bot', 'Конечно. Я передал диалог администратору Vega Studio. Как только он подключится, вы сможете продолжить разговор здесь.');
     }
 
     private function clearGeneration(int $id): void

@@ -97,6 +97,8 @@ function pass(text) { checks++; console.log('PASS:', text); }
         };
         let data = await send('Расскажи про Лендинг Бизнес и AI ассистента');
         await page.waitForTimeout(2700);
+        assert(await page.locator('.web-chat-message.is-user').count() > 0, 'user message renders in chat');
+        assert(await page.locator('.web-chat-message.is-user').last().innerText() === 'Расскажи про Лендинг Бизнес и AI ассистента');
         assert(data.messages.some(row => row.sender === 'bot' && row.message.includes('Лендинг — Бизнес')));
         await page.screenshot({path: path.join(artifacts, 'chat-desktop.png')});
         pass('chat sends message and renders contextual answer');

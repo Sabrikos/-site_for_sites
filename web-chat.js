@@ -5,9 +5,9 @@
         <button class="web-chat-toggle" type="button" aria-label="Открыть чат" aria-expanded="false" aria-controls="webChatPanel">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v12H9l-5 4V5Z" fill="currentColor"/><path d="M8 9h8M8 13h5" stroke="#6655ee" stroke-width="2"/></svg>
         </button>
-        <section class="web-chat-panel" id="webChatPanel" role="dialog" aria-label="Чат с WebStart Studio" aria-hidden="true">
+        <section class="web-chat-panel" id="webChatPanel" role="dialog" aria-label="Чат с Vega Studio" aria-hidden="true">
             <div class="web-chat-header">
-                <div><strong>WebStart Assistant</strong><span class="web-chat-status" role="status"></span></div>
+            <div><strong>Vega Assistant</strong><span class="web-chat-status" role="status"></span></div>
                 <button class="web-chat-close" type="button" aria-label="Закрыть чат">×</button>
             </div>
             <div class="web-chat-messages" role="log" aria-label="Сообщения" aria-live="off"></div>
@@ -55,7 +55,7 @@
         } else if (state.status === 'waiting_human' || state.status === 'human') {
             text = state.admin_online ? 'Администратор в сети' : 'Ожидаем администратора';
         } else if (sending || state.assistant_typing || animated.size) {
-            text = 'Assistant печатает';
+            text = 'Vega Assistant печатает';
             typing = true;
         }
         if (starting) text = 'Подключение...';
@@ -76,6 +76,13 @@
         return list.scrollHeight - list.scrollTop - list.clientHeight < 65;
     }
 
+    function chatBrandText(value) {
+        return String(value)
+            .replace(/WebStart Assistant/gi, 'Vega Assistant')
+            .replace(/WebStart Studio/gi, 'Vega Studio')
+            .replace(/WebStart/gi, 'Vega');
+    }
+
     function addMessage(message, animate) {
         const id = Number(message.id);
         if (id <= lastId) return;
@@ -85,7 +92,7 @@
         item.className = 'web-chat-message is-' + ({user: 'user', admin: 'admin', bot: 'bot'}[message.sender] || 'bot');
         item.dataset.messageId = String(id);
         list.appendChild(item);
-        const text = String(message.message);
+        const text = chatBrandText(message.message);
         if (!animate || message.sender !== 'bot' || matchMedia('(prefers-reduced-motion: reduce)').matches) {
             item.textContent = text;
             if (follow) list.scrollTop = list.scrollHeight;
@@ -174,6 +181,12 @@
             sending = false;
             updateStatus();
         }
+    });
+    textarea.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' || event.shiftKey || event.isComposing) return;
+        event.preventDefault();
+        if (typeof form.requestSubmit === 'function') form.requestSubmit();
+        else submit.click();
     });
     setInterval(async () => {
         if (!root.classList.contains('is-open') || !csrf || document.hidden || polling || starting) return;
