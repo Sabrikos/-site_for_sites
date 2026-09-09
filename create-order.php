@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/services/TelegramService.php';
 
-session_start();
+appStartSession();
 
 if (empty($_SESSION['order_csrf'])) {
     $_SESSION['order_csrf'] = bin2hex(random_bytes(32));
@@ -163,6 +164,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
             $successOrderId = $orderId;
             $_SESSION['order_csrf'] = bin2hex(random_bytes(32));
+
+            // Уведомление не влияет на результат уже завершённой транзакции заказа.
+            try {
+                $telegram = new TelegramService();
+                foreach ($telegram->adminChatIds() as $adminChatId) {
+                    $telegram->sendMessage(
+                        $adminChatId,
+                        '<b>Новый заказ Vega Studio</b>\n'
+                            . 'Заказ: #' . $orderId . "\n"
+                            . 'Клиент: ' . htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8') . "\n"
+                            . 'Телефон: ' . htmlspecialchars($customerPhone, ENT_QUOTES, 'UTF-8') . "\n"
+                            . 'Email: ' . htmlspecialchars($customerEmail, ENT_QUOTES, 'UTF-8') . "\n"
+                            . 'Сумма: ' . number_format($total, 0, '', ' ') . ' ₽',
+                        [[['text' => '📋 Подробнее', 'callback_data' => 'order:' . $orderId], ['text' => '✅ В работу', 'callback_data' => 'status:' . $orderId . ':processing']]],
+                    );
+                }
+            } catch (Throwable $notificationError) {
+                appLog('Order notification failed', ['order_id' => $orderId]);
+            }
         } catch (Throwable $error) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();
@@ -176,125 +196,128 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($title) ?></title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
 </head>
+
 <body>
 
-<?php renderHeader(); ?>
+    <?php renderHeader(); ?>
 
-<main class="cart-page">
-    <div class="cart-page-title">
-        <h1>Оформление заявки</h1>
-        <p>Оставьте контакты, и мы свяжемся с вами.</p>
-    </div>
+    <main class="cart-page">
+        <div class="cart-page-title">
+            <h1>Оформление заявки</h1>
+            <p>Оставьте контакты, и мы свяжемся с вами.</p>
+        </div>
 
-    <div class="cart-page-layout">
-        <section class="cart-products">
-            <div class="cart-products-header">
-                <h2>Выбранные услуги</h2>
-            </div>
-            <div id="orderItems"></div>
-            <p id="emptyOrder" class="cart-page-empty">Корзина пуста.</p>
-        </section>
-
-        <section class="cart-summary contact-form-wrapper">
-            <h2>Данные клиента</h2>
-
-            <?php if ($errors !== []): ?>
-                <div class="errors">
-                    <ul>
-                        <?php foreach ($errors as $error): ?>
-                            <li><?= e($error) ?></li>
-                        <?php endforeach; ?>
-                    </ul>
+        <div class="cart-page-layout">
+            <section class="cart-products">
+                <div class="cart-products-header">
+                    <h2>Выбранные услуги</h2>
                 </div>
-            <?php endif; ?>
+                <div id="orderItems"></div>
+                <p id="emptyOrder" class="cart-page-empty">Корзина пуста.</p>
+            </section>
 
-            <?php if ($successOrderId !== null): ?>
-                <div class="success">
-                    Заявка №<?= $successOrderId ?> сохранена. Мы свяжемся с вами.
-                </div>
-                <a href="tariffs.php" class="cart-back-button">Вернуться к тарифам</a>
-            <?php else: ?>
-                <form method="post" id="orderForm">
-                    <input type="hidden" name="csrf_token" value="<?= e($_SESSION['order_csrf']) ?>">
-                    <input type="hidden" name="cart_json" id="cartJson">
+            <section class="cart-summary contact-form-wrapper">
+                <h2>Данные клиента</h2>
 
-                    <div class="form-group">
-                        <label for="customer_name">Имя</label>
-                        <input type="text" id="customer_name" name="customer_name" value="<?= e($customerName) ?>" minlength="2" maxlength="150" required>
+                <?php if ($errors !== []): ?>
+                    <div class="errors">
+                        <ul>
+                            <?php foreach ($errors as $error): ?>
+                                <li><?= e($error) ?></li>
+                            <?php endforeach; ?>
+                        </ul>
                     </div>
+                <?php endif; ?>
 
-                    <div class="form-group">
-                        <label for="customer_phone">Телефон</label>
-                        <input type="tel" id="customer_phone" name="customer_phone" value="<?= e($customerPhone) ?>" maxlength="30" required>
+                <?php if ($successOrderId !== null): ?>
+                    <div class="success">
+                        Заявка №<?= $successOrderId ?> сохранена. Мы свяжемся с вами.
                     </div>
+                    <a href="tariffs.php" class="cart-back-button">Вернуться к тарифам</a>
+                <?php else: ?>
+                    <form method="post" id="orderForm">
+                        <input type="hidden" name="csrf_token" value="<?= e($_SESSION['order_csrf']) ?>">
+                        <input type="hidden" name="cart_json" id="cartJson">
 
-                    <div class="form-group">
-                        <label for="customer_email">Email</label>
-                        <input type="email" id="customer_email" name="customer_email" value="<?= e($customerEmail) ?>" required>
-                    </div>
+                        <div class="form-group">
+                            <label for="customer_name">Имя</label>
+                            <input type="text" id="customer_name" name="customer_name" value="<?= e($customerName) ?>" minlength="2" maxlength="150" required>
+                        </div>
 
-                    <div class="form-group">
-                        <label for="project_comment">Комментарий</label>
-                        <textarea id="project_comment" name="project_comment" maxlength="1000"><?= e($projectComment) ?></textarea>
-                    </div>
+                        <div class="form-group">
+                            <label for="customer_phone">Телефон</label>
+                            <input type="tel" id="customer_phone" name="customer_phone" value="<?= e($customerPhone) ?>" maxlength="30" required>
+                        </div>
 
-                    <label class="form-consent">
-                        <input type="checkbox" name="personal_data_consent" value="1" required>
-                        <span>Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</span>
-                    </label>
+                        <div class="form-group">
+                            <label for="customer_email">Email</label>
+                            <input type="email" id="customer_email" name="customer_email" value="<?= e($customerEmail) ?>" required>
+                        </div>
 
-                    <button type="submit" class="contact-submit">Отправить заявку</button>
-                </form>
-            <?php endif; ?>
-        </section>
-    </div>
-</main>
+                        <div class="form-group">
+                            <label for="project_comment">Комментарий</label>
+                            <textarea id="project_comment" name="project_comment" maxlength="1000"><?= e($projectComment) ?></textarea>
+                        </div>
 
-<?php renderFooter(); ?>
+                        <label class="form-consent">
+                            <input type="checkbox" name="personal_data_consent" value="1" required>
+                            <span>Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</span>
+                        </label>
 
-<script>
-    const orderForm = document.getElementById('orderForm');
-    const cart = JSON.parse(localStorage.getItem('webstartCart') || '[]');
-    const orderItems = document.getElementById('orderItems');
-    const emptyOrder = document.getElementById('emptyOrder');
+                        <button type="submit" class="contact-submit">Отправить заявку</button>
+                    </form>
+                <?php endif; ?>
+            </section>
+        </div>
+    </main>
 
-    function tariffName(item) {
-        return item.tariff ?? item.name ?? '';
-    }
+    <?php renderFooter(); ?>
 
-    if (orderForm) {
-        document.getElementById('cartJson').value = JSON.stringify(cart);
-    }
+    <script>
+        const orderForm = document.getElementById('orderForm');
+        const cart = JSON.parse(localStorage.getItem('webstartCart') || '[]');
+        const orderItems = document.getElementById('orderItems');
+        const emptyOrder = document.getElementById('emptyOrder');
 
-    if (cart.length > 0) {
-        emptyOrder.style.display = 'none';
-
-        cart.forEach(item => {
-            const row = document.createElement('p');
-            row.textContent = `${item.service ?? ''}: ${tariffName(item)}`;
-            orderItems.appendChild(row);
-        });
-    }
-
-    <?php if ($successOrderId !== null): ?>
-        localStorage.removeItem('webstartCart');
-        if (typeof updateHeaderCartCounter === 'function') {
-            updateHeaderCartCounter();
+        function tariffName(item) {
+            return item.tariff ?? item.name ?? '';
         }
-        if (orderItems) {
-            orderItems.innerHTML = '';
+
+        if (orderForm) {
+            document.getElementById('cartJson').value = JSON.stringify(cart);
         }
-        if (emptyOrder) {
-            emptyOrder.style.display = 'block';
+
+        if (cart.length > 0) {
+            emptyOrder.style.display = 'none';
+
+            cart.forEach(item => {
+                const row = document.createElement('p');
+                row.textContent = `${item.service ?? ''}: ${tariffName(item)}`;
+                orderItems.appendChild(row);
+            });
         }
-    <?php endif; ?>
-</script>
-<script src="cursor-stars.js"></script>
+
+        <?php if ($successOrderId !== null): ?>
+            localStorage.removeItem('webstartCart');
+            if (typeof updateHeaderCartCounter === 'function') {
+                updateHeaderCartCounter();
+            }
+            if (orderItems) {
+                orderItems.innerHTML = '';
+            }
+            if (emptyOrder) {
+                emptyOrder.style.display = 'block';
+            }
+        <?php endif; ?>
+    </script>
+    <script src="cursor-stars.js"></script>
 </body>
+
 </html>

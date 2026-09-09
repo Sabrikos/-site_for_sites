@@ -24,7 +24,7 @@ $title = 'Корзина | WebStart Studio';
 
     <link
         rel="stylesheet"
-        href="styles.css?v=hero-code-canvas-1"
+        href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>"
     >
 
 </head>
@@ -327,38 +327,39 @@ $title = 'Корзина | WebStart Studio';
                 );
 
 
-                element.innerHTML = `
+                const info = document.createElement('div');
+                info.className = 'cart-product-info';
 
-                    <div class="cart-product-info">
+                const service = document.createElement('span');
+                service.className = 'cart-product-service';
+                service.textContent = item.service || 'Услуга';
 
-                        <span class="cart-product-service">
-                            ${item.service}
-                        </span>
+                const title = document.createElement('h3');
+                title.textContent = getTariffName(item) || 'Тариф';
 
-                        <h3>
-                            ${getTariffName(item)}
-                        </h3>
+                if (item.description) {
+                    const description = document.createElement('p');
+                    description.className = 'cart-product-description';
+                    description.textContent = item.description;
+                    info.append(service, title, description);
+                } else {
+                    info.append(service, title);
+                }
 
-                    </div>
+                const actions = document.createElement('div');
+                actions.className = 'cart-product-actions';
 
+                const price = document.createElement('strong');
+                price.textContent = formatPrice(Number(item.price) || 0);
 
-                    <div class="cart-product-actions">
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'cart-product-remove';
+                removeButton.dataset.id = getTariffId(item);
+                removeButton.textContent = 'Удалить';
 
-                        <strong>
-                            ${formatPrice(item.price)}
-                        </strong>
-
-                        <button
-                            type="button"
-                            class="cart-product-remove"
-                            data-id="${getTariffId(item)}"
-                        >
-                            Удалить
-                        </button>
-
-                    </div>
-
-                `;
+                actions.append(price, removeButton);
+                element.append(info, actions);
 
 
                 cartPageItems.appendChild(

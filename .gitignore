@@ -4,8 +4,13 @@ php-server.*.log
 
 # Local database configuration
 bd.php
+.env
 
 # OS/editor noise
 .DS_Store
 Thumbs.db
 .vscode/
+storage/logs/
+storage/rate-limit/
+storage/telegram-offset.txt
+storage/*.tmp

@@ -95,7 +95,7 @@ foreach ($tariffs as $tariff) {
 
     <link
         rel="stylesheet"
-        href="styles.css?v=hero-code-canvas-1">
+        href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
 
 </head>
 
@@ -487,39 +487,29 @@ foreach ($tariffs as $tariff) {
 
 
                     cartItem.classList.add('cart-item');
+                    const itemInfo = document.createElement('div');
+                    itemInfo.className = 'cart-item-info';
 
+                    const service = document.createElement('span');
+                    service.className = 'cart-item-service';
+                    service.textContent = item.service ?? '';
 
-                    cartItem.innerHTML = `
+                    const title = document.createElement('strong');
+                    title.textContent = getTariffName(item);
 
-                    <div class="cart-item-info">
+                    const price = document.createElement('span');
+                    price.className = 'cart-item-price';
+                    price.textContent = formatPrice(item.price);
 
-                        <span class="cart-item-service">
-                            ${item.service}
-                        </span>
+                    const removeButton = document.createElement('button');
+                    removeButton.className = 'cart-remove';
+                    removeButton.dataset.id = getTariffId(item);
+                    removeButton.type = 'button';
+                    removeButton.textContent = '×';
 
-                        <strong>
-                            ${getTariffName(item)}
-                        </strong>
-
-                        <span class="cart-item-price">
-                            ${formatPrice(item.price)}
-                        </span>
-
-                    </div>
-
-
-                    <button
-                        class="cart-remove"
-                        data-id="${getTariffId(item)}"
-                        type="button"
-                    >
-                        ×
-                    </button>
-
-                `;
-
-
-                    cartItems.appendChild(cartItem);
+                    itemInfo.append(service, title, price);
+                    cartItem.append(itemInfo, removeButton);
+cartItems.appendChild(cartItem);
 
                 });
 

@@ -1,7 +1,7 @@
 <?php
 
-require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/bd.php';
+require_once __DIR__ . '/layout.php';
 $title = 'WebStart Studio';
 $subtitle = 'Продвигаем ваш бизнес в сети';
 $customerName = '';
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title><?= $title ?></title>
-    <link rel="stylesheet" href="styles.css?v=hero-label-glow-1">
+    <link rel="stylesheet" href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
 </head>
 
 <body>
