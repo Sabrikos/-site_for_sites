@@ -1,15 +1,15 @@
-﻿# Local PHP server logs
+# Local PHP server logs
 php-server.*.log
 *.log
 
 # Local database configuration
 bd.php
-.env
 
 # OS/editor noise
 .DS_Store
 Thumbs.db
 .vscode/
+.env
 storage/logs/
 storage/rate-limit/
 storage/telegram-offset.txt

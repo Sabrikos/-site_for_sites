@@ -819,10 +819,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     </div>
 
-                    <label class="form-consent">
-                        <input type="checkbox" name="personal_data_consent" value="1" required>
-                        <span>Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</span>
-                    </label>
+                    <div class="form-consent">
+                        <input type="checkbox" id="home_personal_data_consent" name="personal_data_consent" value="1" required>
+                        <label for="home_personal_data_consent">Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</label>
+                    </div>
 
                     <button
                         type="submit"

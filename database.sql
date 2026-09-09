@@ -334,3 +334,73 @@ VALUES
     'Стоимость рассчитывается после обсуждения.',
     10000
 );
+
+/* ==============================================
+   ЧАТЫ
+============================================== */
+
+CREATE TABLE chat_conversations (
+
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    session_key VARCHAR(128) NOT NULL,
+
+    status VARCHAR(30) NOT NULL DEFAULT 'bot',
+
+    customer_name VARCHAR(150) NULL,
+
+    customer_contact VARCHAR(255) NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP
+        DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_chat_session_key (session_key),
+
+    INDEX idx_chat_status (status)
+
+) ENGINE=InnoDB;
+
+
+CREATE TABLE chat_messages (
+
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    conversation_id BIGINT UNSIGNED NOT NULL,
+
+    sender VARCHAR(20) NOT NULL,
+
+    message TEXT NOT NULL,
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_chat_messages_conversation (conversation_id, id),
+
+    CONSTRAINT fk_chat_messages_conversation
+
+        FOREIGN KEY (conversation_id)
+
+        REFERENCES chat_conversations(id)
+
+        ON DELETE CASCADE
+
+) ENGINE=InnoDB;
+/* ==============================================
+   TELEGRAM SESSIONS
+============================================== */
+
+CREATE TABLE telegram_sessions (
+
+    chat_id BIGINT NOT NULL PRIMARY KEY,
+
+    state VARCHAR(60) NULL,
+
+    selected_tariff_id INT UNSIGNED NULL,
+
+    updated_at TIMESTAMP
+        DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP
+
+) ENGINE=InnoDB;
