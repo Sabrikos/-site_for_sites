@@ -1,4 +1,4 @@
-﻿# Local PHP server logs
+# Local PHP server logs
 php-server.*.log
 *.log
 
@@ -9,3 +9,8 @@ bd.php
 .DS_Store
 Thumbs.db
 .vscode/
+.env
+storage/logs/
+storage/rate-limit/
+storage/telegram-offset.txt
+storage/*.tmp

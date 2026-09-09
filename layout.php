@@ -113,6 +113,8 @@ function renderHeader()
 
     </header>
 
+    <script src="web-chat.js?v=<?= filemtime(__DIR__ . '/web-chat.js') ?>" defer></script>
+
 <?php
 }
 

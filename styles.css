@@ -4427,4 +4427,456 @@ body.header-is-floating {
     .hero-bg-line-low {
         opacity: 0.46;
     }
+}}
+
+.web-chat-panel {
+    position: fixed;
+    right: 24px;
+    bottom: 96px;
+    width: min(390px, calc(100vw - 32px));
+    height: min(570px, calc(100vh - 124px));
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(13, 15, 39, 0.98), rgba(9, 10, 28, 0.98));
+}
+
+.web-chat-header {
+    min-height: 78px;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, #4f5cff, #8c55ff);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.web-chat-header div {
+    display: grid;
+    gap: 4px;
+}
+
+.web-chat-header strong {
+    font-size: 18px;
+}
+
+.web-chat-header span {
+    color: rgba(255, 255, 255, 0.74);
+    font-size: 13px;
+}
+
+.web-chat-close {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    line-height: 1;
+}
+
+.web-chat-messages {
+    padding: 18px;
+    background:
+        radial-gradient(circle at 18% 10%, rgba(79, 92, 255, 0.14), transparent 28%),
+        radial-gradient(circle at 84% 72%, rgba(176, 92, 255, 0.12), transparent 32%);
+}
+
+.web-chat-message {
+    border: 1px solid rgba(157, 166, 255, 0.16);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.16);
+}
+
+.web-chat-form {
+    grid-template-columns: minmax(0, 1fr) 46px;
+    padding: 14px;
+    background: rgba(11, 13, 35, 0.98);
+}
+
+.web-chat-form textarea {
+    min-height: 46px;
+    max-height: 92px;
+    border-radius: 14px;
+}
+
+.web-chat-form button {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    border-radius: 14px;
+}
+
+.web-chat-form button svg {
+    width: 21px;
+    height: 21px;
+}
+
+@media (max-width: 760px) {
+    main.tariffs-page .tariffs-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    main.tariffs-page .tariff-card {
+        min-height: 0;
+    }
+
+    main.tariffs-page .tariff-description {
+        min-height: 0;
+    }
+
+    .web-chat {
+        right: 16px;
+        bottom: 16px;
+    }
+
+    .web-chat-panel {
+        right: 12px;
+        left: 12px;
+        bottom: 86px;
+        width: auto;
+        height: min(560px, 76vh);
+    }
+}
+/* =
+   USER CORRECTIONS: CHAT POSITION, CONSENT, TARIFF FLOW
+= */
+
+main.tariffs-page .tariffs-grid {
+    grid-template-columns: repeat(var(--columns, 3), minmax(0, 1fr)) !important;
+    justify-content: stretch !important;
+    align-items: stretch !important;
+}
+
+main.tariffs-page .tariff-card {
+    align-items: stretch !important;
+    min-height: 290px !important;
+    text-align: center !important;
+    justify-content: space-between !important;
+}
+
+main.tariffs-page .tariff-description {
+    min-height: 0 !important;
+}
+
+main.tariffs-page .tariff-bottom {
+    margin-top: auto !important;
+    align-items: stretch !important;
+}
+
+main.tariffs-page .tariff-price,
+main.tariffs-page .tariff-card h3,
+main.tariffs-page .tariff-description {
+    text-align: center !important;
+}
+
+main.tariffs-page .tariff-button {
+    width: 100% !important;
+    max-width: none !important;
+}
+
+.form-consent input[type="checkbox"] {
+    position: relative !important;
+    margin-top: 0.28em !important;
+}
+
+.form-consent input[type="checkbox"]:checked::after {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    width: 10px !important;
+    height: 6px !important;
+    margin: 0 !important;
+    transform: translate(-50%, -58%) rotate(-45deg) !important;
+}
+
+.web-chat {
+    position: fixed !important;
+    right: 24px !important;
+    left: auto !important;
+    bottom: 24px !important;
+    top: auto !important;
+    z-index: 2147483000 !important;
+}
+
+.web-chat-toggle {
+    position: relative !important;
+    display: grid !important;
+    place-items: center !important;
+}
+
+.web-chat-panel {
+    position: fixed !important;
+    right: 24px !important;
+    left: auto !important;
+    bottom: 96px !important;
+    top: auto !important;
+    z-index: 2147483001 !important;
+}
+
+.web-chat-form button svg,
+.web-chat-toggle svg {
+    display: block !important;
+}
+
+@media (max-width: 760px) {
+    main.tariffs-page .tariffs-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .web-chat {
+        right: 16px !important;
+        bottom: 16px !important;
+    }
+
+    .web-chat-panel {
+        right: 12px !important;
+        left: 12px !important;
+        bottom: 86px !important;
+        width: auto !important;
+    }
+}
+/* =
+   CHAT PIN, CHECKMARK, RESPONSIVE TARIFFS
+= */
+
+main.tariffs-page .tariffs-grid {
+    display: grid !important;
+    grid-template-columns: repeat(var(--columns, 3), minmax(0, 1fr)) !important;
+    justify-content: stretch !important;
+    justify-items: stretch !important;
+    align-items: stretch !important;
+    gap: 20px !important;
+}
+
+main.tariffs-page .tariff-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: space-between !important;
+    min-height: 290px !important;
+    text-align: center !important;
+}
+
+main.tariffs-page .tariff-card {
+    min-width: 0;
+    height: auto;
+    padding: 24px 16px !important;
+    overflow-wrap: anywhere;
+    hyphens: manual;
+    container-type: inline-size;
+    container-name: tariff-card;
+}
+
+main.tariffs-page .tariff-card > div {
+    min-width: 0;
+    max-width: 100%;
+}
+
+main.tariffs-page .tariff-card h3 {
+    font-size: 20px;
+    line-height: 1.35;
+    text-wrap: wrap;
+}
+
+main.tariffs-page .tariff-card h3,
+main.tariffs-page .tariff-description,
+main.tariffs-page .tariff-price {
+    text-align: center !important;
+    letter-spacing: 0;
+    white-space: normal;
+}
+
+main.tariffs-page .tariff-description {
+    min-height: 0 !important;
+    margin-bottom: 25px !important;
+}
+
+main.tariffs-page .tariff-button {
+    padding-inline: 8px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    line-height: 1.4;
+    min-height: 46px;
+}
+
+main.tariffs-page .tariff-bottom {
+    display: block !important;
+    width: auto !important;
+    margin-top: auto !important;
+    text-align: center !important;
+}
+
+main.tariffs-page .tariff-button {
+    width: 100% !important;
+    max-width: none !important;
+    margin-inline: 0 !important;
+}
+
+.form-consent {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+}
+
+.form-consent input[type="checkbox"] {
+    position: relative !important;
+    flex: 0 0 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+    margin: 0.28em 0 0 !important;
+}
+
+.form-consent input[type="checkbox"]:checked::after {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    display: block !important;
+    width: 10px !important;
+    height: 6px !important;
+    margin: 0 !important;
+    border-left: 2px solid #fff !important;
+    border-bottom: 2px solid #fff !important;
+    transform: translate(-50%, -62%) rotate(-45deg) !important;
+    transform-origin: center !important;
+}
+
+.form-consent label {
+    display: inline !important;
+    min-width: 0 !important;
+    line-height: 1.5 !important;
+}
+
+.web-chat {
+    position: static !important;
+    z-index: 2147483000 !important;
+    font-family: inherit !important;
+}
+
+.web-chat-toggle {
+    position: fixed !important;
+    right: 24px !important;
+    bottom: 24px !important;
+    left: auto !important;
+    top: auto !important;
+    z-index: 2147483000 !important;
+    display: grid !important;
+    place-items: center !important;
+    width: 62px !important;
+    min-width: 62px !important;
+    height: 62px !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.web-chat-toggle svg {
+    display: block !important;
+    width: 30px !important;
+    height: 30px !important;
+    margin: 0 !important;
+}
+
+.web-chat-panel {
+    position: fixed !important;
+    right: 24px !important;
+    bottom: 96px !important;
+    left: auto !important;
+    top: auto !important;
+    z-index: 2147483001 !important;
+    width: min(390px, calc(100vw - 32px)) !important;
+    height: min(570px, calc(100vh - 124px)) !important;
+}
+
+.web-chat.is-open .web-chat-panel {
+    display: grid !important;
+}
+
+.web-chat.is-open .web-chat-toggle {
+    display: none !important;
+}
+
+.web-chat-form button svg {
+    display: block !important;
+    width: 21px !important;
+    height: 21px !important;
+    margin: 0 !important;
+}
+
+@media (max-width: 760px) {
+    main.tariffs-page .tariffs-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .web-chat-toggle {
+        right: 16px !important;
+        bottom: 16px !important;
+    }
+
+    .web-chat-panel {
+        right: 12px !important;
+        left: 12px !important;
+        bottom: 86px !important;
+        width: auto !important;
+        height: min(560px, 76vh) !important;
+    }
+}
+
+/* Chat status and compact, readable tariff cards. */
+.tariffs-content { container: tariff-content / inline-size; }
+@container tariff-content (max-width: 650px) {
+    main.tariffs-page .tariffs-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@container tariff-content (max-width: 450px) {
+    main.tariffs-page .tariffs-grid { grid-template-columns: minmax(0, 1fr) !important; }
+}
+@container tariff-card (max-width: 190px) {
+    main.tariffs-page .tariff-card h3 { font-size: 18px; }
+}
+main.tariffs-page .service-title h2,
+main.tariffs-page .service-title p { overflow-wrap: anywhere; }
+.web-chat-panel {
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
+}
+.web-chat.is-open .web-chat-panel { grid-template-rows: auto minmax(0, 1fr) auto auto; }
+.web-chat-panel > .web-chat-messages { min-height: 0; }
+.web-chat-message { flex-shrink: 0; overflow-wrap: anywhere; line-height: 1.5; font-size: 15px; }
+.web-chat-message.is-admin { border-color: #4da58c; background: #183d3b; }
+.web-chat-status { display: flex !important; align-items: center; gap: 6px; min-height: 20px; }
+.web-chat-header > div { min-width: 0; }
+.web-chat-header strong { overflow-wrap: anywhere; }
+.web-chat-close { flex: 0 0 34px; }
+.web-chat-error { margin: 0; padding: 8px 14px; color: #ffd6db; font-size: 13px; line-height: 1.4; }
+.web-chat-error[hidden] { display: none; }
+.web-chat-form { margin: 0; align-items: end; }
+.web-chat-form textarea { box-sizing: border-box; min-width: 0; line-height: 1.4; }
+.web-chat-form button:disabled { opacity: .55; cursor: wait; }
+.chat-typing-dots { display: inline-flex !important; gap: 3px; }
+.chat-typing-dots i { display: block; width: 4px; height: 4px; background: currentColor; border-radius: 50%; animation: chatTyping 1s ease-in-out infinite; }
+.chat-typing-dots i:nth-child(2) { animation-delay: .15s; }
+.chat-typing-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes chatTyping { 0%, 70%, 100% { opacity: .35; transform: translateY(0); } 35% { opacity: 1; transform: translateY(-3px); } }
+.chat-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.admin-chat-thread { min-width: 0; border-radius: 8px; }
+.admin-chat-messages { height: 450px; overflow: auto; overscroll-behavior: contain; }
+.admin-chat-message { overflow-wrap: anywhere; border-radius: 8px; }
+.admin-chat-message p { white-space: pre-wrap; line-height: 1.5; }
+.admin-chat-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.admin-chat-status-form { margin: 0; }
+.admin-chat-actions button { padding: 8px 12px; border: 1px solid #6e7698; border-radius: 6px; background: #292d43; color: #f2f5ff; cursor: pointer; }
+.admin-chat-status { color: #9ae3c9; }
+.admin-chat-list-item { overflow-wrap: anywhere; border-radius: 8px; }
+.admin-chat-list-item[aria-current] { border-color: #88b8de; background: #202943; }
+.admin-chat-error:empty { display: none; }
+.admin-chat-error { color: #ffb5bf; }
+.admin-edit-card h2 { margin: 0; font-size: 20px; }
+.admin-edit-card { max-width: 850px; border-radius: 8px; }
+.admin-edit-card input, .admin-edit-card textarea { box-sizing: border-box; min-width: 0; }
+@media (max-width: 650px) {
+    .main-header .container { min-width: 0; }
+    .main-header nav { flex-wrap: wrap; justify-content: center; min-width: 0; max-width: 100%; row-gap: 10px; }
+    .admin-chat-layout { grid-template-columns: minmax(0, 1fr); }
+    .admin-chat-list { max-height: 210px; overflow-y: auto; }
+    .admin-content { padding: 16px; min-width: 0; }
+    .admin-chat-messages { height: 360px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .chat-typing-dots i, .web-chat-toggle { animation: none !important; }
 }

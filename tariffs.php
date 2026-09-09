@@ -2,7 +2,7 @@
 require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/layout.php';
 
-$title = 'Тарифы | Vega Studio';
+$title = 'Тарифы | WebStart Studio';
 
 /*
     Получаем услуги из базы данных
@@ -95,11 +95,8 @@ foreach ($tariffs as $tariff) {
 
     <link
         rel="stylesheet"
-        href="styles.css?v=brand-vega-1">
+        href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
 
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=cursor-2">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=cursor-2">
-    <link rel="apple-touch-icon" href="assets/images/favicon-512.png?v=cursor-2">
 </head>
 
 
@@ -367,7 +364,9 @@ foreach ($tariffs as $tariff) {
         останутся даже после обновления страницы.
     */
 
-        let cart = JSON.parse(localStorage.getItem('webstartCart') || '[]');
+        let cart = JSON.parse(
+            localStorage.getItem('webstartCart')
+        ) || [];
 
         function getTariffId(item) {
             return String(item.tariff_id ?? item.id);
@@ -416,7 +415,10 @@ foreach ($tariffs as $tariff) {
 
         function saveCart() {
 
-            localStorage.setItem('webstartCart', JSON.stringify(cart));
+            localStorage.setItem(
+                'webstartCart',
+                JSON.stringify(cart)
+            );
 
         }
 
@@ -485,39 +487,29 @@ foreach ($tariffs as $tariff) {
 
 
                     cartItem.classList.add('cart-item');
+                    const itemInfo = document.createElement('div');
+                    itemInfo.className = 'cart-item-info';
 
+                    const service = document.createElement('span');
+                    service.className = 'cart-item-service';
+                    service.textContent = item.service ?? '';
 
-                    cartItem.innerHTML = `
+                    const title = document.createElement('strong');
+                    title.textContent = getTariffName(item);
 
-                    <div class="cart-item-info">
+                    const price = document.createElement('span');
+                    price.className = 'cart-item-price';
+                    price.textContent = formatPrice(item.price);
 
-                        <span class="cart-item-service">
-                            ${item.service}
-                        </span>
+                    const removeButton = document.createElement('button');
+                    removeButton.className = 'cart-remove';
+                    removeButton.dataset.id = getTariffId(item);
+                    removeButton.type = 'button';
+                    removeButton.textContent = '×';
 
-                        <strong>
-                            ${getTariffName(item)}
-                        </strong>
-
-                        <span class="cart-item-price">
-                            ${formatPrice(item.price)}
-                        </span>
-
-                    </div>
-
-
-                    <button
-                        class="cart-remove"
-                        data-id="${getTariffId(item)}"
-                        type="button"
-                    >
-                        ×
-                    </button>
-
-                `;
-
-
-                    cartItems.appendChild(cartItem);
+                    itemInfo.append(service, title, price);
+                    cartItem.append(itemInfo, removeButton);
+cartItems.appendChild(cartItem);
 
                 });
 
@@ -720,7 +712,7 @@ foreach ($tariffs as $tariff) {
     </script>
 
 
-    <script src="cursor-stars.js?v=footer-mask-1"></script>
+    <script src="cursor-stars.js?v=stars-light-1"></script>
 </body>
 
 </html>

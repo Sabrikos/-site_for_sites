@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/layout.php';
 
-$title = 'Корзина | Vega Studio';
+$title = 'Корзина | WebStart Studio';
 
 ?>
 
@@ -24,12 +24,9 @@ $title = 'Корзина | Vega Studio';
 
     <link
         rel="stylesheet"
-        href="styles.css?v=brand-vega-1"
+        href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>"
     >
 
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=cursor-2">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=cursor-2">
-    <link rel="apple-touch-icon" href="assets/images/favicon-512.png?v=cursor-2">
 </head>
 
 
@@ -210,7 +207,9 @@ $title = 'Корзина | Vega Studio';
 <script>
 
     let cart =
-        JSON.parse(localStorage.getItem('webstartCart') || '[]');
+        JSON.parse(
+            localStorage.getItem('webstartCart')
+        ) || [];
 
     function getTariffId(item) {
         return String(item.tariff_id ?? item.id);
@@ -259,7 +258,10 @@ $title = 'Корзина | Vega Studio';
 
     function saveCart() {
 
-        localStorage.setItem('webstartCart', JSON.stringify(cart));
+        localStorage.setItem(
+            'webstartCart',
+            JSON.stringify(cart)
+        );
 
     }
 
@@ -325,38 +327,39 @@ $title = 'Корзина | Vega Studio';
                 );
 
 
-                element.innerHTML = `
+                const info = document.createElement('div');
+                info.className = 'cart-product-info';
 
-                    <div class="cart-product-info">
+                const service = document.createElement('span');
+                service.className = 'cart-product-service';
+                service.textContent = item.service || 'Услуга';
 
-                        <span class="cart-product-service">
-                            ${item.service}
-                        </span>
+                const title = document.createElement('h3');
+                title.textContent = getTariffName(item) || 'Тариф';
 
-                        <h3>
-                            ${getTariffName(item)}
-                        </h3>
+                if (item.description) {
+                    const description = document.createElement('p');
+                    description.className = 'cart-product-description';
+                    description.textContent = item.description;
+                    info.append(service, title, description);
+                } else {
+                    info.append(service, title);
+                }
 
-                    </div>
+                const actions = document.createElement('div');
+                actions.className = 'cart-product-actions';
 
+                const price = document.createElement('strong');
+                price.textContent = formatPrice(Number(item.price) || 0);
 
-                    <div class="cart-product-actions">
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'cart-product-remove';
+                removeButton.dataset.id = getTariffId(item);
+                removeButton.textContent = 'Удалить';
 
-                        <strong>
-                            ${formatPrice(item.price)}
-                        </strong>
-
-                        <button
-                            type="button"
-                            class="cart-product-remove"
-                            data-id="${getTariffId(item)}"
-                        >
-                            Удалить
-                        </button>
-
-                    </div>
-
-                `;
+                actions.append(price, removeButton);
+                element.append(info, actions);
 
 
                 cartPageItems.appendChild(
@@ -478,7 +481,7 @@ $title = 'Корзина | Vega Studio';
 </script>
 
 
-    <script src="cursor-stars.js?v=footer-mask-1"></script>
+    <script src="cursor-stars.js?v=stars-light-1"></script>
 </body>
 
 </html>

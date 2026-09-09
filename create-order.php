@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/app.php';
 require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/layout.php';
 
-session_start();
+appStartSession();
 
 if (empty($_SESSION['order_csrf'])) {
     $_SESSION['order_csrf'] = bin2hex(random_bytes(32));
 }
 
-$title = 'Оформление заявки | Vega Studio';
+$title = 'Оформление заявки | WebStart Studio';
 $errors = [];
 $successOrderId = null;
 $customerName = trim((string) ($_POST['customer_name'] ?? ''));
@@ -31,6 +32,10 @@ function textLength(string $value): int
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!appRateLimit('order_form', 5, 300)) {
+        $errors[] = 'Слишком много попыток оформления. Попробуйте чуть позже.';
+    }
+
     if (!hash_equals(
         $_SESSION['order_csrf'],
         (string) ($_POST['csrf_token'] ?? '')
@@ -161,7 +166,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             $pdo->commit();
+
             $successOrderId = $orderId;
+
+            try {
+                appSendTelegram(
+                    'Новая заявка #' . $orderId . "\nИсточник: сайт\nИтого: " . appMoney($total),
+                    'Открыть заказ',
+                    appUrl('admin/order.php?id=' . $orderId)
+                );
+            } catch (Throwable $notificationError) {
+                appLog('Order notification failed', ['order_id' => $orderId]);
+            }
+
             $_SESSION['order_csrf'] = bin2hex(random_bytes(32));
         } catch (Throwable $error) {
             if ($pdo->inTransaction()) {
@@ -180,11 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($title) ?></title>
-    <link rel="stylesheet" href="styles.css">
-
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=cursor-2">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=cursor-2">
-    <link rel="apple-touch-icon" href="assets/images/favicon-512.png?v=cursor-2">
+    <link rel="stylesheet" href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
 </head>
 <body>
 
@@ -248,10 +261,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <textarea id="project_comment" name="project_comment" maxlength="1000"><?= e($projectComment) ?></textarea>
                     </div>
 
-                    <label class="form-consent">
-                        <input type="checkbox" name="personal_data_consent" value="1" required>
-                        <span>Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</span>
-                    </label>
+                    <div class="form-consent">
+                        <input type="checkbox" id="order_personal_data_consent" name="personal_data_consent" value="1" required>
+                        <label for="order_personal_data_consent">Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</label>
+                    </div>
 
                     <button type="submit" class="contact-submit">Отправить заявку</button>
                 </form>
