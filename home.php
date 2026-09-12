@@ -122,6 +122,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <section class="hero-section">
 
+        <svg class="hero-background-lines" viewBox="0 0 1440 720" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path class="hero-bg-line hero-bg-line-main" d="M-120 196 C110 104 260 250 440 168 C650 72 770 244 960 158 C1138 78 1268 148 1560 92" />
+            <path class="hero-bg-line hero-bg-line-soft" d="M-90 328 C116 252 316 374 500 288 C684 204 816 330 1010 256 C1168 196 1308 268 1530 220" />
+            <path class="hero-bg-line hero-bg-line-low" d="M-130 508 C126 406 312 574 548 462 C754 364 902 524 1110 430 C1270 356 1380 452 1534 386" />
+            <path class="hero-bg-line hero-bg-line-orbit hero-bg-line-orbit-one" d="M820 360 C930 262 1110 248 1236 320 C1364 394 1286 500 1108 502 C926 506 770 458 820 360" />
+            <path class="hero-bg-line hero-bg-line-orbit hero-bg-line-orbit-two" d="M908 240 C1018 198 1166 204 1278 272 C1376 332 1332 420 1190 438 C1038 456 878 398 852 318 C838 276 864 256 908 240" />
+        </svg>
+
         <div class="hero-content">
 
             <span class="hero-label">
