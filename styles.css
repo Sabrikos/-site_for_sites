@@ -4356,18 +4356,18 @@ body.header-is-floating {
 }
 
 .hero-bg-line-main {
-    stroke: rgba(123, 130, 255, 0.16);
+    stroke: rgba(123, 130, 255, 0.21);
     stroke-width: 1.5px;
 }
 
 .hero-bg-line-soft {
-    stroke: rgba(179, 92, 255, 0.12);
+    stroke: rgba(179, 92, 255, 0.16);
     stroke-width: 1px;
     opacity: 0.86;
 }
 
 .hero-bg-line-low {
-    stroke: rgba(78, 85, 255, 0.11);
+    stroke: rgba(78, 85, 255, 0.145);
     stroke-width: 1px;
     opacity: 0.72;
 }
@@ -4378,13 +4378,13 @@ body.header-is-floating {
 }
 
 .hero-bg-line-orbit-one {
-    stroke: rgba(216, 213, 255, 0.10);
+    stroke: rgba(216, 213, 255, 0.13);
     stroke-width: 1px;
     opacity: 0.78;
 }
 
 .hero-bg-line-orbit-two {
-    stroke: rgba(123, 130, 255, 0.14);
+    stroke: rgba(123, 130, 255, 0.18);
     stroke-width: 1.25px;
     opacity: 0.70;
 }
