@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/bd.php';
-$title = 'Vega Studio';
+require_once __DIR__ . '/layout.php';
+$title = 'WebStart Studio';
 $subtitle = 'Продвигаем ваш бизнес в сети';
 $customerName = '';
 $customerPhone = '';
@@ -114,25 +114,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title><?= $title ?></title>
-    <link rel="stylesheet" href="styles.css?v=brand-vega-1">
-
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=cursor-2">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=cursor-2">
-    <link rel="apple-touch-icon" href="assets/images/favicon-512.png?v=cursor-2">
+    <link rel="stylesheet" href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
 </head>
 
 <body>
     <?php renderHeader(); ?>
 
     <section class="hero-section">
-
-        <svg class="hero-background-lines" viewBox="0 0 1440 720" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-            <path class="hero-bg-line hero-bg-line-main" d="M-120 196 C110 104 260 250 440 168 C650 72 770 244 960 158 C1138 78 1268 148 1560 92" />
-            <path class="hero-bg-line hero-bg-line-soft" d="M-90 328 C116 252 316 374 500 288 C684 204 816 330 1010 256 C1168 196 1308 268 1530 220" />
-            <path class="hero-bg-line hero-bg-line-low" d="M-130 508 C126 406 312 574 548 462 C754 364 902 524 1110 430 C1270 356 1380 452 1534 386" />
-            <path class="hero-bg-line hero-bg-line-orbit hero-bg-line-orbit-one" d="M820 360 C930 262 1110 248 1236 320 C1364 394 1286 500 1108 502 C926 506 770 458 820 360" />
-            <path class="hero-bg-line hero-bg-line-orbit hero-bg-line-orbit-two" d="M908 240 C1018 198 1166 204 1278 272 C1376 332 1332 420 1190 438 C1038 456 878 398 852 318 C838 276 864 256 908 240" />
-        </svg>
 
         <div class="hero-content">
 
@@ -193,7 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <text><textPath href="#sphere-code-path-4" startOffset="0">SELECT name, price FROM tariffs WHERE active = 1;</textPath></text>
                         <text><textPath href="#sphere-code-path-5" startOffset="0">if ($errors === []) { createOrder($customer, $project); }</textPath></text>
                         <text><textPath href="#sphere-code-path-6" startOffset="0">$pdo-&gt;prepare($sql); $stmt-&gt;execute(); fetchAll();</textPath></text>
-                        <text><textPath href="#sphere-code-path-7" startOffset="0">class VegaProject { public function launch(): bool {} }</textPath></text>
+                        <text><textPath href="#sphere-code-path-7" startOffset="0">class WebStartProject { public function launch(): bool {} }</textPath></text>
                         <text><textPath href="#sphere-code-path-8" startOffset="0">addToCart(serviceId); localStorage.setItem('webstartCart', cart);</textPath></text>
                         <text><textPath href="#sphere-code-path-9" startOffset="0">try { connectDatabase(); } catch (PDOException $error) {}</textPath></text>
                         <text><textPath href="#sphere-code-path-10" startOffset="0">foreach ($services as $service) { renderCard($service); }</textPath></text>
@@ -653,7 +641,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
 
                             <strong>
-                                vega@example.ru
+                                webstart@example.ru
                             </strong>
 
                         </div>
@@ -674,7 +662,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
 
                             <strong>
-                                @vegastudio
+                                @webstart
                             </strong>
 
                         </div>
@@ -695,7 +683,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
 
                             <strong>
-                                Vega Studio
+                                WebStart Studio
                             </strong>
 
                         </div>
@@ -831,10 +819,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     </div>
 
-                    <label class="form-consent">
-                        <input type="checkbox" name="personal_data_consent" value="1" required>
-                        <span>Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</span>
-                    </label>
+                    <div class="form-consent">
+                        <input type="checkbox" id="home_personal_data_consent" name="personal_data_consent" value="1" required>
+                        <label for="home_personal_data_consent">Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</label>
+                    </div>
 
                     <button
                         type="submit"
@@ -889,7 +877,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
-<script src="cursor-stars.js?v=footer-mask-1"></script>
+<script src="cursor-stars.js?v=stars-light-1"></script>
 <script src="sphere-code-loop.js?v=canvas-render-2"></script>
 </body>
 

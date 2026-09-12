@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/../app.php';
 require_once __DIR__ . '/../bd.php';
 require_once __DIR__ . '/auth.php';
 
@@ -18,12 +19,16 @@ $error = '';
 $username = trim((string) ($_POST['username'] ?? ''));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!appRateLimit('admin_login', 10, 300)) {
+        $error = 'Слишком много попыток входа. Попробуйте чуть позже.';
+    }
+
     $token = (string) ($_POST['csrf_token'] ?? '');
     $password = (string) ($_POST['password'] ?? '');
 
-    if (!hash_equals($_SESSION['login_csrf'], $token)) {
+    if ($error === '' && !hash_equals($_SESSION['login_csrf'], $token)) {
         $error = 'Срок действия формы истёк. Обновите страницу и попробуйте снова.';
-    } else {
+    } elseif ($error === '') {
         $statement = $pdo->prepare(
             'SELECT id, username, password_hash
              FROM admins

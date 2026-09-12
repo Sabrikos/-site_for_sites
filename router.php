@@ -1,13 +1,31 @@
 <?php
-// Router for the PHP development server. Existing resources keep native handling.
-$path = rawurldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/');
-$root = realpath(__DIR__);
-$file = strpos($path, "\0") === false ? realpath(__DIR__ . $path) : false;
-$insideRoot = $file !== false && strncmp($file, $root . DIRECTORY_SEPARATOR, strlen($root) + 1) === 0;
-if ($path === '/' || ($insideRoot && is_file($file))) {
-    return false;
+
+declare(strict_types=1);
+
+// Only public pages and assets are served by the local PHP server.
+$path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
+$path = str_replace('\\', '/', $path);
+$publicPages = ['404.php', 'index.php', 'home.php', 'tariffs.php', 'cart.php', 'create-order.php', 'privacy.php', 'telegram-webhook.php'];
+$blocked = preg_match('~(?:^|/)[.]|\x00|^/(?:storage|services|migrations|tests|docs)(?:/|$)~i', $path);
+$extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+if ($path !== '/' && $extension === 'php') {
+    $blocked = $blocked || !(in_array(ltrim($path, '/'), $publicPages, true) ||
+        preg_match('~^/(?:api/chat|admin/(?:index|login|logout|orders|order|chats|chat-api|services|tariffs|faq))\.php$~', $path));
+} elseif ($path !== '/') {
+    $blocked = $blocked || !in_array($extension, ['css', 'js', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'ico', 'svg', 'woff', 'woff2'], true);
 }
-if ($insideRoot && is_dir($file) && (is_file($file . '/index.php') || is_file($file . '/index.html'))) {
+if ($blocked) {
+    require __DIR__ . '/404.php';
+    return true;
+}
+if ($path === '/') {
+    require __DIR__ . '/index.php';
+    return true;
+}
+$file = realpath(__DIR__ . $path);
+$root = realpath(__DIR__) . DIRECTORY_SEPARATOR;
+if ($file !== false && strncmp($file, $root, strlen($root)) === 0 && is_file($file)) {
     return false;
 }
 require __DIR__ . '/404.php';
+return true;

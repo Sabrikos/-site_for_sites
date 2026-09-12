@@ -1,0 +1,6 @@
+Options -Indexes
+<FilesMatch "(^\.|\.(env|sql|log|bat|md|ini|lock)$)">
+    Require all denied
+</FilesMatch>
+RewriteEngine On
+RewriteRule ^(?:storage|services|migrations|tests|docs)(?:/|$) - [F,L]

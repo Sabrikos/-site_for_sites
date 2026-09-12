@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/layout.php';
 
-$title = 'Корзина | Vega Studio';
+$title = 'Корзина | WebStart Studio';
 
 ?>
 
@@ -15,8 +15,7 @@ $title = 'Корзина | Vega Studio';
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+        content="width=device-width, initial-scale=1.0">
 
     <title>
         <?= htmlspecialchars($title) ?>
@@ -24,462 +23,454 @@ $title = 'Корзина | Vega Studio';
 
     <link
         rel="stylesheet"
-        href="styles.css?v=brand-vega-1"
-    >
+        href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
 
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=cursor-2">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=cursor-2">
-    <link rel="apple-touch-icon" href="assets/images/favicon-512.png?v=cursor-2">
 </head>
 
 
 <body>
 
-<?php renderHeader(); ?>
+    <?php renderHeader(); ?>
 
-<!-- =========================================
+    <!-- =========================================
      КОРЗИНА
 ========================================= -->
 
-<main class="cart-page">
+    <main class="cart-page">
 
 
-    <div class="cart-page-title">
+        <div class="cart-page-title">
 
-        <h1>
-            Корзина
-        </h1>
+            <h1>
+                Корзина
+            </h1>
 
-        <p>
-            Проверьте выбранные услуги перед оформлением заявки.
-        </p>
+            <p>
+                Проверьте выбранные услуги перед оформлением заявки.
+            </p>
 
-    </div>
-
-
-
-    <div class="cart-page-layout">
+        </div>
 
 
-        <!-- =================================
+
+        <div class="cart-page-layout">
+
+
+            <!-- =================================
              ВЫБРАННЫЕ УСЛУГИ
         ================================= -->
 
-        <section class="cart-products">
+            <section class="cart-products">
 
 
-            <div class="cart-products-header">
+                <div class="cart-products-header">
 
-                <h2>
-                    Выбранные услуги
-                </h2>
+                    <h2>
+                        Выбранные услуги
+                    </h2>
 
-                <span id="cartItemsCount">
-                    0 услуг
-                </span>
+                    <span id="cartItemsCount">
+                        0 услуг
+                    </span>
 
-            </div>
-
-
-
-            <div id="cartPageItems">
-
-                <!-- JavaScript добавит сюда товары -->
-
-            </div>
-
-
-
-            <div
-                class="cart-page-empty"
-                id="cartPageEmpty"
-            >
-
-                <div class="empty-cart-icon">
-                    🛒
                 </div>
 
-                <h3>
-                    Корзина пока пуста
-                </h3>
-
-                <p>
-                    Перейдите к тарифам и выберите необходимые услуги.
-                </p>
-
-                <a
-                    href="tariffs.php"
-                    class="continue-shopping-button"
-                >
-                    Перейти к тарифам
-                </a>
-
-            </div>
 
 
-        </section>
+                <div id="cartPageItems">
+
+                    <!-- JavaScript добавит сюда товары -->
+
+                </div>
 
 
 
-        <!-- =================================
+                <div
+                    class="cart-page-empty"
+                    id="cartPageEmpty">
+
+                    <div class="empty-cart-icon">
+                        🛒
+                    </div>
+
+                    <h3>
+                        Корзина пока пуста
+                    </h3>
+
+                    <p>
+                        Перейдите к тарифам и выберите необходимые услуги.
+                    </p>
+
+                    <a
+                        href="tariffs.php"
+                        class="continue-shopping-button">
+                        Перейти к тарифам
+                    </a>
+
+                </div>
+
+
+            </section>
+
+
+
+            <!-- =================================
              ИТОГ
         ================================= -->
 
-        <aside class="cart-summary">
+            <aside class="cart-summary">
 
 
-            <h2>
-                Ваш заказ
-            </h2>
+                <h2>
+                    Ваш заказ
+                </h2>
 
 
 
-            <div class="summary-row">
+                <div class="summary-row">
 
-                <span>
-                    Количество услуг
-                </span>
+                    <span>
+                        Количество услуг
+                    </span>
 
-                <strong id="summaryCount">
-                    0
-                </strong>
+                    <strong id="summaryCount">
+                        0
+                    </strong>
 
-            </div>
+                </div>
 
 
 
-            <div class="summary-divider"></div>
+                <div class="summary-divider"></div>
 
 
 
-            <div class="summary-total">
+                <div class="summary-total">
 
-                <span>
-                    Итого
-                </span>
+                    <span>
+                        Итого
+                    </span>
 
-                <strong id="cartPageTotal">
-                    0 ₽
-                </strong>
+                    <strong id="cartPageTotal">
+                        0 ₽
+                    </strong>
 
-            </div>
+                </div>
 
 
 
-            <a
-                href="create-order.php"
-                class="cart-order-button"
-                id="cartOrderButton"
-            >
-                Оформить заявку
-            </a>
+                <a
+                    href="create-order.php"
+                    class="cart-order-button"
+                    id="cartOrderButton">
+                    Оформить заявку
+                </a>
 
 
 
-            <a
-                href="tariffs.php"
-                class="cart-back-button"
-            >
-                Продолжить выбор
-            </a>
+                <a
+                    href="tariffs.php"
+                    class="cart-back-button">
+                    Продолжить выбор
+                </a>
 
 
 
-            <button
-                type="button"
-                class="cart-clear-page"
-                id="cartClearPage"
-            >
-                Очистить корзину
-            </button>
+                <button
+                    type="button"
+                    class="cart-clear-page"
+                    id="cartClearPage">
+                    Очистить корзину
+                </button>
 
 
-        </aside>
+            </aside>
 
 
-    </div>
+        </div>
 
 
-</main>
+    </main>
 
 
 
 
-<?php renderFooter(); ?>
+    <?php renderFooter(); ?>
 
-<script>
+    <script>
+        let cart =
+            JSON.parse(
+                localStorage.getItem('webstartCart')
+            ) || [];
 
-    let cart =
-        JSON.parse(localStorage.getItem('webstartCart') || '[]');
-
-    function getTariffId(item) {
-        return String(item.tariff_id ?? item.id);
-    }
-
-    function getTariffName(item) {
-        return item.tariff ?? item.name ?? '';
-    }
-
-
-    const cartPageItems =
-        document.getElementById('cartPageItems');
-
-    const cartPageEmpty =
-        document.getElementById('cartPageEmpty');
-
-    const cartPageTotal =
-        document.getElementById('cartPageTotal');
-
-    const cartCounter =
-        document.getElementById('cartCounter');
-
-    const cartItemsCount =
-        document.getElementById('cartItemsCount');
-
-    const summaryCount =
-        document.getElementById('summaryCount');
-
-    const cartClearPage =
-        document.getElementById('cartClearPage');
-
-    const cartOrderButton =
-        document.getElementById('cartOrderButton');
-
-
-
-    function formatPrice(price) {
-
-        return new Intl.NumberFormat(
-            'ru-RU'
-        ).format(price) + ' ₽';
-
-    }
-
-
-
-    function saveCart() {
-
-        localStorage.setItem('webstartCart', JSON.stringify(cart));
-
-    }
-
-
-
-    function updateCartPage() {
-
-
-        /*
-            СЧЁТЧИК
-        */
-
-        cartCounter.textContent =
-            cart.length;
-
-        summaryCount.textContent =
-            cart.length;
-
-        cartItemsCount.textContent =
-            cart.length + ' шт.';
-
-
-
-        /*
-            ПУСТАЯ КОРЗИНА
-        */
-
-        if (cart.length === 0) {
-
-            cartPageItems.innerHTML = '';
-
-            cartPageEmpty.style.display =
-                'flex';
-
-            cartOrderButton.classList.add(
-                'disabled'
-            );
-
+        function getTariffId(item) {
+            return String(item.tariff_id ?? item.id);
         }
 
-        else {
-
-            cartPageEmpty.style.display =
-                'none';
-
-            cartOrderButton.classList.remove(
-                'disabled'
-            );
-
-            cartPageItems.innerHTML = '';
+        function getTariffName(item) {
+            return item.tariff ?? item.name ?? '';
+        }
 
 
+        const cartPageItems =
+            document.getElementById('cartPageItems');
 
-            cart.forEach(item => {
+        const cartPageEmpty =
+            document.getElementById('cartPageEmpty');
 
+        const cartPageTotal =
+            document.getElementById('cartPageTotal');
 
-                const element =
-                    document.createElement('div');
+        const cartCounter =
+            document.getElementById('cartCounter');
 
+        const cartItemsCount =
+            document.getElementById('cartItemsCount');
 
-                element.classList.add(
-                    'cart-product'
-                );
+        const summaryCount =
+            document.getElementById('summaryCount');
 
+        const cartClearPage =
+            document.getElementById('cartClearPage');
 
-                element.innerHTML = `
-
-                    <div class="cart-product-info">
-
-                        <span class="cart-product-service">
-                            ${item.service}
-                        </span>
-
-                        <h3>
-                            ${getTariffName(item)}
-                        </h3>
-
-                    </div>
+        const cartOrderButton =
+            document.getElementById('cartOrderButton');
 
 
-                    <div class="cart-product-actions">
 
-                        <strong>
-                            ${formatPrice(item.price)}
-                        </strong>
+        function formatPrice(price) {
 
-                        <button
-                            type="button"
-                            class="cart-product-remove"
-                            data-id="${getTariffId(item)}"
-                        >
-                            Удалить
-                        </button>
-
-                    </div>
-
-                `;
-
-
-                cartPageItems.appendChild(
-                    element
-                );
-
-
-            });
+            return new Intl.NumberFormat(
+                'ru-RU'
+            ).format(price) + ' ₽';
 
         }
 
 
 
-        /*
-            ОБЩАЯ ЦЕНА
-        */
+        function saveCart() {
 
-        const total =
-            cart.reduce(
+            localStorage.setItem(
+                'webstartCart',
+                JSON.stringify(cart)
+            );
 
-                (sum, item) =>
+        }
+
+
+
+        function updateCartPage() {
+
+
+            /*
+                СЧЁТЧИК
+            */
+
+            cartCounter.textContent =
+                cart.length;
+
+            summaryCount.textContent =
+                cart.length;
+
+            cartItemsCount.textContent =
+                cart.length + ' шт.';
+
+
+
+            /*
+                ПУСТАЯ КОРЗИНА
+            */
+
+            if (cart.length === 0) {
+
+                cartPageItems.innerHTML = '';
+
+                cartPageEmpty.style.display =
+                    'flex';
+
+                cartOrderButton.classList.add(
+                    'disabled'
+                );
+
+            } else {
+
+                cartPageEmpty.style.display =
+                    'none';
+
+                cartOrderButton.classList.remove(
+                    'disabled'
+                );
+
+                cartPageItems.innerHTML = '';
+
+
+
+                cart.forEach(item => {
+
+
+                    const element =
+                        document.createElement('div');
+
+
+                    element.classList.add(
+                        'cart-product'
+                    );
+
+
+                    const info = document.createElement('div');
+                    info.className = 'cart-product-info';
+
+                    const service = document.createElement('span');
+                    service.className = 'cart-product-service';
+                    service.textContent = item.service || 'Услуга';
+
+                    const title = document.createElement('h3');
+                    title.textContent = getTariffName(item) || 'Тариф';
+
+                    if (item.description) {
+                        const description = document.createElement('p');
+                        description.className = 'cart-product-description';
+                        description.textContent = item.description;
+                        info.append(service, title, description);
+                    } else {
+                        info.append(service, title);
+                    }
+
+                    const actions = document.createElement('div');
+                    actions.className = 'cart-product-actions';
+
+                    const price = document.createElement('strong');
+                    price.textContent = formatPrice(Number(item.price) || 0);
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'cart-product-remove';
+                    removeButton.dataset.id = getTariffId(item);
+                    removeButton.textContent = 'Удалить';
+
+                    actions.append(price, removeButton);
+                    element.append(info, actions);
+
+
+                    cartPageItems.appendChild(
+                        element
+                    );
+
+
+                });
+
+            }
+
+
+
+            /*
+                ОБЩАЯ ЦЕНА
+            */
+
+            const total =
+                cart.reduce(
+
+                    (sum, item) =>
                     sum + item.price,
 
-                0
+                    0
 
-            );
-
-
-        cartPageTotal.textContent =
-            formatPrice(total);
+                );
 
 
-
-        /*
-            УДАЛЕНИЕ ОДНОЙ УСЛУГИ
-        */
-
-        document
-            .querySelectorAll(
-                '.cart-product-remove'
-            )
-            .forEach(button => {
+            cartPageTotal.textContent =
+                formatPrice(total);
 
 
-                button.addEventListener(
-                    'click',
-                    function () {
+
+            /*
+                УДАЛЕНИЕ ОДНОЙ УСЛУГИ
+            */
+
+            document
+                .querySelectorAll(
+                    '.cart-product-remove'
+                )
+                .forEach(button => {
 
 
-                        const id =
-                            this.dataset.id;
+                    button.addEventListener(
+                        'click',
+                        function() {
 
 
-                        cart =
-                            cart.filter(
+                            const id =
+                                this.dataset.id;
+
+
+                            cart =
+                                cart.filter(
 
                                     item =>
                                     getTariffId(item) !== String(id)
 
-                            );
+                                );
 
 
-                        saveCart();
+                            saveCart();
 
-                        updateCartPage();
-
-
-                    }
-                );
+                            updateCartPage();
 
 
-            });
-
-    }
-
+                        }
+                    );
 
 
-    /*
-        ОЧИСТИТЬ ВСЁ
-    */
-
-    cartClearPage.addEventListener(
-        'click',
-        function () {
-
-            cart = [];
-
-            saveCart();
-
-            updateCartPage();
+                });
 
         }
-    );
 
 
 
-    /*
-        НЕ ДАЁМ ОФОРМЛЯТЬ
-        ПУСТУЮ КОРЗИНУ
-    */
+        /*
+            ОЧИСТИТЬ ВСЁ
+        */
 
-    cartOrderButton.addEventListener(
-        'click',
-        function (event) {
+        cartClearPage.addEventListener(
+            'click',
+            function() {
 
-            if (cart.length === 0) {
+                cart = [];
 
-                event.preventDefault();
+                saveCart();
+
+                updateCartPage();
 
             }
-
-        }
-    );
+        );
 
 
 
-    updateCartPage();
+        /*
+            НЕ ДАЁМ ОФОРМЛЯТЬ
+            ПУСТУЮ КОРЗИНУ
+        */
 
-</script>
+        cartOrderButton.addEventListener(
+            'click',
+            function(event) {
+
+                if (cart.length === 0) {
+
+                    event.preventDefault();
+
+                }
+
+            }
+        );
 
 
-    <script src="cursor-stars.js?v=footer-mask-1"></script>
+
+        updateCartPage();
+    </script>
+
+
+    <script src="cursor-stars.js?v=stars-light-1"></script>
 </body>
 
 </html>
-
