@@ -24,7 +24,6 @@ try {
     $value = is_string($_POST['value'] ?? null) ? $_POST['value'] : '';
     $adminId = (int) $_SESSION['admin_id'];
     session_write_close();
-    appEnsureAssistantTables($pdo);
     $service = new ChatService($pdo);
     $service->adminAction($id, $adminId, $action, $value);
     $after = filter_var($_POST['after_id'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);

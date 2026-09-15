@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../app.php';
 require_once __DIR__ . '/../bd.php';
 require_once __DIR__ . '/../services/AiAssistant.php';
+require_once __DIR__ . '/../services/SupportRelay.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -20,8 +21,18 @@ function chatJson(array $payload, int $status = 200): never
 function chatNotifyHumanRequest(int $id): void
 {
     try {
-        appSendTelegram('Пользователь запросил помощь человека. Диалог #' . $id,
-            'Открыть диалог', appUrl('admin/chats.php?id=' . $id));
+        $statement = $GLOBALS['pdo']->prepare('SELECT customer_name, customer_contact FROM chat_conversations WHERE id = ?');
+        $statement->execute([$id]);
+        $conversation = $statement->fetch() ?: [];
+        supportNotify(
+            $GLOBALS['pdo'],
+            $id,
+            'website',
+            null,
+            (string) ($conversation['customer_name'] ?? 'Пользователь сайта'),
+            '',
+            'Пользователь сайта запросил помощь специалиста.',
+        );
     } catch (Throwable $error) {
         appLog('Handoff notification failed', ['conversation_id' => $id]);
     }
@@ -42,7 +53,6 @@ try {
         chatJson(['error' => 'Сообщение слишком большое.'], 413);
     }
     appStartSession();
-    appEnsureAssistantTables($pdo);
     $action = is_string($_POST['action'] ?? null) ? $_POST['action'] : '';
     if (!in_array($action, ['start', 'message', 'poll'], true)) {
         chatJson(['error' => 'Неизвестное действие.'], 400);
@@ -68,6 +78,9 @@ try {
         chatJson(['error' => 'Обновите страницу и откройте чат снова.'], 403);
     }
     $conversation = $service->conversation($_SESSION['chat_session_key']);
+    if (($conversation['status'] ?? '') === 'closed') {
+        $conversation = $service->startFreshConversation($_SESSION['chat_session_key']);
+    }
     $id = (int) $conversation['id'];
     $afterId = filter_var($_POST['after_id'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
     if ($afterId === false) {
@@ -86,6 +99,12 @@ try {
     }
     $pending = $service->beginMessage($id, $message);
     $handoff = $pending['handoff'];
+    if (!$handoff && $pending['key'] === null) {
+        $conversationState = $service->snapshot($id);
+        if (in_array((string) ($conversationState['status'] ?? ''), ['waiting_human', 'human'], true)) {
+            supportNotify($pdo, $id, 'website', null, 'Пользователь сайта', '', $message);
+        }
+    }
     if ($pending['key']) {
         $allowApi = false;
         if (appEnv('AI_API_KEY', appEnv('OPENAI_API_KEY')) && !AiAssistant::restricted($message)) {

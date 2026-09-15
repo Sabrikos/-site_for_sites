@@ -2,7 +2,7 @@
 require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/layout.php';
 
-$title = 'Тарифы | WebStart Studio';
+$title = 'Тарифы | Vega Studio';
 
 /*
     Получаем услуги из базы данных
@@ -509,7 +509,7 @@ foreach ($tariffs as $tariff) {
 
                     itemInfo.append(service, title, price);
                     cartItem.append(itemInfo, removeButton);
-cartItems.appendChild(cartItem);
+                    cartItems.appendChild(cartItem);
 
                 });
 

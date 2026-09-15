@@ -1,8 +1,15 @@
 <?php
 
 require_once __DIR__ . '/bd.php';
+require_once __DIR__ . '/services/OrderService.php';
 require_once __DIR__ . '/layout.php';
-$title = 'WebStart Studio';
+
+appStartSession();
+$homeCsrf = appCsrfToken('home_lead_csrf');
+if (empty($_SESSION['home_lead_request_token'])) {
+    $_SESSION['home_lead_request_token'] = bin2hex(random_bytes(32));
+}
+$title = 'Vega Studio';
 $subtitle = 'Продвигаем ваш бизнес в сети';
 $customerName = '';
 $customerPhone = '';
@@ -11,6 +18,7 @@ $projectType = '';
 $projectTheme = '';
 $selectedService = null;
 $errors = [];
+$successOrderId = null;
 
 $sql = "
 
@@ -51,7 +59,6 @@ $services = $stmt->fetchAll();
 
 
 
-#обработка формы
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerName = trim($_POST['customer_name'] ?? '');
     $customerPhone = trim($_POST['customer_phone'] ?? '');
@@ -60,48 +67,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $projectTheme = trim($_POST['project_theme'] ?? '');
     $personalDataConsent = isset($_POST['personal_data_consent']);
 
-    if ($customerName === '') {
-        $errors[] = 'Введите имя';
+    if (!appCsrfValid('home_lead_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
+        $errors[] = 'Форма устарела. Обновите страницу и повторите отправку.';
     }
+    [$customerErrors, $customer] = OrderService::validateCustomer([
+        'customer_name' => $customerName,
+        'customer_phone' => $customerPhone,
+        'customer_email' => $customerEmail,
+        'project_comment' => $projectTheme,
+    ]);
+    $errors = array_merge($errors, $customerErrors);
 
-    if ($customerPhone === '') {
-        $errors[] = 'Введите номер телефона';
-    }
-
-    if ($customerEmail === '') {
-        $errors[] = 'Введите электронную почту';
-    }
-
-    if (
-        $customerEmail !== ''
-        && !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)
-    ) {
-        $errors[] = 'Введите корректный адрес электронной почты';
-    }
-
-    if ($projectType === '') {
-        $errors[] = 'Выберите тип сайта';
-    }
-
-    if ($projectTheme === '') {
-        $errors[] = 'Опишите тему проекта';
+    $serviceId = filter_var($projectType, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    if (!$serviceId) {
+        $errors[] = 'Выберите услугу.';
     }
 
     if (!$personalDataConsent) {
         $errors[] = 'Подтвердите согласие на обработку персональных данных';
     }
 
-    if (empty($errors)) {
-        foreach ($services as $service) {
-            if ($service['name'] === $projectType) {
-                $selectedService = $service;
-                break;
-            }
+    $requestToken = is_string($_POST['request_token'] ?? null) ? $_POST['request_token'] : '';
+    if (!OrderService::validRequestToken($requestToken) || !hash_equals($_SESSION['home_lead_request_token'], $requestToken)) {
+        $errors[] = 'Форма устарела. Обновите страницу и повторите отправку.';
+    }
+
+    if ($errors === []) {
+        if (!appPersistentRateLimit($pdo, 'order:' . appClientIp(), 6, 600)) {
+            $errors[] = 'Слишком много заявок с этого адреса. Попробуйте позже.';
         }
     }
 
-    if ($selectedService === null) {
-        $errors[] = 'Выбранная услуга не найдена';
+    if ($errors === []) {
+        try {
+            $result = (new OrderService($pdo))->createLead($customer, (int) $serviceId, $requestToken);
+            $successOrderId = $result['id'];
+            appRotateCsrf('home_lead_csrf');
+            $_SESSION['home_lead_request_token'] = bin2hex(random_bytes(32));
+            if ($result['created']) {
+                try {
+                    appSendTelegram('<b>Новая заявка Vega Studio</b>\nИсточник: главная форма\nЗаказ: #' . $successOrderId
+                        . '\nКлиент: ' . appTelegramEscape($customer['name'])
+                        . '\nТелефон: ' . appTelegramEscape($customer['phone'])
+                        . '\nEmail: ' . appTelegramEscape($customer['email']), 'Открыть заказ', appUrl('admin/order.php?id=' . $successOrderId));
+                } catch (Throwable $error) {
+                    appLog('Lead notification failed after commit', ['order_id' => $successOrderId, 'type' => get_class($error)]);
+                }
+            }
+        } catch (Throwable $error) {
+            appLog('Lead create failed', ['type' => get_class($error)]);
+            $errors[] = 'Не удалось сохранить заявку. Попробуйте ещё раз.';
+        }
     }
 }
 
@@ -113,6 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $title ?></title>
     <link rel="stylesheet" href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
 </head>
@@ -133,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </h1>
 
             <p>
-               Продумываем дизайн, функционал и путь клиента с фокусом на результат.
+                Продумываем дизайн, функционал и путь клиента с фокусом на результат.
             </p>
 
             <div class="hero-buttons">
@@ -175,17 +192,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </defs>
 
                     <g class="sphere-code-lines">
-                        <text><textPath href="#sphere-code-path-1" startOffset="0">deploy(); require_once 'layout.php'; renderHeader();</textPath></text>
-                        <text><textPath href="#sphere-code-path-2" startOffset="0">const page = createLanding(); validateForm(); sendRequest();</textPath></text>
-                        <text><textPath href="#sphere-code-path-3" startOffset="0">function buildSite($service, $tariff){ return $orderId; }</textPath></text>
-                        <text><textPath href="#sphere-code-path-4" startOffset="0">SELECT name, price FROM tariffs WHERE active = 1;</textPath></text>
-                        <text><textPath href="#sphere-code-path-5" startOffset="0">if ($errors === []) { createOrder($customer, $project); }</textPath></text>
-                        <text><textPath href="#sphere-code-path-6" startOffset="0">$pdo-&gt;prepare($sql); $stmt-&gt;execute(); fetchAll();</textPath></text>
-                        <text><textPath href="#sphere-code-path-7" startOffset="0">class WebStartProject { public function launch(): bool {} }</textPath></text>
-                        <text><textPath href="#sphere-code-path-8" startOffset="0">addToCart(serviceId); localStorage.setItem('webstartCart', cart);</textPath></text>
-                        <text><textPath href="#sphere-code-path-9" startOffset="0">try { connectDatabase(); } catch (PDOException $error) {}</textPath></text>
-                        <text><textPath href="#sphere-code-path-10" startOffset="0">foreach ($services as $service) { renderCard($service); }</textPath></text>
-                        <text><textPath href="#sphere-code-path-11" startOffset="0">git commit -m 'ship feature'; git push origin Kseha;</textPath></text>
+                        <text>
+                            <textPath href="#sphere-code-path-1" startOffset="0">deploy(); require_once 'layout.php'; renderHeader();</textPath>
+                        </text>
+                        <text>
+                            <textPath href="#sphere-code-path-2" startOffset="0">const page = createLanding(); validateForm(); sendRequest();</textPath>
+                        </text>
+                        <text>
+                            <textPath href="#sphere-code-path-3" startOffset="0">function buildSite($service, $tariff){ return $orderId; }</textPath>
+                        </text>
+                        <text>
+                            <textPath href="#sphere-code-path-4" startOffset="0">SELECT name, price FROM tariffs WHERE active = 1;</textPath>
+                        </text>
+                        <text>
+                            <textPath href="#sphere-code-path-5" startOffset="0">if ($errors === []) { createOrder($customer, $project); }</textPath>
+                        </text>
+                        <text>
+                            <textPath href="#sphere-code-path-6" startOffset="0">$pdo-&gt;prepare($sql); $stmt-&gt;execute(); fetchAll();</textPath>
+                        </text>
+                        <text>
+                            <textPath href="#sphere-code-path-7" startOffset="0">class WebStartProject { public function launch(): bool {} }</textPath>
+                        </text>
+                        <text>
+                            <textPath href="#sphere-code-path-8" startOffset="0">addToCart(serviceId); localStorage.setItem('webstartCart', cart);</textPath>
+                        </text>
+                        <text>
+                            <textPath href="#sphere-code-path-9" startOffset="0">try { connectDatabase(); } catch (PDOException $error) {}</textPath>
+                        </text>
+                        <text>
+                            <textPath href="#sphere-code-path-10" startOffset="0">foreach ($services as $service) { renderCard($service); }</textPath>
+                        </text>
+                        <text>
+                            <textPath href="#sphere-code-path-11" startOffset="0">git commit -m 'ship feature'; git push origin Kseha;</textPath>
+                        </text>
                     </g>
                 </svg>
             </div>
@@ -641,7 +680,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
 
                             <strong>
-                                webstart@example.ru
+                                hello@vegastudio.ru
                             </strong>
 
                         </div>
@@ -662,7 +701,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
 
                             <strong>
-                                @webstart
+                                @vegastudio
                             </strong>
 
                         </div>
@@ -683,7 +722,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
 
                             <strong>
-                                WebStart Studio
+                                Vega Studio
                             </strong>
 
                         </div>
@@ -721,6 +760,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                 <form method="post">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($homeCsrf, ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="request_token" value="<?= htmlspecialchars($_SESSION['home_lead_request_token'], ENT_QUOTES, 'UTF-8') ?>">
 
                     <div class="form-group">
 
@@ -791,8 +832,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <?php foreach ($services as $service): ?>
 
                                 <option
-                                    value="<?= htmlspecialchars($service['name']) ?>"
-                                    <?= $projectType === $service['name'] ? 'selected' : '' ?>>
+                                    value="<?= (int) $service['id'] ?>"
+                                    <?= $projectType === (string) $service['id'] ? 'selected' : '' ?>>
 
                                     <?= htmlspecialchars($service['name']) ?>
 
@@ -855,8 +896,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                 <?php if (
-                    $_SERVER['REQUEST_METHOD'] === 'POST'
-                    && empty($errors)
+                    $successOrderId !== null
                 ): ?>
 
                     <div class="success">
@@ -864,7 +904,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         Спасибо,
                         <?= htmlspecialchars($customerName) ?>!
 
-                        Мы получили вашу заявку.
+                        Заявка №<?= (int) $successOrderId ?> отправлена. Мы свяжемся с вами.
 
                     </div>
 
@@ -877,11 +917,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
-<script src="cursor-stars.js?v=stars-light-1"></script>
-<script src="sphere-code-loop.js?v=canvas-render-2"></script>
+    <script src="cursor-stars.js?v=stars-light-1"></script>
+    <script src="sphere-code-loop.js?v=canvas-render-2"></script>
 </body>
 
 </html>
-
-
-

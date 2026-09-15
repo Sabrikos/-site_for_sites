@@ -20,11 +20,17 @@ if (!hash_equals($secret, (string) ($_SERVER['HTTP_X_TELEGRAM_BOT_API_SECRET_TOK
 	exit;
 }
 
-require_once __DIR__ . '/services/TelegramBot.php';
+if (appEnv('TELEGRAM_MODE', 'polling') !== 'webhook') {
+    http_response_code(409);
+    exit;
+}
+
+define('VEGA_TELEGRAM_TRANSPORT', 'webhook');
+require_once __DIR__ . '/telegram-poll.php';
 $payload = json_decode((string) file_get_contents('php://input'), true);
 if (is_array($payload)) {
 	try {
-		(new TelegramBot($pdo, new TelegramService()))->handle($payload);
+		tgHandleUpdate($pdo, $payload);
 	} catch (Throwable $error) {
 		appLog('Telegram webhook failed', ['error' => $error->getMessage()]);
 		http_response_code(500);

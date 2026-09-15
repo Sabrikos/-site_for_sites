@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/layout.php';
-require_once __DIR__ . '/services/TelegramService.php';
+require_once __DIR__ . '/services/OrderService.php';
 
 appStartSession();
 
-if (empty($_SESSION['order_csrf'])) {
-    $_SESSION['order_csrf'] = bin2hex(random_bytes(32));
+$csrfToken = appCsrfToken('order_csrf');
+if (empty($_SESSION['order_request_token'])) {
+    $_SESSION['order_request_token'] = bin2hex(random_bytes(32));
 }
 
-$title = 'Оформление заявки | WebStart Studio';
+$title = 'Оформление заявки | Vega Studio';
 $errors = [];
 $successOrderId = null;
 $customerName = trim((string) ($_POST['customer_name'] ?? ''));
@@ -26,34 +27,12 @@ function e(string $value): string
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
-function textLength(string $value): int
-{
-    return function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : strlen($value);
-}
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!hash_equals(
-        $_SESSION['order_csrf'],
-        (string) ($_POST['csrf_token'] ?? '')
-    )) {
+    if (!appCsrfValid('order_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
         $errors[] = 'Срок действия формы истёк. Обновите страницу и повторите отправку.';
     }
-
-    if ($customerName === '' || textLength($customerName) < 2 || textLength($customerName) > 150) {
-        $errors[] = 'Введите имя от 2 до 150 символов.';
-    }
-
-    if ($customerPhone === '' || !preg_match('/^[0-9+()\-\s]{7,30}$/u', $customerPhone)) {
-        $errors[] = 'Введите корректный номер телефона.';
-    }
-
-    if ($customerEmail === '' || !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'Введите корректный email.';
-    }
-
-    if (textLength($projectComment) > 1000) {
-        $errors[] = 'Комментарий не должен быть длиннее 1000 символов.';
-    }
+    [$customerErrors, $customer] = OrderService::validateCustomer($_POST);
+    $errors = array_merge($errors, $customerErrors);
 
     if (!$personalDataConsent) {
         $errors[] = 'Подтвердите согласие на обработку персональных данных.';
@@ -66,6 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!is_array($cart) || $cart === []) {
         $errors[] = 'Корзина пуста.';
+    } elseif (count($cart) > OrderService::MAX_ITEMS) {
+        $errors[] = 'В одном заказе можно оформить не более ' . OrderService::MAX_ITEMS . ' тарифов.';
         $cart = [];
     }
 
@@ -91,103 +72,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($errors === [] && $tariffIds === []) {
         $errors[] = 'Не удалось определить тарифы заказа.';
     }
-
-    if ($errors === []) {
-        $placeholders = implode(',', array_fill(0, count($tariffIds), '?'));
-        $statement = $pdo->prepare(
-            "SELECT
-                t.id,
-                t.name AS tariff_name,
-                t.price,
-                s.name AS service_name
-             FROM tariffs t
-             INNER JOIN services s ON s.id = t.service_id
-             WHERE t.active = 1
-               AND s.active = 1
-               AND t.id IN ($placeholders)"
-        );
-        $statement->execute($tariffIds);
-        $tariffs = $statement->fetchAll();
-        $tariffsById = [];
-
-        foreach ($tariffs as $tariff) {
-            $tariffsById[(int) $tariff['id']] = $tariff;
-        }
-
-        if (count($tariffsById) !== count($tariffIds)) {
-            $errors[] = 'Один из выбранных тарифов больше недоступен. Обновите страницу тарифов.';
-        }
+    $requestToken = is_string($_POST['request_token'] ?? null) ? $_POST['request_token'] : '';
+    if (!OrderService::validRequestToken($requestToken) || !hash_equals($_SESSION['order_request_token'], $requestToken)) {
+        $errors[] = 'Форма устарела. Обновите страницу и повторите отправку.';
     }
 
     if ($errors === []) {
-        $total = 0;
-
-        foreach ($tariffIds as $tariffId) {
-            $total += (int) $tariffsById[$tariffId]['price'];
+        if (!appPersistentRateLimit($pdo, 'order:' . appClientIp(), 6, 600)) {
+            $errors[] = 'Слишком много заявок с этого адреса. Попробуйте позже.';
         }
-
+    }
+    if ($errors === []) {
         try {
-            $pdo->beginTransaction();
+            $result = (new OrderService($pdo))->createCartOrder($customer, $tariffIds, $requestToken);
+            $successOrderId = $result['id'];
+            appRotateCsrf('order_csrf');
+            $_SESSION['order_request_token'] = bin2hex(random_bytes(32));
 
-            $orderStatement = $pdo->prepare(
-                'INSERT INTO orders
-                    (customer_name, phone, email, project_comment, total, status)
-                 VALUES (?, ?, ?, ?, ?, ?)'
-            );
-            $orderStatement->execute([
-                $customerName,
-                $customerPhone,
-                $customerEmail,
-                $projectComment !== '' ? $projectComment : null,
-                $total,
-                'new',
-            ]);
-
-            $orderId = (int) $pdo->lastInsertId();
-            $itemStatement = $pdo->prepare(
-                'INSERT INTO order_items
-                    (order_id, tariff_id, service_name, tariff_name, price)
-                 VALUES (?, ?, ?, ?, ?)'
-            );
-
-            foreach ($tariffIds as $tariffId) {
-                $tariff = $tariffsById[$tariffId];
-                $itemStatement->execute([
-                    $orderId,
-                    $tariffId,
-                    $tariff['service_name'],
-                    $tariff['tariff_name'],
-                    (int) $tariff['price'],
-                ]);
-            }
-
-            $pdo->commit();
-            $successOrderId = $orderId;
-            $_SESSION['order_csrf'] = bin2hex(random_bytes(32));
-
-            // Уведомление не влияет на результат уже завершённой транзакции заказа.
-            try {
-                $telegram = new TelegramService();
-                foreach ($telegram->adminChatIds() as $adminChatId) {
-                    $telegram->sendMessage(
-                        $adminChatId,
-                        '<b>Новый заказ Vega Studio</b>\n'
-                            . 'Заказ: #' . $orderId . "\n"
-                            . 'Клиент: ' . htmlspecialchars($customerName, ENT_QUOTES, 'UTF-8') . "\n"
-                            . 'Телефон: ' . htmlspecialchars($customerPhone, ENT_QUOTES, 'UTF-8') . "\n"
-                            . 'Email: ' . htmlspecialchars($customerEmail, ENT_QUOTES, 'UTF-8') . "\n"
-                            . 'Сумма: ' . number_format($total, 0, '', ' ') . ' ₽',
-                        [[['text' => '📋 Подробнее', 'callback_data' => 'order:' . $orderId], ['text' => '✅ В работу', 'callback_data' => 'status:' . $orderId . ':processing']]],
+            if ($result['created']) {
+                try {
+                    appSendTelegram(
+                '<b>🚀 НОВАЯ ЗАЯВКА Vega Studio</b>\n'
+                    . 'Источник: 🌐 Сайт\n'
+                    . 'Заказ: #' . $successOrderId . "\n"
+                    . 'Клиент: ' . appTelegramEscape($customerName) . "\n"
+                    . 'Телефон: ' . appTelegramEscape($customerPhone) . "\n"
+                    . 'Email: ' . appTelegramEscape($customerEmail) . "\n"
+                    . 'Сумма: ' . number_format((int) $result['total'], 0, '', ' ') . ' ₽',
+                '📋 Открыть заказ',
+                appUrl('admin/order.php?id=' . $successOrderId),
                     );
+                } catch (Throwable $error) {
+                    appLog('Order notification failed after commit', ['order_id' => $successOrderId, 'type' => get_class($error)]);
                 }
-            } catch (Throwable $notificationError) {
-                appLog('Order notification failed', ['order_id' => $orderId]);
             }
         } catch (Throwable $error) {
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-
+            appLog('Order create failed', ['type' => get_class($error)]);
             $errors[] = 'Не удалось сохранить заказ. Попробуйте ещё раз.';
         }
     }
@@ -243,7 +163,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <a href="tariffs.php" class="cart-back-button">Вернуться к тарифам</a>
                 <?php else: ?>
                     <form method="post" id="orderForm">
-                        <input type="hidden" name="csrf_token" value="<?= e($_SESSION['order_csrf']) ?>">
+                        <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
+                        <input type="hidden" name="request_token" value="<?= e($_SESSION['order_request_token']) ?>">
                         <input type="hidden" name="cart_json" id="cartJson">
 
                         <div class="form-group">

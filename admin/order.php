@@ -35,57 +35,60 @@ $items = $itemsStatement->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Заказ №<?= (int) $order['id'] ?> | WebStart Studio</title>
+    <title>Заказ №<?= (int) $order['id'] ?> | Vega Studio</title>
     <link rel="stylesheet" href="../styles.css">
 </head>
+
 <body>
-<main class="admin-shell">
-    <aside class="admin-sidebar">
-        <a href="index.php">Dashboard</a>
-        <a href="orders.php">Заказы</a>
-        <a href="chats.php">Чаты</a>
-        <a href="services.php">Услуги</a>
-        <a href="tariffs.php">Тарифы</a>
-        <a href="logout.php">Выход</a>
-    </aside>
+    <main class="admin-shell">
+        <aside class="admin-sidebar">
+            <a href="index.php">Dashboard</a>
+            <a href="orders.php">Заказы</a>
+            <a href="chats.php">Чаты</a>
+            <a href="services.php">Услуги</a>
+            <a href="tariffs.php">Тарифы</a>
+            <a href="logout.php">Выход</a>
+        </aside>
 
-    <section class="admin-content">
-        <h1>Заказ №<?= (int) $order['id'] ?></h1>
-        <p><?= appEscape($order['created_at']) ?></p>
-        <a href="orders.php" class="cart-back-button">К списку заказов</a>
+        <section class="admin-content">
+            <h1>Заказ №<?= (int) $order['id'] ?></h1>
+            <p><?= appEscape($order['created_at']) ?></p>
+            <a href="orders.php" class="cart-back-button">К списку заказов</a>
 
-        <section class="cart-products">
-            <article class="cart-product">
-                <div class="cart-product-info">
-                    <span class="cart-product-service"><?= appEscape($order['status']) ?></span>
-                    <h3>Клиент</h3>
-                    <p><?= appEscape($order['customer_name']) ?></p>
-                    <p><?= appEscape($order['phone']) ?></p>
-                    <p><?= appEscape($order['email']) ?></p>
-                    <?php if (!empty($order['project_comment'])): ?><p><?= appEscape($order['project_comment']) ?></p><?php endif; ?>
-                </div>
-                <div class="cart-product-actions">
-                    <strong><?= appMoney((int) $order['total']) ?></strong>
-                </div>
-            </article>
-
-            <h2>Выбранные тарифы</h2>
-            <?php foreach ($items as $item): ?>
+            <section class="cart-products">
                 <article class="cart-product">
                     <div class="cart-product-info">
-                        <span class="cart-product-service"><?= appEscape($item['service_name']) ?></span>
-                        <h3><?= appEscape($item['tariff_name']) ?></h3>
+                        <span class="cart-product-service"><?= appEscape($order['status']) ?></span>
+                        <h3>Клиент</h3>
+                        <p><?= appEscape($order['customer_name']) ?></p>
+                        <p><?= appEscape($order['phone']) ?></p>
+                        <p><?= appEscape($order['email']) ?></p>
+                        <?php if (!empty($order['project_comment'])): ?><p><?= appEscape($order['project_comment']) ?></p><?php endif; ?>
                     </div>
                     <div class="cart-product-actions">
-                        <strong><?= appMoney((int) $item['price']) ?></strong>
+                        <strong><?= appMoney((int) $order['total']) ?></strong>
                     </div>
                 </article>
-            <?php endforeach; ?>
+
+                <h2>Выбранные тарифы</h2>
+                <?php foreach ($items as $item): ?>
+                    <article class="cart-product">
+                        <div class="cart-product-info">
+                            <span class="cart-product-service"><?= appEscape($item['service_name']) ?></span>
+                            <h3><?= appEscape($item['tariff_name']) ?></h3>
+                        </div>
+                        <div class="cart-product-actions">
+                            <strong><?= appMoney((int) $item['price']) ?></strong>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </section>
         </section>
-    </section>
-</main>
+    </main>
 </body>
+
 </html>

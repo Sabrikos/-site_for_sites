@@ -1,4 +1,4 @@
-# WebStart Studio
+# Vega Studio
 
 PHP/MySQL-сайт, тарифы, заявки, web-chat и Telegram-бот.
 
