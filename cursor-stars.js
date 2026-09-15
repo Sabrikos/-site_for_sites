@@ -1,5 +1,12 @@
 (() => {
     const STAR_COUNT = 240;
+    // Match the density of the former three CSS star tiles, without repeating them.
+    const BACKGROUND_STAR_LAYERS = [
+        { area: 140 * 140, size: 2, opacity: 0.18, hue: 0.2 },
+        { area: 190 * 190, size: 1, opacity: 0.34, hue: 0.6 },
+        { area: 220 * 220, size: 2, opacity: 0.18, hue: 0.35 },
+    ];
+    const scatterSeed = Math.random() * 100000;
     const ACTIVE_RADIUS = 170;
     const MAX_DEVICE_PIXEL_RATIO = 1;
     const EXCLUDE_PADDING = 12;
@@ -59,6 +66,28 @@
                 opacity: 0.22 + random(i * 11.83) * 0.38,
                 hue: random(i * 5.43),
             });
+        }
+
+        if (document.body.classList.contains('home-page')) {
+            let index = 0;
+            for (const layer of BACKGROUND_STAR_LAYERS) {
+                const count = Math.round(width * worldHeight / layer.area);
+                for (let i = 0; i < count; i++, index++) {
+                    const x = random(scatterSeed + index * 41.37 + 1) * width;
+                    const colorChoice = random(scatterSeed + index * 53.29 + 7);
+                    // Recolor some blue stars on the left; preserve their positions and density.
+                    const recolor = x < width * 0.5 && layer.hue < 0.45 && colorChoice < 0.45;
+                    const hue = recolor ? (colorChoice < 0.20 ? 0.6 : 0.85) : layer.hue;
+                    stars.push({
+                        x,
+                        y: random(scatterSeed + index * 67.91 + 2) * worldHeight,
+                        size: layer.size * (0.8 + random(index * 23.17 + 3) * 0.4),
+                        opacity: recolor ? Math.max(layer.opacity, 0.26) : layer.opacity,
+                        hue,
+                        ambient: true,
+                    });
+                }
+            }
         }
     }
 
@@ -159,7 +188,7 @@
         const distance = Math.hypot(dx, dy);
         const influence = mouseInside ? Math.max(0, 1 - distance / ACTIVE_RADIUS) : 0;
         const alpha = Math.min(1, star.opacity + influence * 0.72);
-        const glow = star.size * (2.2 + influence * 7.5);
+        const glow = star.size * ((star.ambient ? 0 : 2.2) + influence * 7.5);
         const size = star.size * (1 + influence * 0.75);
 
         if (glow > 0) {
