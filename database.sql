@@ -93,9 +93,15 @@ CREATE TABLE orders (
         DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
 
+    source VARCHAR(20) NOT NULL DEFAULT 'website_cart',
+
+    request_token CHAR(64) NULL,
+
     INDEX idx_orders_status (status),
 
-    INDEX idx_orders_created_at (created_at)
+    INDEX idx_orders_created_at (created_at),
+
+    UNIQUE KEY uq_orders_request_token (request_token)
 
 ) ENGINE=InnoDB;
 

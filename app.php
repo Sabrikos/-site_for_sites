@@ -114,7 +114,7 @@ function appRateLimit(string $scope, int $limit, int $windowSeconds): bool
     $now = time();
     $bucketKey = 'rate_' . preg_replace('/[^a-z0-9_\-]/i', '_', $scope);
     $bucket = $_SESSION[$bucketKey] ?? [];
-    $bucket = array_values(array_filter($bucket, static fn ($time) => is_int($time) && $time > $now - $windowSeconds));
+    $bucket = array_values(array_filter($bucket, static fn($time) => is_int($time) && $time > $now - $windowSeconds));
 
     if (count($bucket) >= $limit) {
         $_SESSION[$bucketKey] = $bucket;
@@ -125,6 +125,57 @@ function appRateLimit(string $scope, int $limit, int $windowSeconds): bool
     $_SESSION[$bucketKey] = $bucket;
     return true;
 }
+
+function appPersistentRateLimit(PDO $pdo, string $scope, int $limit, int $windowSeconds): bool
+{
+    $window = intdiv(time(), $windowSeconds);
+    $bucket = hash('sha256', $scope . ':' . $window);
+    $pdo->prepare('INSERT IGNORE INTO app_rate_limits (bucket, expires_at) VALUES (?, ?)')
+        ->execute([$bucket, date('Y-m-d H:i:s', ($window + 1) * $windowSeconds)]);
+    $statement = $pdo->prepare('UPDATE app_rate_limits SET hits = hits + 1 WHERE bucket = ? AND hits < ?');
+    $statement->execute([$bucket, $limit]);
+    return $statement->rowCount() === 1;
+}
+
+function appClientIp(): string
+{
+    return (string) ($_SERVER['REMOTE_ADDR'] ?? 'unknown');
+}
+
+function appIsHttps(): bool
+{
+    return !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+}
+
+function appApplySecurityHeaders(): void
+{
+    if (headers_sent()) return;
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
+    header('X-Frame-Options: DENY');
+    header("Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'");
+    if (appEnv('APP_ENV', 'local') === 'production' && appIsHttps()) {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
+}
+
+function appAdminSessionActive(): bool
+{
+    appStartSession();
+    if (empty($_SESSION['admin_id'])) return false;
+    $timeout = max(300, min(28800, (int) appEnv('ADMIN_SESSION_IDLE_SECONDS', '1800')));
+    $lastActivity = (int) ($_SESSION['admin_last_activity'] ?? 0);
+    if ($lastActivity === 0 || $lastActivity < time() - $timeout) {
+        $_SESSION = [];
+        session_regenerate_id(true);
+        return false;
+    }
+    $_SESSION['admin_last_activity'] = time();
+    return true;
+}
+
+appApplySecurityHeaders();
 
 function appMoney(int $amount): string
 {
@@ -141,33 +192,6 @@ function appUrl(string $path): string
     return $baseUrl . '/' . ltrim($path, '/');
 }
 
-
-function appEnsureChatTables(PDO $pdo): void
-{
-    $pdo->exec("CREATE TABLE IF NOT EXISTS chat_conversations (
-        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        session_key VARCHAR(128) NOT NULL,
-        status VARCHAR(30) NOT NULL DEFAULT 'bot',
-        customer_name VARCHAR(150) NULL,
-        customer_contact VARCHAR(255) NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_chat_session_key (session_key),
-        INDEX idx_chat_status (status)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-
-    $pdo->exec("CREATE TABLE IF NOT EXISTS chat_messages (
-        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-        conversation_id BIGINT UNSIGNED NOT NULL,
-        sender VARCHAR(20) NOT NULL,
-        message TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_chat_messages_conversation (conversation_id, id),
-        CONSTRAINT fk_chat_messages_conversation
-            FOREIGN KEY (conversation_id) REFERENCES chat_conversations(id)
-            ON DELETE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
-}
 
 function appTelegramRequest(string $method, array $payload = []): ?array
 {
@@ -201,10 +225,43 @@ function appTelegramSendMessage(int|string $chatId, string $text, array $extra =
     $payload = array_merge([
         'chat_id' => $chatId,
         'text' => $text,
+        'parse_mode' => 'HTML',
         'disable_web_page_preview' => true,
     ], $extra);
 
     $response = appTelegramRequest('sendMessage', $payload);
+    return (bool) ($response['ok'] ?? false);
+}
+
+function appTelegramSendMessageResult(int|string $chatId, string $text, array $extra = []): ?array
+{
+    $payload = array_merge([
+        'chat_id' => $chatId,
+        'text' => $text,
+        'parse_mode' => 'HTML',
+        'disable_web_page_preview' => true,
+    ], $extra);
+    $response = appTelegramRequest('sendMessage', $payload);
+    return ($response['ok'] ?? false) && is_array($response['result'] ?? null)
+        ? $response['result']
+        : null;
+}
+
+function appTelegramEditMessage(int|string $chatId, int $messageId, string $text, array $extra = []): bool
+{
+    $payload = array_merge([
+        'chat_id' => $chatId,
+        'message_id' => $messageId,
+        'text' => $text,
+        'parse_mode' => 'HTML',
+    ], $extra);
+    $response = appTelegramRequest('editMessageText', $payload);
+    return (bool) ($response['ok'] ?? false);
+}
+
+function appTelegramChatAction(int|string $chatId, string $action = 'typing'): bool
+{
+    $response = appTelegramRequest('sendChatAction', ['chat_id' => $chatId, 'action' => $action]);
     return (bool) ($response['ok'] ?? false);
 }
 function appTelegramAdminChatIds(): array
@@ -215,7 +272,7 @@ function appTelegramAdminChatIds(): array
     }
 
     $ids = preg_split('/[\s,;]+/', $raw, -1, PREG_SPLIT_NO_EMPTY);
-    return array_values(array_unique(array_filter(array_map('trim', $ids), static fn ($id) => $id !== '')));
+    return array_values(array_unique(array_filter(array_map('trim', $ids), static fn($id) => $id !== '')));
 }
 
 function appTelegramEscape(string $value): string
@@ -224,10 +281,9 @@ function appTelegramEscape(string $value): string
 }
 function appSendTelegram(string $text, ?string $buttonText = null, ?string $buttonUrl = null): bool
 {
-    $chatIds = appTelegramAdminChatIds();
-
-    if ($chatIds === []) {
-        appLog('Telegram skipped: admin chat ids are empty');
+    $supportChatId = trim((string) appEnv('TELEGRAM_SUPPORT_CHAT_ID', ''));
+    if ($supportChatId === '') {
+        appLog('Telegram support notification skipped: support chat id is empty');
         return false;
     }
 
@@ -245,15 +301,9 @@ function appSendTelegram(string $text, ?string $buttonText = null, ?string $butt
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
-    $sent = true;
-    foreach ($chatIds as $chatId) {
-        if (appTelegramSendMessage($chatId, $text, $extra)) {
-            continue;
-        }
-
-        $sent = false;
-        appLog('Telegram admin notification failed', ['chat_id' => $chatId]);
+    if (!appTelegramSendMessage($supportChatId, $text, $extra)) {
+        appLog('Telegram support notification failed', ['support_chat_id' => $supportChatId]);
+        return false;
     }
-
-    return $sent;
+    return true;
 }

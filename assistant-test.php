@@ -16,7 +16,6 @@ if (!appEnv('AI_API_KEY', appEnv('OPENAI_API_KEY'))) {
     echo "AI key is missing. Configure .env first. No request sent.\n";
     exit(2);
 }
-appEnsureAssistantTables($pdo);
 $reply = (new AiAssistant($pdo))->reply(0, 'Расскажи подробнее про Лендинг Бизнес и AI-ассистента.');
 echo 'Mode: ' . $reply['mode'] . PHP_EOL . $reply['text'] . PHP_EOL;
 exit($reply['mode'] === 'llm' ? 0 : 1);

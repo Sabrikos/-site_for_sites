@@ -8,6 +8,27 @@
 
 html {
   scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: #656dff #11122f;
+}
+
+html::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+html::-webkit-scrollbar-track {
+    background: #11122f;
+}
+
+html::-webkit-scrollbar-thumb {
+    border: 2px solid #11122f;
+    border-radius: 999px;
+    background: #656dff;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+    background: #858bff;
 }
 
 body {
@@ -2847,6 +2868,7 @@ body.header-is-floating {
     position: relative;
     z-index: 4;
     max-width: 760px;
+    min-width: 0;
 }
 
 .hero-label {
@@ -3009,6 +3031,22 @@ body.header-is-floating {
 }
 
 @media (max-width: 640px) {
+    .hero-content,
+    .hero-label {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .hero-label {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .hero-visual {
+        max-width: 100%;
+        overflow: hidden;
+    }
+
     .hero-section h1 {
         font-size: 46px;
     }
@@ -4018,15 +4056,21 @@ body.header-is-floating {
 }
 
 .footer-atmosphere-lines {
-    left: -5%;
-    right: -5%;
+    left: 0;
+    right: auto;
     top: 22px;
     z-index: 2;
-    width: 110%;
+    width: 100%;
+    max-width: 100%;
     height: 355px;
     fill: none;
     opacity: 0.36;
     stroke-linecap: round;
+}
+
+.footer-contact-todo {
+    margin: 0;
+    color: rgba(200, 198, 231, 0.72);
 }
 
 .footer-atmosphere-lines path:nth-child(1) {
@@ -4994,15 +5038,11 @@ main.tariffs-page .service-title p { overflow-wrap: anywhere; }
 }
 
 .web-chat-status::before {
-    content: "";
+    content: "●";
     display: inline-block;
-    width: 7px;
-    height: 7px;
     margin-right: 6px;
-    border-radius: 50%;
-    background: #65d6a4;
-    box-shadow: 0 0 9px rgba(101, 214, 164, 0.72);
-    vertical-align: middle;
+    color: #65d6a4;
+    vertical-align: 1px;
 }
 
 .web-chat-messages {
@@ -5059,10 +5099,14 @@ main.tariffs-page .service-title p { overflow-wrap: anywhere; }
     display: grid !important;
     min-width: 0 !important;
     box-sizing: border-box !important;
-    grid-template-columns: minmax(0, 1fr) 46px !important;
-    gap: 10px !important;
-    padding: 10px 12px 12px !important;
-    border-radius: 0 0 19px 19px !important;
+    grid-template-columns: minmax(0, 1fr) 48px !important;
+    gap: 0 !important;
+    margin: 10px 12px 12px !important;
+    padding: 0 !important;
+    border: 1px solid rgba(122, 135, 255, 0.72) !important;
+    border-radius: 16px !important;
+    background: rgba(7, 9, 29, 0.82) !important;
+    box-shadow: 0 0 0 3px rgba(92, 104, 255, 0.12) !important;
 }
 
 .web-chat-form textarea {
@@ -5078,10 +5122,11 @@ main.tariffs-page .service-title p { overflow-wrap: anywhere; }
     overflow-wrap: anywhere !important;
     word-break: break-word !important;
     min-height: 52px !important;
-    max-height: 90px !important;
+    max-height: 112px !important;
     padding: 12px 13px !important;
-    border-color: rgba(157, 166, 255, 0.34) !important;
-    background: rgba(7, 9, 29, 0.72) !important;
+    border: 0 !important;
+    border-radius: 15px 0 0 15px !important;
+    background: transparent !important;
     color: #f4f4ff !important;
 }
 
@@ -5090,8 +5135,8 @@ main.tariffs-page .service-title p { overflow-wrap: anywhere; }
 }
 
 .web-chat-form textarea:focus {
-    border-color: rgba(122, 135, 255, 0.92) !important;
-    box-shadow: 0 0 0 3px rgba(92, 104, 255, 0.16) !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
     outline: none !important;
 }
 
@@ -5103,10 +5148,13 @@ main.tariffs-page .service-title p { overflow-wrap: anywhere; }
 .web-chat-form button {
     grid-column: 2 !important;
     grid-row: 1 !important;
-    align-self: end !important;
-    justify-self: end !important;
-    border: 1px solid rgba(255, 255, 255, 0.24) !important;
-    border-radius: 14px !important;
+    align-self: stretch !important;
+    justify-self: stretch !important;
+    width: auto !important;
+    height: auto !important;
+    border: 0 !important;
+    border-left: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 0 15px 15px 0 !important;
     color: #fff !important;
     background: linear-gradient(135deg, #5d6bff, #9b55ff) !important;
     box-shadow: 0 8px 18px rgba(61, 67, 180, 0.35) !important;
@@ -5126,6 +5174,8 @@ main.tariffs-page .service-title p { overflow-wrap: anywhere; }
 
 .web-chat-form button:disabled {
     filter: grayscale(0.35) !important;
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
 }
 
 .web-chat-messages::-webkit-scrollbar {
@@ -5375,4 +5425,53 @@ main .planet-panel .project-card { border: 1px solid #7b82ff66; border-radius: 1
 @media (max-width: 700px) {
     .planet-panels { --planet-size: 1600px; --planet-left: calc(50% - 1320px); }
     main .planet-panel { padding: 24px 18px; }
+}
+
+/* Decorative orbit and footer SVGs must not enlarge the document on narrow screens. */
+html {
+    overflow-x: clip;
+}
+
+.hero-section {
+    overflow: hidden;
+}
+
+.footer-atmosphere-lines {
+    overflow: hidden;
+}
+
+@media (max-width: 640px) {
+    .hero-visual {
+        overflow: clip !important;
+    }
+}
+
+@media (max-width: 850px) {
+    .main-header .container {
+        flex-direction: column;
+        gap: 12px;
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+
+    .main-header nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px 18px;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 360px) {
+    .hero-section h1 {
+        font-size: 38px;
+    }
+}
+
+@media (max-width: 400px) {
+    .cart-products h1 {
+        font-size: 28px;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
 }

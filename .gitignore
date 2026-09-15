@@ -13,4 +13,5 @@ Thumbs.db
 storage/logs/
 storage/rate-limit/
 storage/telegram-offset.txt
+storage/telegram-worker.lock
 storage/*.tmp

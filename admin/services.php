@@ -37,26 +37,34 @@ $rows = $pdo->query('SELECT id, name, description, deadline, active FROM service
 ?>
 <!DOCTYPE html>
 <html lang="ru">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Услуги | WebStart Studio</title><link rel="stylesheet" href="../styles.css"></head>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Услуги | Vega Studio</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+
 <body>
-<main class="admin-shell">
-    <aside class="admin-sidebar"><a href="index.php">Dashboard</a><a href="orders.php">Заказы</a><a href="chats.php">Чаты</a><a href="services.php">Услуги</a><a href="tariffs.php">Тарифы</a><a href="logout.php">Выход</a></aside>
-    <section class="admin-content">
-        <h1>Услуги</h1>
-        <?php if ($message !== ''): ?><div class="success"><?= appEscape($message) ?></div><?php endif; ?>
-        <?php if ($error !== ''): ?><div class="errors"><?= appEscape($error) ?></div><?php endif; ?>
-        <?php foreach ($rows as $row): ?>
-            <form method="post" class="admin-edit-card">
-                <input type="hidden" name="csrf_token" value="<?= appEscape(appCsrfToken('admin_csrf')) ?>">
-                <input type="hidden" name="id" value="<?= (int) $row['id'] ?>">
-                <label>Название <input name="name" maxlength="100" value="<?= appEscape($row['name']) ?>" required></label>
-                <label>Описание <textarea name="description" maxlength="2000"><?= appEscape($row['description']) ?></textarea></label>
-                <label>Срок <input name="deadline" maxlength="100" value="<?= appEscape($row['deadline']) ?>"></label>
-                <label class="admin-check"><input type="checkbox" name="active" value="1" <?= (int) $row['active'] === 1 ? 'checked' : '' ?>> Активна</label>
-                <button type="submit">Сохранить</button>
-            </form>
-        <?php endforeach; ?>
-    </section>
-</main>
+    <main class="admin-shell">
+        <aside class="admin-sidebar"><a href="index.php">Dashboard</a><a href="orders.php">Заказы</a><a href="chats.php">Чаты</a><a href="services.php">Услуги</a><a href="tariffs.php">Тарифы</a><a href="logout.php">Выход</a></aside>
+        <section class="admin-content">
+            <h1>Услуги</h1>
+            <?php if ($message !== ''): ?><div class="success"><?= appEscape($message) ?></div><?php endif; ?>
+            <?php if ($error !== ''): ?><div class="errors"><?= appEscape($error) ?></div><?php endif; ?>
+            <?php foreach ($rows as $row): ?>
+                <form method="post" class="admin-edit-card">
+                    <input type="hidden" name="csrf_token" value="<?= appEscape(appCsrfToken('admin_csrf')) ?>">
+                    <input type="hidden" name="id" value="<?= (int) $row['id'] ?>">
+                    <label>Название <input name="name" maxlength="100" value="<?= appEscape($row['name']) ?>" required></label>
+                    <label>Описание <textarea name="description" maxlength="2000"><?= appEscape($row['description']) ?></textarea></label>
+                    <label>Срок <input name="deadline" maxlength="100" value="<?= appEscape($row['deadline']) ?>"></label>
+                    <label class="admin-check"><input type="checkbox" name="active" value="1" <?= (int) $row['active'] === 1 ? 'checked' : '' ?>> Активна</label>
+                    <button type="submit">Сохранить</button>
+                </form>
+            <?php endforeach; ?>
+        </section>
+    </main>
 </body>
+
 </html>

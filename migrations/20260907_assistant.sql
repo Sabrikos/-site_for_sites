@@ -1,3 +1,4 @@
+-- Superseded by 002_chat_telegram_schema.sql and intentionally not executed by migrate.php.
 CREATE TABLE IF NOT EXISTS chat_assistant_state (
     conversation_id BIGINT UNSIGNED PRIMARY KEY,
     handoff_offered TINYINT(1) NOT NULL DEFAULT 0,

@@ -7,8 +7,10 @@ appStartSession();
 
 function requireAdmin(): void
 {
-    if (empty($_SESSION['admin_id'])) {
+    if (!appAdminSessionActive()) {
+        if (!headers_sent()) header('Cache-Control: no-store, private');
         header('Location: login.php');
         exit;
     }
+    header('Cache-Control: no-store, private');
 }
