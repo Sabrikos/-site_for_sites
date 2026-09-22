@@ -5426,7 +5426,6 @@ main .planet-panel .project-card { border: 1px solid #7b82ff66; border-radius: 1
     .planet-panels { --planet-size: 1600px; --planet-left: calc(50% - 1320px); }
     main .planet-panel { padding: 24px 18px; }
 }
-<<<<<<< HEAD
 /* Exact continuation of the existing About globe, with no lens or offset. */
 .studio-sphere-wrap { position: relative; display: flow-root; }
 .studio-sphere-backdrop { position: absolute; left: calc(50% - 50vw); top: -100px; width: 100vw; height: 1000px; overflow: clip; pointer-events: none; z-index: 3; }
@@ -5537,7 +5536,6 @@ main .studio-sphere-wrap > .about-studio { z-index: 4 !important; }
 .studio-planet-arcs--back > path:nth-child(2),
 .studio-planet-arcs--back > path:nth-child(3) { stroke: url(#studio-ring-shadow); filter: drop-shadow(0 1px 2px #08061999); }
 .planet-panel::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 0; background: radial-gradient(ellipse 110px 28px at var(--lower-rim-top, -1000px) 0%, #aaa0ff24, transparent 100%), radial-gradient(ellipse 110px 28px at var(--lower-rim-bottom, -1000px) 100%, #aaa0ff24, transparent 100%); }
-=======
 
 /* Decorative orbit and footer SVGs must not enlarge the document on narrow screens. */
 html {
@@ -5587,4 +5585,3 @@ html {
         overflow-wrap: anywhere;
     }
 }
->>>>>>> origin/main
