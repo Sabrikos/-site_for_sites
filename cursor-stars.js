@@ -107,6 +107,7 @@
     }
 
     function getColor(hue, alpha) {
+        if (hue === -1) return `rgba(255, 255, 255, ${alpha})`;
         if (hue < 0.45) {
             return `rgba(82, 96, 255, ${alpha})`;
         }
@@ -187,8 +188,10 @@
         const dy = screenY - mouseY;
         const distance = Math.hypot(dx, dy);
         const influence = mouseInside ? Math.max(0, 1 - distance / ACTIVE_RADIUS) : 0;
-        const alpha = Math.min(1, star.opacity + influence * 0.72);
-        const glow = star.size * ((star.ambient ? 0 : 2.2) + influence * 7.5);
+        const alpha = star.constellation
+            ? star.opacity + (1 - star.opacity) * influence
+            : Math.min(1, star.opacity + influence * 0.72);
+        const glow = star.size * ((star.baseGlow ?? (star.ambient ? 0 : 2.2)) + influence * 7.5);
         const size = star.size * (1 + influence * 0.75);
 
         if (glow > 0) {
@@ -206,6 +209,69 @@
         ctx.beginPath();
         ctx.arc(star.x, screenY, size, 0, Math.PI * 2);
         ctx.fill();
+    }
+
+    const constellation = document.querySelector('.cart-vega-constellation');
+    const nebulaNote = document.querySelector('.cart-vega-nebula');
+    const nebulaPointer = document.querySelector('.cart-vega-pointer');
+    const showNebula = (visible) => {
+        if (!nebulaNote) return;
+        nebulaNote.classList.toggle('is-visible', visible);
+        nebulaPointer?.classList.toggle('is-visible', visible);
+        nebulaNote.setAttribute('aria-hidden', String(!visible));
+    };
+    constellation?.addEventListener('focus', requestDraw);
+    constellation?.addEventListener('blur', requestDraw);
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') showNebula(false);
+    });
+    function drawConstellation() {
+        if (!constellation) return;
+        const rect = constellation.getBoundingClientRect();
+        if (!rect.width || !rect.height || rect.bottom < 0 || rect.top > height) { showNebula(false); return; }
+        // Vega -> Zeta -> Delta -> Gamma -> Beta, matching the supplied chart.
+        const points = [[214,25,3],[181,51,1.5],[140,66,1.3],[118,156,1.9],[158,143,1.8]]
+            .map(([x,y,size], index) => ({x: rect.left + x / 320 * rect.width,
+                y: rect.top + y / 190 * rect.height, size,
+                opacity: index === 0 ? .78 : .60, baseGlow: index === 0 ? 4.5 : 3.8,
+                constellation: true, hue: -1}));
+        if (nebulaNote && nebulaPointer) {
+            const vega = points[0];
+            const noteWidth = nebulaNote.offsetWidth;
+            const x = Math.max(16, Math.min(width - noteWidth - 24, vega.x + 30));
+            const y = Math.max(90, vega.y + 62);
+            nebulaNote.style.setProperty('--nebula-x', `${x}px`);
+            nebulaNote.style.setProperty('--nebula-y', `${y}px`);
+            const endX = vega.x + 13, endY = vega.y + 4;
+            nebulaPointer.querySelector('.cart-vega-pointer__curve').setAttribute('d',
+                `M ${x + noteWidth * .58} ${y + 3} C ${x + noteWidth * .62} ${y - 34}, ${endX + 52} ${endY + 8}, ${endX} ${endY}`);
+            nebulaPointer.querySelector('.cart-vega-pointer__head').setAttribute('d',
+                `M ${endX + 8} ${endY - 4} L ${endX} ${endY} L ${endX + 6} ${endY + 7}`);
+        }
+        const hovering = mouseInside &&
+            mouseX >= Math.min(...points.map(p => p.x)) - 18 &&
+            mouseX <= Math.max(...points.map(p => p.x)) + 18 &&
+            mouseY >= Math.min(...points.map(p => p.y)) - 18 &&
+            mouseY <= Math.max(...points.map(p => p.y)) + 18;
+        showNebula(hovering || document.activeElement === constellation);
+        ctx.save();
+        ctx.lineWidth = .65;
+        for (const [a,b] of [[0,1],[1,2],[2,3],[3,4],[4,1]]) {
+            const start = points[a], end = points[b];
+            const vx = end.x - start.x, vy = end.y - start.y;
+            const t = Math.max(0, Math.min(1, ((mouseX-start.x)*vx + (mouseY-start.y)*vy)/(vx*vx+vy*vy)));
+            const distance = Math.hypot(mouseX-start.x-t*vx, mouseY-start.y-t*vy);
+            const influence = mouseInside ? Math.max(0, 1-distance/ACTIVE_RADIUS) : 0;
+            ctx.strokeStyle = `rgba(255,255,255,${.25 + influence*.4})`;
+            ctx.shadowColor = 'rgba(255,255,255,.65)';
+            ctx.shadowBlur = 2 + influence*4;
+            ctx.beginPath();
+            ctx.moveTo(start.x,start.y);
+            ctx.lineTo(end.x,end.y);
+            ctx.stroke();
+        }
+        ctx.restore();
+        for (const star of points) drawStar(star, star.y);
     }
 
     function draw() {
@@ -230,6 +296,7 @@
             drawStar(star, screenY);
         }
 
+        drawConstellation();
         frameId = null;
     }
 

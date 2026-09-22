@@ -219,8 +219,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </section>
 
     <main>
+        <div class="studio-sphere-wrap">
+            <div class="studio-sphere-backdrop" aria-hidden="true"><div class="about-studio__planet studio-sphere-continuation"></div><svg class="studio-planet-arcs studio-planet-arcs--back" viewBox="0 0 670 670" fill="none" aria-hidden="true"><path d="M805 230 C876 150 732 62 562 110 C392 158 -15 300 -55 400"/><path d="M805 260 C876 180 732 92 562 140 C392 188 -15 330 -55 430"/><path d="M805 291 C876 211 732 123 562 171 C392 219 -15 361 -55 461"/></svg><svg class="studio-planet-arcs studio-planet-arcs--front" viewBox="0 0 670 670" fill="none" aria-hidden="true"><path d="M-55 400 C-95 500 200 510 400 445 C480 419 480 345 550 315 C620 285 734 310 805 230"/><path d="M-55 430 C-95 530 200 540 400 475 C480 449 480 375 550 345 C620 315 734 340 805 260"/><path d="M-55 461 C-95 561 200 571 400 506 C480 480 480 406 550 376 C620 346 734 371 805 291"/><defs><linearGradient id="studio-ring-light" gradientUnits="userSpaceOnUse" x1="300" y1="0" x2="820" y2="0"><stop offset="0" stop-color="#61559f"/><stop offset="0.22" stop-color="#9983ed"/><stop offset="0.43" stop-color="#ddd0ff"/><stop offset="0.55" stop-color="#b7a2ff"/><stop offset="0.72" stop-color="#63558f"/><stop offset="0.84" stop-color="#8671bf"/><stop offset="1" stop-color="#c1b0ff"/></linearGradient><linearGradient id="studio-ring-shadow" gradientUnits="userSpaceOnUse" x1="500" y1="100" x2="840" y2="200"><stop stop-color="#49416e"/><stop offset="0.45" stop-color="#8872bd"/><stop offset="1" stop-color="#393052"/></linearGradient></defs></svg></div>
         <section class="about-studio" id="about" aria-labelledby="about-title">
             <div class="about-studio__space" aria-hidden="true"><div class="about-studio__planet"></div></div>
+
             <div class="about-studio__content">
                 <span class="about-studio__eyebrow">VEGA STUDIO</span>
                 <h2 id="about-title">О <span>студии</span></h2>
@@ -237,13 +240,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p>Ваши задачи.<br>Наши решения.<br>Больше возможностей.</p>
             </div>
         </section>
+        </div>
 
         <!-- услуги -->
 
         <section id="services" class="studio-services" aria-labelledby="services-title">
+
             <div class="studio-services__heading">
                 <div><span class="studio-services__label">Услуги</span><h2 id="services-title">Наши <span>услуги</span></h2></div>
-                <p>Полный цикл разработки — от идеи до запуска.<br>Выберите подходящее решение или свяжитесь с нами для консультации.</p>
             </div>
 
             <div class='services-grid'>
@@ -939,7 +943,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php renderFooter(); ?>
 <script src="cursor-stars.js?v=left-star-colors-3"></script>
-<script src="planet-panels.js?v=6"></script>
+<script src="planet-panels.js?v=25"></script>
 <script src="sphere-code-loop.js?v=canvas-render-2"></script>
 </body>
 

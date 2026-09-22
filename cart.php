@@ -123,6 +123,10 @@ $title = 'Корзина | WebStart Studio';
         ================================= -->
 
             <aside class="cart-summary">
+                <div class="cart-vega-constellation" tabindex="0" role="img" aria-label="Созвездие Лиры" aria-describedby="vega-nebula-note"></div>
+                <svg class="cart-vega-pointer" aria-hidden="true" focusable="false"><path class="cart-vega-pointer__curve"/><path class="cart-vega-pointer__head"/></svg>
+                <div class="cart-vega-nebula" id="vega-nebula-note" role="tooltip" aria-hidden="true">Созвездие Лиры — дом Веги, одной из самых ярких звёзд ночного неба.</div>
+
 
 
                 <h2>
@@ -474,7 +478,7 @@ $title = 'Корзина | WebStart Studio';
     </script>
 
 
-    <script src="cursor-stars.js?v=stars-light-1"></script>
+    <script src="cursor-stars.js?v=vega-nebula-4"></script>
 </body>
 
 </html>
