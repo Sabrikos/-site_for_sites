@@ -11,7 +11,7 @@ require_once __DIR__ . '/app.php';
 
 $response = appTelegramRequest('getUpdates', [
     'timeout' => 1,
-    'allowed_updates' => json_encode(['message'], JSON_UNESCAPED_UNICODE),
+    'allowed_updates' => json_encode(['message', 'edited_message', 'channel_post', 'edited_channel_post', 'callback_query', 'my_chat_member'], JSON_UNESCAPED_UNICODE),
 ]);
 
 if (!$response || empty($response['ok'])) {
@@ -21,7 +21,17 @@ if (!$response || empty($response['ok'])) {
 
 $seen = [];
 foreach ($response['result'] ?? [] as $update) {
-    $chat = $update['message']['chat'] ?? null;
+    $chat = null;
+    foreach (['message', 'edited_message', 'channel_post', 'edited_channel_post', 'callback_query', 'my_chat_member'] as $key) {
+        if (isset($update[$key]['chat'])) {
+            $chat = $update[$key]['chat'];
+            break;
+        }
+        if (isset($update[$key]['message']['chat'])) {
+            $chat = $update[$key]['message']['chat'];
+            break;
+        }
+    }
     if (!is_array($chat) || !isset($chat['id'])) {
         continue;
     }

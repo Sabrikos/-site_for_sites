@@ -3,4 +3,5 @@ Options -Indexes
     Require all denied
 </FilesMatch>
 RewriteEngine On
-RewriteRule ^(?:storage|services|migrations|tests|docs)(?:/|$) - [F,L]
+RewriteRule ^(?:storage|services|migrations|tests|docs|\.git|\.footer-backups)(?:/|$) - [F,L,NC]
+RewriteRule ^(?:assistant-(?:setup|test)|migrate|telegram-(?:chat-ids|test-notification|support-test|poll|worker))\.php$ - [F,L,NC]

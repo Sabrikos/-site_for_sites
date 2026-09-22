@@ -1,3 +1,2 @@
-﻿<?php
-ob_start();
+<?php
 require __DIR__ . '/home.php';

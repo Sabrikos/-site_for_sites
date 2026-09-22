@@ -287,17 +287,7 @@ function renderFooter()
                     Связаться
                 </h3>
 
-                <a href="#">
-                    Telegram
-                </a>
-
-                <a href="#">
-                    ВКонтакте
-                </a>
-
-                <a href="mailto:vega@example.ru">
-                    vega@example.ru
-                </a>
+                <p class="footer-contact-todo">Контакты будут опубликованы после подтверждения владельцем.</p>
 
             </div>
 

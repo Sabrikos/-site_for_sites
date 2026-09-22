@@ -136,7 +136,7 @@ final class TelegramBot
 		$data = (string) ($callback['data'] ?? '');
 		$this->telegram->answerCallback((string) ($callback['id'] ?? ''));
 		if ($chatId === 0) return;
-		if (str_starts_with($data, 'status:') || str_starts_with($data, 'reply:') || str_starts_with($data, 'resume:')) {
+		if (str_starts_with($data, 'status:') || str_starts_with($data, 'resume:')) {
 			if (!$this->isAdmin($chatId)) {
 				return;
 			}
@@ -155,8 +155,6 @@ final class TelegramBot
 				if (str_starts_with($data, 'resume:')) {
 					$this->saveSession($clientId, 'idle', []);
 					$this->telegram->sendMessage($clientId, 'Администратор завершил диалог. AI снова подключён.');
-				} else {
-					$this->telegram->sendMessage($chatId, 'Напишите ответ обычным сообщением, и я передам его клиенту.');
 				}
 			}
 			return;
@@ -208,15 +206,12 @@ final class TelegramBot
 	private function askAdmin(int $chatId, array $message, string $text): void
 	{
 		$this->saveSession($chatId, 'idle', ['human_mode' => 1], true);
-		foreach ($this->telegram->adminChatIds() as $admin) $this->telegram->sendMessage($admin, '<b>Клиент вызывает администратора</b>\nИсточник: Telegram\nКлиент: ' . $this->esc($message['from']['first_name'] ?? '') . '\nTelegram: @' . $this->esc($message['from']['username'] ?? '') . '\nUser ID: ' . $chatId . '\nПоследнее сообщение: ' . $this->esc($text), [[['text' => '💬 Ответить клиенту', 'callback_data' => 'reply:' . $chatId]]]);
+		$this->telegram->sendMessage((string) appEnv('TELEGRAM_SUPPORT_CHAT_ID'), '<b>Клиент вызывает администратора</b>\nИсточник: Telegram\nКлиент: ' . $this->esc($message['from']['first_name'] ?? '') . '\nTelegram: @' . $this->esc($message['from']['username'] ?? '') . '\nUser ID: ' . $chatId . '\nПоследнее сообщение: ' . $this->esc($text));
 		$this->telegram->sendMessage($chatId, 'Я передал запрос администратору. Он ответит здесь, как только подключится.');
 	}
 	private function forwardToAdmins(int $chatId, array $message, string $text): void
 	{
-		foreach ($this->telegram->adminChatIds() as $admin) {
-			$this->pdo->prepare('REPLACE INTO telegram_admin_links (admin_chat_id, client_chat_id) VALUES (?, ?)')->execute([$admin, $chatId]);
-			$this->telegram->sendMessage($admin, '<b>Сообщение клиента</b>\nUser ID: ' . $chatId . '\n' . $this->esc($text), [[['text' => '🤖 Вернуть AI', 'callback_data' => 'resume:' . $chatId]]]);
-		}
+		$this->telegram->sendMessage((string) appEnv('TELEGRAM_SUPPORT_CHAT_ID'), '<b>Сообщение клиента</b>\nИсточник: Telegram\nUser ID: ' . $chatId . '\n' . $this->esc($text));
 	}
 	private function adminRelay(int $adminId, string $text): bool
 	{
@@ -248,7 +243,7 @@ final class TelegramBot
 			$item->execute([$orderId, $tariff['id'], $tariff['service_name'], $tariff['tariff_name'], $tariff['price']]);
 			$this->pdo->commit();
 			$this->saveSession($chatId, 'idle', []);
-			foreach ($this->telegram->adminChatIds() as $admin) $this->telegram->sendMessage($admin, '<b>Новый заказ Vega Studio</b>\nЗаказ: #' . $orderId . '\nКлиент: ' . $this->esc($data['name']) . '\nTelegram: @' . $this->esc($data['username'] ?? '') . '\nТелефон: ' . $this->esc($data['phone']) . '\nEmail: ' . $this->esc($data['email']) . '\nУслуга: ' . $this->esc($tariff['service_name']) . '\nТариф: ' . $this->esc($tariff['tariff_name']), [[['text' => '✅ В работу', 'callback_data' => 'status:' . $orderId . ':processing']]]);
+			$this->telegram->sendMessage((string) appEnv('TELEGRAM_SUPPORT_CHAT_ID'), '<b>Новый заказ Vega Studio</b>\nЗаказ: #' . $orderId . '\nКлиент: ' . $this->esc($data['name']) . '\nTelegram: @' . $this->esc($data['username'] ?? '') . '\nТелефон: ' . $this->esc($data['phone']) . '\nEmail: ' . $this->esc($data['email']) . '\nУслуга: ' . $this->esc($tariff['service_name']) . '\nТариф: ' . $this->esc($tariff['tariff_name']));
 			$this->telegram->sendMessage($chatId, 'Заказ #' . $orderId . ' создан. Администратор свяжется с вами.');
 		} catch (Throwable $error) {
 			if ($this->pdo->inTransaction()) $this->pdo->rollBack();

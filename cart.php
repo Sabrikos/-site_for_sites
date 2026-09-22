@@ -2,7 +2,7 @@
 
 require_once __DIR__ . '/layout.php';
 
-$title = 'Корзина | WebStart Studio';
+$title = 'Корзина | Vega Studio';
 
 ?>
 

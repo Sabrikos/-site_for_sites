@@ -4,12 +4,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app.php';
 
-function appEnsureAssistantTables(PDO $pdo): void
-{
-    appEnsureChatTables($pdo);
-    $pdo->exec(file_get_contents(__DIR__ . '/../migrations/20260907_assistant.sql'));
-}
-
 function assistantLimit(PDO $pdo, string $scope, int $maximum, int $seconds): bool
 {
     $window = intdiv(time(), $seconds);
@@ -44,6 +38,15 @@ final class ChatService
         return $conversation;
     }
 
+    public function startFreshConversation(string $sessionKey): array
+    {
+        $this->pdo->prepare('INSERT INTO chat_conversations (session_key, status) VALUES (?, ?)')->execute([$sessionKey, 'bot']);
+        $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
+        $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я снова готов помочь. Расскажите, какой у вас вопрос.');
+        $this->pdo->prepare('INSERT IGNORE INTO chat_assistant_state (conversation_id) VALUES (?)')->execute([$conversation['id']]);
+        return $conversation;
+    }
+
     public function add(int $id, string $sender, string $text): int
     {
         $this->pdo->prepare('INSERT INTO chat_messages (conversation_id, sender, message) VALUES (?, ?, ?)')->execute([$id, $sender, $text]);
@@ -63,11 +66,14 @@ final class ChatService
         $state = $statement->fetch();
         $messages = $this->pdo->prepare('SELECT id, sender, message, created_at FROM chat_messages WHERE conversation_id = ? AND id > ? ORDER BY id LIMIT 100');
         $messages->execute([$id, $afterId]);
-        return ['conversation_id' => $id, 'status' => $state['status'],
+        return [
+            'conversation_id' => $id,
+            'status' => $state['status'],
             'assistant_typing' => $state['status'] === 'bot' && (bool) $state['assistant_typing'],
             'admin_online' => (bool) $state['admin_online'],
             'admin_typing' => $state['status'] === 'human' && (bool) $state['admin_typing'],
-            'messages' => $messages->fetchAll()];
+            'messages' => $messages->fetchAll()
+        ];
     }
 
     public static function needsHuman(string $message, bool $offered): bool
@@ -186,6 +192,32 @@ final class ChatService
                 VALUES (?, ?, NOW(), IF(? = 1, DATE_ADD(NOW(), INTERVAL 7 SECOND), NULL))
                 ON DUPLICATE KEY UPDATE last_activity = NOW(), typing_until = VALUES(typing_until)')
                 ->execute([$id, $adminId, (int) $typing]);
+            $this->pdo->commit();
+        } catch (Throwable $error) {
+            $this->pdo->rollBack();
+            throw $error;
+        }
+    }
+
+    public function telegramAdminAction(int $id, string $action, string $value = ''): void
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $this->lock($id);
+            if ($action === 'reply') {
+                if (trim($value) === '' || mb_strlen($value) > 4000) {
+                    throw new DomainException('Ответ должен содержать от 1 до 4000 символов.', 422);
+                }
+                $this->add($id, 'admin', trim($value));
+                $status = 'human';
+            } else {
+                $status = $value;
+                if (!in_array($status, ['bot', 'waiting_human', 'human', 'closed'], true)) {
+                    throw new DomainException('Некорректный статус.', 422);
+                }
+            }
+            $this->pdo->prepare('UPDATE chat_conversations SET status = ? WHERE id = ?')->execute([$status, $id]);
+            $this->clearGeneration($id);
             $this->pdo->commit();
         } catch (Throwable $error) {
             $this->pdo->rollBack();

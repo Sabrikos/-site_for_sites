@@ -10,13 +10,13 @@ if (PHP_SAPI !== 'cli') {
 require_once __DIR__ . '/app.php';
 
 $sent = appSendTelegram(
-    "Тестовое уведомление WebStart Studio\nЕсли вы видите это сообщение, Telegram-уведомления настроены.",
+    "Тестовое уведомление Vega Studio\nЕсли вы видите это сообщение, Telegram-уведомления настроены.",
     'Открыть сайт',
     appUrl('/')
 );
 
 if (!$sent) {
-    fwrite(STDERR, "Тестовое уведомление не отправлено. Проверьте TELEGRAM_BOT_TOKEN и TELEGRAM_ADMIN_CHAT_IDS в .env.\n");
+    fwrite(STDERR, "Тестовое уведомление не отправлено. Проверьте TELEGRAM_BOT_TOKEN и TELEGRAM_SUPPORT_CHAT_ID в .env.\n");
     exit(1);
 }
 

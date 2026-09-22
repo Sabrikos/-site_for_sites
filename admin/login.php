@@ -19,7 +19,10 @@ $error = '';
 $username = trim((string) ($_POST['username'] ?? ''));
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!appRateLimit('admin_login', 10, 300)) {
+    $loginScope = 'admin_login:' . appClientIp() . ':' . mb_strtolower($username, 'UTF-8');
+    $ipScope = 'admin_login_ip:' . appClientIp();
+    if (!appPersistentRateLimit($pdo, $ipScope, 30, 300)
+        || !appPersistentRateLimit($pdo, $loginScope, 10, 300)) {
         $error = 'Слишком много попыток входа. Попробуйте чуть позже.';
     }
 
@@ -44,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['admin_id'] = (int) $admin['id'];
             $_SESSION['admin_username'] = $admin['username'];
             $_SESSION['admin_csrf'] = bin2hex(random_bytes(32));
+            $_SESSION['admin_last_activity'] = time();
             header('Location: orders.php');
             exit;
         }
