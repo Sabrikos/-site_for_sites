@@ -1410,6 +1410,28 @@ main.tariffs-page {
     color: white;
 }
 
+.home-page .contact-section {
+    overflow: visible;
+    margin-bottom: 125px;
+}
+.contact-alien {
+    position: absolute;
+    width: 275px;
+    height: auto;
+    left: calc(25% - 137.5px);
+    bottom: -80px;
+    z-index: 6;
+    pointer-events: none;
+    user-select: none;
+}
+@media (min-width: 901px) {
+    .home-page .contact-info { padding-bottom: 190px; }
+}
+@media (max-width: 900px) {
+    .home-page .contact-section { padding-bottom: 270px; }
+    .contact-alien { width: 240px; left: calc(50% - 120px); bottom: -70px; }
+}
+
 .contact-info h2 {
     margin: 0 0 18px;
 

@@ -15,7 +15,7 @@ header('Content-Type: text/html; charset=utf-8');
 <body>
 <main class="error-page">
   <div class="scene-frame">
-    <img class="error-page__scene" src="/assets/images/404-space-scene.png?v=20260911-232620" width="1672" height="941" alt="" aria-hidden="true" draggable="false" fetchpriority="high">
+    <img class="error-page__scene" src="/assets/images/404-space-scene.png?v=20260922-2" width="1672" height="941" alt="" aria-hidden="true" draggable="false" fetchpriority="high">
   <section class="error-copy" aria-labelledby="error-heading">
     <div class="error-code">404</div>
     <h1 id="error-heading">Упс, мы потеряли сигнал этой страницы.</h1>

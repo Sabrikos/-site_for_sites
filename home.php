@@ -713,6 +713,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             class="contact-section"
             id="application">
 
+            <img class="contact-alien" src="assets/images/contact-alien.png" alt="" aria-hidden="true" width="1086" height="1448" loading="lazy">
+
             <div class="contact-info">
 
                 <span class="section-label">
