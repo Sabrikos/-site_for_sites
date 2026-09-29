@@ -318,8 +318,13 @@
             rows = prepareRows(svg, ctx);
         }
 
+        const phone = matchMedia('(max-width: 600px)');
+        const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+        let animationFrame = 0;
         function draw(currentTime) {
-            requestAnimationFrame(draw);
+            animationFrame = 0;
+            if (phone.matches) return;
+            if (!reducedMotion.matches) animationFrame = requestAnimationFrame(draw);
 
             if (document.hidden || !visible || currentTime - lastFrameTime < FRAME_INTERVAL) {
                 return;
@@ -335,7 +340,7 @@
             ctx.arc(130, 130, 130, 0, Math.PI * 2);
             ctx.clip();
 
-            const elapsedSeconds = (currentTime - startTime) / 1000;
+            const elapsedSeconds = reducedMotion.matches ? 0 : (currentTime - startTime) / 1000;
             rows.forEach((row) => drawRow(ctx, row, elapsedSeconds, scaleX, scaleY));
 
             ctx.restore();
@@ -344,7 +349,14 @@
         resize();
         initVisibilityObserver(planet);
         window.addEventListener('resize', resize, { passive: true });
-        requestAnimationFrame(draw);
+        function restart() {
+            cancelAnimationFrame(animationFrame);
+            lastFrameTime = 0;
+            if (!phone.matches) { resize(); animationFrame = requestAnimationFrame(draw); }
+        }
+        phone.addEventListener('change', restart);
+        reducedMotion.addEventListener('change', restart);
+        restart();
     }
 
     if (document.readyState === 'loading') {

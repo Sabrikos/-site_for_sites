@@ -15,7 +15,7 @@ final class OrderService
         return mb_strlen($value, 'UTF-8');
     }
 
-    public static function validateCustomer(array $input): array
+    public static function validateCustomer(array $input, bool $requireEmail = true): array
     {
         $name = trim((string) ($input['customer_name'] ?? ''));
         $phone = trim((string) ($input['customer_phone'] ?? ''));
@@ -29,7 +29,7 @@ final class OrderService
         if (!preg_match('/^[0-9+()\-\s]{7,30}$/u', $phone)) {
             $errors[] = 'Введите корректный номер телефона.';
         }
-        if (self::length($email) > 255 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (($requireEmail || $email !== '') && (self::length($email) > 255 || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
             $errors[] = 'Введите корректный email.';
         }
         if (self::length($comment) > 1000) {

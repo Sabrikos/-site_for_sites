@@ -59,7 +59,6 @@ $title = 'Корзина | Vega Studio';
 
         <div class="cart-page-layout">
 
-
             <!-- =================================
              ВЫБРАННЫЕ УСЛУГИ
         ================================= -->
@@ -114,6 +113,7 @@ $title = 'Корзина | Vega Studio';
                 </div>
 
 
+                <div class="cart-vega-constellation" tabindex="0" role="img" aria-label="Созвездие Лиры" aria-describedby="vega-nebula-note"></div>
             </section>
 
 
@@ -123,7 +123,8 @@ $title = 'Корзина | Vega Studio';
         ================================= -->
 
             <aside class="cart-summary">
-                <div class="cart-vega-constellation" tabindex="0" role="img" aria-label="Созвездие Лиры" aria-describedby="vega-nebula-note"></div>
+                <div class="cart-canis-major" tabindex="0" role="img" aria-label="Созвездие Большого Пса, Сириус — самая яркая звезда" aria-describedby="canis-major-note"></div>
+
                 <svg class="cart-vega-pointer" aria-hidden="true" focusable="false"><path class="cart-vega-pointer__curve"/><path class="cart-vega-pointer__head"/></svg>
                 <div class="cart-vega-nebula" id="vega-nebula-note" role="tooltip" aria-hidden="true">Созвездие Лиры — дом Веги, одной из самых ярких звёзд ночного неба.</div>
 
@@ -355,6 +356,7 @@ $title = 'Корзина | Vega Studio';
                     removeButton.className = 'cart-product-remove';
                     removeButton.dataset.id = getTariffId(item);
                     removeButton.textContent = 'Удалить';
+                    removeButton.setAttribute('aria-label', `Удалить: ${item.service || 'Услуга'} — ${getTariffName(item) || 'Тариф'}`);
 
                     actions.append(price, removeButton);
                     element.append(info, actions);
@@ -478,7 +480,9 @@ $title = 'Корзина | Vega Studio';
     </script>
 
 
-    <script src="cursor-stars.js?v=vega-nebula-4"></script>
+    <div class="cart-vega-nebula cart-canis-nebula" id="canis-major-note" role="tooltip" aria-hidden="true">Созвездие Большого Пса — в нём находится самая яркая звезда ночного неба — Сириус.</div>
+    <svg class="cart-vega-pointer cart-canis-pointer" aria-hidden="true" focusable="false"><path class="cart-vega-pointer__curve"/><path class="cart-vega-pointer__head"/></svg>
+    <script src="cursor-stars.js?v=canis-major-5"></script>
 </body>
 
 </html>

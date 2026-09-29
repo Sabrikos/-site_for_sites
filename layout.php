@@ -31,7 +31,9 @@ function renderHeader()
             </a>
 
 
-            <nav>
+            <button class="mobile-menu-toggle" type="button" aria-controls="mobile-navigation" aria-expanded="false" aria-label="Открыть меню"><span></span><span></span><span></span></button>
+            <nav aria-label="Основная навигация">
+                <div class="header-links" id="mobile-navigation">
 
                 <a href="index.php">
                     Главная
@@ -58,6 +60,8 @@ function renderHeader()
                 </a>
 
 
+                <a class="mobile-menu-cta" href="index.php#application">Обсудить проект</a>
+                </div>
                 <!-- Корзина -->
 
                 <a
@@ -112,6 +116,8 @@ function renderHeader()
         </div>
 
     </header>
+    <div class="mobile-menu-shade" hidden></div>
+    <script src="mobile-navigation.js?v=2" defer></script>
 
     <script src="web-chat.js?v=<?= filemtime(__DIR__ . '/web-chat.js') ?>" defer></script>
 

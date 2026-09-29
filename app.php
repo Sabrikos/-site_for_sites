@@ -77,6 +77,16 @@ function appStartSession(): void
         return;
     }
 
+    // The local PHP server may not have access to Laragon's shared session files.
+    // Keep its sessions outside the document root, in the current user's temp directory.
+    if (PHP_SAPI === 'cli-server' && ini_get('session.save_handler') === 'files') {
+        $sessionDir = sys_get_temp_dir() . '/vega-sessions-' . substr(hash('sha256', __DIR__), 0, 16);
+        if (!is_dir($sessionDir) && !mkdir($sessionDir, 0700, true) && !is_dir($sessionDir)) {
+            throw new RuntimeException('Unable to create the local session directory.');
+        }
+        session_save_path($sessionDir);
+    }
+
     session_start([
         'use_strict_mode' => 1,
         'cookie_httponly' => true,

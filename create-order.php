@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!appCsrfValid('order_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
         $errors[] = 'Срок действия формы истёк. Обновите страницу и повторите отправку.';
     }
-    [$customerErrors, $customer] = OrderService::validateCustomer($_POST);
+    [$customerErrors, $customer] = OrderService::validateCustomer($_POST, false);
     $errors = array_merge($errors, $customerErrors);
 
     if (!$personalDataConsent) {
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php renderHeader(); ?>
 
-    <main class="cart-page">
+    <main class="cart-page checkout-page">
         <div class="cart-page-title">
             <h1>Оформление заявки</h1>
             <p>Оставьте контакты, и мы свяжемся с вами.</p>
@@ -144,11 +144,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <h2>Выбранные услуги</h2>
                 </div>
                 <div id="orderItems"></div>
-                <p id="emptyOrder" class="cart-page-empty">Корзина пуста.</p>
+                <div id="emptyOrder" class="cart-page-empty">
+                    <div class="checkout-empty-desktop">
+                        <div class="empty-cart-icon" aria-hidden="true">🛒</div>
+                        <h3>Корзина пока пуста</h3>
+                        <p>Перейдите к тарифам и выберите необходимые услуги.</p>
+                        <a href="tariffs.php" class="continue-shopping-button">Перейти к тарифам</a>
+                    </div>
+                    <div class="checkout-empty-mobile">
+                        <div class="empty-cart-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M4 6h4l4 15h13l3-11H9"/><circle cx="14" cy="26" r="1.5"/><circle cx="24" cy="26" r="1.5"/></svg></div>
+                        <h3>Начнём с вашей задачи</h3>
+                        <p>Выберите услугу — она появится здесь для оформления заявки.</p>
+                        <a href="tariffs.php" class="continue-shopping-button">Выбрать услугу</a>
+                    </div>
+                </div>
+                <a href="cart.php" class="checkout-edit">Изменить выбор →</a>
+                <div class="checkout-sky" aria-hidden="false">
+                    <div class="cart-vega-constellation" tabindex="0" role="img" aria-label="Созвездие Лиры" aria-describedby="vega-nebula-note"></div>
+                </div>
             </section>
 
             <section class="cart-summary contact-form-wrapper">
-                <h2>Данные клиента</h2>
+                <h2>Обсудим ваш проект</h2>
 
                 <?php if ($errors !== []): ?>
                     <div class="errors">
@@ -173,22 +190,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         <div class="form-group">
                             <label for="customer_name">Имя</label>
-                            <input type="text" id="customer_name" name="customer_name" value="<?= e($customerName) ?>" minlength="2" maxlength="150" required>
+                            <input type="text" id="customer_name" name="customer_name" autocomplete="name" placeholder="Как к вам обращаться?" value="<?= e($customerName) ?>" minlength="2" maxlength="150" required>
                         </div>
 
                         <div class="form-group">
                             <label for="customer_phone">Телефон</label>
-                            <input type="tel" id="customer_phone" name="customer_phone" value="<?= e($customerPhone) ?>" maxlength="30" required>
+                            <input type="tel" id="customer_phone" name="customer_phone" autocomplete="tel" placeholder="+7 (___) ___-__-__" value="<?= e($customerPhone) ?>" maxlength="30" required>
                         </div>
 
-                        <div class="form-group">
-                            <label for="customer_email">Email</label>
-                            <input type="email" id="customer_email" name="customer_email" value="<?= e($customerEmail) ?>" required>
-                        </div>
+
 
                         <div class="form-group">
                             <label for="project_comment">Комментарий</label>
-                            <textarea id="project_comment" name="project_comment" maxlength="1000"><?= e($projectComment) ?></textarea>
+                            <textarea id="project_comment" name="project_comment" placeholder="Расскажите о задаче и пожеланиях" maxlength="1000"><?= e($projectComment) ?></textarea>
                         </div>
 
                         <label class="form-consent">
@@ -196,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <span>Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</span>
                         </label>
 
-                        <button type="submit" class="contact-submit">Отправить заявку</button>
+                        <button type="submit" class="contact-submit">Отправить заявку</button><p class="checkout-free-note">Обсуждение проекта бесплатно</p>
                     </form>
                 <?php endif; ?>
             </section>
@@ -204,6 +218,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
+    <div class="cart-vega-nebula" id="vega-nebula-note" role="tooltip" aria-hidden="true">Созвездие Лиры — дом Веги, одной из самых ярких звёзд ночного неба.</div>
+    <svg class="cart-vega-pointer" aria-hidden="true"><path class="cart-vega-pointer__curve"/><path class="cart-vega-pointer__head"/></svg>
 
     <script>
         const orderForm = document.getElementById('orderForm');
@@ -223,8 +239,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             emptyOrder.style.display = 'none';
 
             cart.forEach(item => {
-                const row = document.createElement('p');
-                row.textContent = `${item.service ?? ''}: ${tariffName(item)}`;
+                const row = document.createElement('div');
+                row.className = 'cart-product';
+                const info = document.createElement('div');
+                info.className = 'cart-product-info';
+                const service = document.createElement('span');
+                service.className = 'cart-product-service';
+                service.textContent = item.service ?? '';
+                const name = document.createElement('h3');
+                name.textContent = tariffName(item);
+                const price = document.createElement('span');
+                price.className = 'checkout-item-price';
+                price.textContent = 'от ' + new Intl.NumberFormat('ru-RU').format(Number(item.price) || 0) + ' ₽';
+                info.append(service, name);
+                row.append(info, price);
                 orderItems.appendChild(row);
             });
         }
@@ -242,7 +270,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         <?php endif; ?>
     </script>
-    <script src="cursor-stars.js"></script>
+    <script src="cursor-stars.js?v=canis-major-5"></script>
 </body>
 
 </html>

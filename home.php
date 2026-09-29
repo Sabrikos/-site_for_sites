@@ -62,7 +62,7 @@ $services = $stmt->fetchAll();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerName = trim($_POST['customer_name'] ?? '');
     $customerPhone = trim($_POST['customer_phone'] ?? '');
-    $customerEmail = trim($_POST['customer_email'] ?? '');
+    $customerEmail = '';
     $projectType = trim($_POST['project_type'] ?? '');
     $projectTheme = trim($_POST['project_theme'] ?? '');
     $personalDataConsent = isset($_POST['personal_data_consent']);
@@ -75,7 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'customer_phone' => $customerPhone,
         'customer_email' => $customerEmail,
         'project_comment' => $projectTheme,
-    ]);
+    ], false);
     $errors = array_merge($errors, $customerErrors);
 
     $serviceId = filter_var($projectType, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -158,9 +158,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </span>
 
             <h1 class="hero-title">
+                <span class="hero-title-mobile">Создаём сайты<br>для <span class="hero-title-accent">роста бизнеса</span></span>
+                <span class="hero-title-desktop">
                 <span class="hero-title-line">Разрабатываем</span>
                 <span class="hero-title-line">сайты, которые</span>
                 <span class="hero-title-line"><span class="hero-title-accent">помогают</span> продавать</span>
+                </span>
             </h1>
 
             <p>
@@ -266,11 +269,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="about-studio__content">
                 <span class="about-studio__eyebrow">VEGA STUDIO</span>
                 <h2 id="about-title">О <span>студии</span></h2>
-                <p class="about-studio__description">Мы разрабатываем информационные сайты, интернет-магазины и страницы для продвижения услуг. Помогаем бизнесу расти в онлайн-пространстве, создавая современные и эффективные решения.</p>
+                <p class="about-studio__description"><span class="about-studio__description-desktop">Мы разрабатываем информационные сайты, интернет-магазины и страницы для продвижения услуг. Помогаем бизнесу расти в онлайн-пространстве, создавая современные и эффективные решения.</span><span class="about-studio__description-mobile">Создаём сайты и интернет-магазины для бизнеса. Продумываем дизайн и функциональность под ваши задачи — от первого знакомства до заявки.</span></p>
                 <ul class="about-studio__benefits">
-                    <li><span class="about-studio__icon"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 11 10 5h12l5 6-11 16L5 11Zm0 0h22M10 5l6 22L22 5M10 5l6 6 6-6"/></svg></span><span>Современные<br>технологии</span></li>
-                    <li><span class="about-studio__icon"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="10" r="4"/><path d="M8 27v-5c0-7 16-7 16 0v5H8ZM7 8c-5 1-5 7 0 8M25 8c5 1 5 7 0 8M5 20c-3 1-3 4-3 6h3M27 20c3 1 3 4 3 6h-3"/></svg></span><span>Индивидуальный<br>подход</span></li>
-                    <li><span class="about-studio__icon"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 27h23M8 24v-8M16 24V10M24 24V4"/></svg></span><span>Результат,<br>а не шаблоны</span></li>
+                    <li><span class="about-studio__icon"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M18 22H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h19a2 2 0 0 1 2 2v4M3 17h15M11 22v5m-4 0h11"/><rect x="21" y="12" width="8" height="16" rx="2"/><path d="M24 25h2"/></svg></span><span>Удобно на любом<br>устройстве</span></li>
+                    <li><span class="about-studio__icon"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="4" y="4" width="24" height="24" rx="4"/><path d="m10 20 2-6 9-7 4 4-9 7-6 2Zm2-6 4 4M19 9l4 4M10 24h12"/></svg></span><span>Дизайн под<br>ваш бренд</span></li>
+                    <li><span class="about-studio__icon"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="6" cy="23" r="3"/><path d="M9 23h6a4 4 0 0 0 0-8h-3a4 4 0 0 1 0-8h6m-3-3 3 3-3 3"/><rect x="21" y="15" width="9" height="12" rx="2"/><path d="m23 21 2 2 3-4"/></svg></span><span>Понятный путь<br>до заявки</span></li>
                 </ul>
             </div>
             <div class="about-studio__note">
@@ -286,7 +289,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <section id="services" class="studio-services" aria-labelledby="services-title">
 
             <div class="studio-services__heading">
-                <div><span class="studio-services__label">Услуги</span><h2 id="services-title">Наши <span>услуги</span></h2></div>
+                <div><h2 id="services-title">Наши <span>услуги</span></h2></div>
             </div>
 
             <div class='services-grid'>
@@ -311,15 +314,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
                             <div><h3><?= htmlspecialchars($service['name']) ?></h3><p class="service-card__description"><?= htmlspecialchars($service['description'] ?? '') ?></p></div>
                         </div>
-                        <span class="service-card__category"><?= (int) $service['price'] >= 30000 ? 'Крупный проект' : 'Стартовый проект' ?></span>
                         <div class="service-card__bottom">
+                            <?php if ($service['slug'] === 'other'): ?>
+                            <div class="service-card__detail service-card__detail--combined"><span class="service-card__mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3a8 8 0 1 0 9 9M5 9h5a2 2 0 0 1 0 4H7m0-4v9m-2-3h6"/><circle cx="17" cy="7" r="5"/><path d="M17 4v3l2 1"/></svg></span><span><small>Цена и срок:</small>по договорённости</span></div>
+                            <?php else: ?>
                             <div class="service-card__detail"><span class="service-card__mini-icon" aria-hidden="true">₽</span><span><small>Цена:</small>от <?= number_format((int) $service['price'], 0, '', ' ') ?> ₽</span></div>
                             <div class="service-card__detail"><span class="service-card__mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></span><span><small>Срок:</small><?= htmlspecialchars($service['deadline'] ?: 'По договорённости') ?></span></div>
-                            <a class="button service-button" href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>">Подробнее <span aria-hidden="true">→</span></a>
+                            <?php endif; ?>
+                            <a class="button service-button" href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>" aria-label="Узнать подробнее: <?= htmlspecialchars($service['name']) ?>"><span class="service-button__desktop">Подробнее</span><span class="service-button__mobile">Узнать подробнее</span><span aria-hidden="true">↗</span></a>
                         </div>
                     </article>
                 <?php endforeach; ?>
-                <div class="studio-services__message"><span>Больше возможностей<br>начинаются с хорошего сайта</span><i aria-hidden="true"></i></div>
+                <div class="studio-services__message"><h3>Не знаете, что выбрать?</h3><p>Поможем определить формат под вашу задачу.</p><a href="#application">Обсудить проект <span aria-hidden="true">↗</span></a></div>
             </div>
         </section>
 
@@ -340,10 +346,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="section-heading">
-
-                <span class="section-label">
-                    Технологии
-                </span>
 
                 <h2 id="stack-title">
                     Наш <span>технологический стек</span>
@@ -441,10 +443,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <section class="cms-section planet-panel">
 
             <div class="section-heading">
-
-                <span class="section-label">
-                    CMS и платформы
-                </span>
 
                 <h2>
                     Работаем с <span>популярными CMS</span>
@@ -578,10 +576,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <section class="projects-section planet-panel"
             id="projects">
             <div class="section-heading">
-
-                <span class="section-label">
-                    Портфолио
-                </span>
 
                 <h2>
                     Наши <span>проекты</span>
@@ -717,28 +711,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="contact-info">
 
-                <span class="section-label">
-                    Связаться с нами
-                </span>
+
 
                 <h2>
-                    Есть идея проекта?
+                    <span class="contact-mobile-only">Обсудим ваш проект</span><span class="contact-desktop-only">Есть идея проекта?</span>
                 </h2>
 
-                <p class="contact-description">
-                    Расскажите нам о своей задаче.
-                    Мы обсудим проект, предложим подходящее решение
-                    и предварительно оценим стоимость.
-                </p>
+                <p class="contact-description"><span class="contact-mobile-only">Расскажите о задаче — обсудим решение и предварительную стоимость.</span><span class="contact-desktop-only">Расскажите нам о своей задаче. Мы обсудим проект, предложим подходящее решение и предварительно оценим стоимость.</span></p>
 
 
-                <div class="contact-items">
+                <div class="contact-items"><div class="contact-item contact-mobile-only"><span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m7 3 3 5-2 2c1 3 3 5 6 6l2-2 5 3-1 4C10 22 2 14 3 4Z"/></svg></span><div><span>Телефон (временно)</span><strong>+7 (000) 000-00-00</strong></div></div>
 
                     <div class="contact-item">
 
-                        <span class="contact-icon">
-                            @
-                        </span>
+                        <span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m4 7 8 6 8-6"/></svg><span class="contact-desktop-only">@</span></span>
 
                         <div>
 
@@ -757,9 +743,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="contact-item">
 
-                        <span class="contact-icon">
-                            TG
-                        </span>
+                        <span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M21 3 17.6 21l-6.1-4.6-3.2 3 .5-5.7L18 6.5 6.6 12 2 10.5Z"/></svg><span class="contact-desktop-only">TG</span></span>
 
                         <div>
 
@@ -778,9 +762,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="contact-item">
 
-                        <span class="contact-icon">
-                            VK
-                        </span>
+                        <span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M2 5h4c.3 4.8 2.4 7 4 7.5V5h4v4.3c1.7-.2 3.5-2.3 4.1-4.3H22c-.5 2.8-2.6 5.1-4 6 1.5.8 4 3 4.8 7H18c-.8-2.5-2.5-4.4-4-4.7V18h-1C5.8 18 2.5 13.2 2 5Z"/></svg><span class="contact-desktop-only">VK</span></span>
 
                         <div>
 
@@ -799,31 +781,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
 
 
-                <div class="contact-benefits">
 
-                    <p>
-                        ✓ Бесплатно обсудим проект
-                    </p>
-
-                    <p>
-                        ✓ Рассчитаем предварительную стоимость
-                    </p>
-
-                    <p>
-                        ✓ Предложим подходящие технологии
-                    </p>
-
-                </div>
 
             </div>
 
             <!-- заявка -->
 
-            <div class="contact-form-wrapper">
+            <div class="contact-form-wrapper"><h3 class="contact-desktop-only">Оставить заявку</h3>
 
-                <h3>
-                    Оставить заявку
-                </h3>
+
 
 
                 <form method="post">
@@ -862,22 +828,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     </div>
 
-                    <div class="form-group">
 
-                        <label for="customer_email">
-                            Электронная почта
-                        </label>
-
-                        <input
-                            type="email"
-                            id="customer_email"
-                            name="customer_email"
-                            placeholder="example@mail.ru"
-                            autocomplete="email"
-                            value="<?= htmlspecialchars($customerEmail) ?>"
-                            required>
-
-                    </div>
 
 
                     <div class="form-group">
@@ -936,7 +887,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         type="submit"
                         class="contact-submit">
                         Отправить заявку
-                    </button>
+                    </button><p class="contact-free-note">Обсуждение проекта бесплатно</p>
 
                 </form>
 
@@ -984,7 +935,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
-<script src="cursor-stars.js?v=left-star-colors-3"></script>
+<script src="service-select.js?v=2"></script>
+<script src="cursor-stars.js?v=native-scroll-1"></script>
 <script src="planet-panels.js?v=25"></script>
 <script src="sphere-code-loop.js?v=canvas-render-2"></script>
 </body>
