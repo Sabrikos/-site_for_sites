@@ -15,3 +15,12 @@ storage/rate-limit/
 storage/telegram-offset.txt
 storage/telegram-worker.lock
 storage/*.tmp
+
+# Front-end dependencies and local browser artifacts
+node_modules/
+.playwright-mcp/
+
+# Local Codex tooling and separate portfolio workspace
+.agents/
+.codex/
+2Portfolio_for_site1/

@@ -133,6 +133,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title><?= $title ?></title>
     <link rel="stylesheet" href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
 
+    <script src="assets/vendor/gsap.min.js?v=3.15.0" defer></script>
+    <script src="assets/vendor/ScrollTrigger.min.js?v=3.15.0" defer></script>
+    <script src="assets/vendor/lenis.min.js?v=1.3.27" defer></script>
+    <script src="assets/vendor/motion.js?v=14.6.0" defer></script>
+    <script src="animation-runtime.js?v=1" defer></script>
+
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=cursor-3">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=cursor-3">
     <link rel="apple-touch-icon" href="assets/images/favicon-512.png?v=cursor-3">
@@ -720,7 +726,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <p class="contact-description"><span class="contact-mobile-only">Расскажите о задаче — обсудим решение и предварительную стоимость.</span><span class="contact-desktop-only">Расскажите нам о своей задаче. Мы обсудим проект, предложим подходящее решение и предварительно оценим стоимость.</span></p>
 
 
-                <div class="contact-items"><div class="contact-item contact-mobile-only"><span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m7 3 3 5-2 2c1 3 3 5 6 6l2-2 5 3-1 4C10 22 2 14 3 4Z"/></svg></span><div><span>Телефон (временно)</span><strong>+7 (000) 000-00-00</strong></div></div>
+                <div class="contact-items"><div class="contact-item contact-mobile-only"><span class="contact-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m7 3 3 5-2 2c1 3 3 5 6 6l2-2 5 3-1 4C10 22 2 14 3 4Z"/></svg></span><div><span>Телефон</span><strong><a href="tel:+79381163164">+7 (938) 116-31-64</a></strong></div></div>
 
                     <div class="contact-item">
 
@@ -733,7 +739,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
 
                             <strong>
-                                hello@vegastudio.ru
+                                <a href="mailto:Ve9a.Studio@yandex.ru">Ve9a.Studio@yandex.ru</a>
                             </strong>
 
                         </div>

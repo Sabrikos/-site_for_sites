@@ -25,6 +25,12 @@ $title = 'Корзина | Vega Studio';
         rel="stylesheet"
         href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
 
+    <script src="assets/vendor/gsap.min.js?v=3.15.0" defer></script>
+    <script src="assets/vendor/ScrollTrigger.min.js?v=3.15.0" defer></script>
+    <script src="assets/vendor/lenis.min.js?v=1.3.27" defer></script>
+    <script src="assets/vendor/motion.js?v=14.6.0" defer></script>
+    <script src="animation-runtime.js?v=1" defer></script>
+
 
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=cursor-3">
     <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicon-16x16.png?v=cursor-3">

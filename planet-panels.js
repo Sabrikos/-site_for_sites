@@ -268,7 +268,9 @@
     const continuation = backdrop?.querySelector('.studio-sphere-continuation');
     if (!source || !continuation) return;
     const align = () => {
-        const host = source.offsetParent.getBoundingClientRect();
+        const offsetParent = source.offsetParent;
+        if (!offsetParent) return;
+        const host = offsetParent.getBoundingClientRect();
         const target = backdrop.getBoundingClientRect();
         const style = getComputedStyle(source);
         backdrop.style.setProperty('--studio-sphere-x', `${host.left + parseFloat(style.left) - target.left}px`);
