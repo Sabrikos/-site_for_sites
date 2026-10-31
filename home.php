@@ -273,9 +273,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="about-studio__space" aria-hidden="true"><div class="about-studio__planet"></div></div>
 
             <div class="about-studio__content">
-                <span class="about-studio__eyebrow">VEGA STUDIO</span>
                 <h2 id="about-title">О <span>студии</span></h2>
-                <p class="about-studio__description"><span class="about-studio__description-desktop">Мы разрабатываем информационные сайты, интернет-магазины и страницы для продвижения услуг. Помогаем бизнесу расти в онлайн-пространстве, создавая современные и эффективные решения.</span><span class="about-studio__description-mobile">Создаём сайты и интернет-магазины для бизнеса. Продумываем дизайн и функциональность под ваши задачи — от первого знакомства до заявки.</span></p>
+                <p class="about-studio__description"><span class="about-studio__description-desktop">Мы разрабатываем информационные сайты, интернет-магазины и страницы для продвижения услуг. Помогаем бизнесу расти в онлайн-пространстве, создаём современные и эффективные решения.</span><span class="about-studio__description-mobile">Создаём сайты и интернет-магазины для бизнеса. Продумываем дизайн и функциональность под ваши задачи — от первого знакомства до заявки.</span></p>
                 <ul class="about-studio__benefits">
                     <li><span class="about-studio__icon"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M18 22H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h19a2 2 0 0 1 2 2v4M3 17h15M11 22v5m-4 0h11"/><rect x="21" y="12" width="8" height="16" rx="2"/><path d="M24 25h2"/></svg></span><span>Удобно на любом<br>устройстве</span></li>
                     <li><span class="about-studio__icon"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="4" y="4" width="24" height="24" rx="4"/><path d="m10 20 2-6 9-7 4 4-9 7-6 2Zm2-6 4 4M19 9l4 4M10 24h12"/></svg></span><span>Дизайн под<br>ваш бренд</span></li>
@@ -468,7 +467,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <article class="cms-card">
 
                     <div class="cms-logo">
-                        WP
+                        <svg class="cms-logo__icon" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                            <rect x="4.5" y="5" width="23" height="22" rx="4"/>
+                            <path d="M4.5 11.5h23M11.5 11.5V27M15.5 16h7.5M15.5 21h7.5"/>
+                            <circle cx="8" cy="8.3" r="1" fill="currentColor" stroke="none"/>
+                        </svg>
                     </div>
 
                     <h3>
@@ -486,7 +489,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <article class="cms-card">
 
                     <div class="cms-logo">
-                        B24
+                        <svg class="cms-logo__icon" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                            <path d="M7 9.5 16 5l9 4.5-9 4.5-9-4.5Z"/>
+                            <path d="m7 15 9 4.5 9-4.5M7 20.5 16 25l9-4.5"/>
+                            <path d="M7 9.5v11M25 9.5v11"/>
+                            <circle cx="16" cy="19.5" r="1.4" fill="currentColor" stroke="none"/>
+                        </svg>
                     </div>
 
                     <h3>
@@ -504,7 +512,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <article class="cms-card">
 
                     <div class="cms-logo">
-                        T
+                        <svg class="cms-logo__icon" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                            <rect x="5" y="5" width="22" height="6" rx="2"/>
+                            <rect x="5" y="14" width="10" height="13" rx="2"/>
+                            <rect x="18" y="14" width="9" height="5" rx="2"/>
+                            <rect x="18" y="22" width="9" height="5" rx="2"/>
+                        </svg>
                     </div>
 
                     <h3>
@@ -522,7 +535,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <article class="cms-card">
 
                     <div class="cms-logo">
-                        W
+                        <svg class="cms-logo__icon" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                            <rect x="4.5" y="5" width="23" height="22" rx="4"/>
+                            <path d="M4.5 10.5h23M8 7.8h.1M11.5 7.8h.1"/>
+                            <path d="M8 22c3.2-7.5 7.4-7.5 10.4-2.2 1.7 3 3.5 3.1 5.6-2.8"/>
+                            <circle cx="8" cy="22" r="1.25" fill="currentColor" stroke="none"/>
+                            <circle cx="24" cy="17" r="1.25" fill="currentColor" stroke="none"/>
+                        </svg>
                     </div>
 
                     <h3>
@@ -540,7 +559,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <article class="cms-card">
 
                     <div class="cms-logo">
-                        PHP
+                        <svg class="cms-logo__icon" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                            <path d="m11.5 8-7 8 7 8M20.5 8l7 8-7 8M18.5 5 13.5 27"/>
+                        </svg>
                     </div>
 
                     <h3>
@@ -558,7 +579,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <article class="cms-card">
 
                     <div class="cms-logo">
-                        AI
+                        <svg class="cms-logo__icon" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                            <rect x="5.5" y="8.5" width="21" height="17" rx="5"/>
+                            <path d="M16 5v3.5"/>
+                            <circle cx="16" cy="4.5" r="1.25" fill="currentColor" stroke="none"/>
+                            <circle cx="12" cy="16" r="1.5" fill="currentColor" stroke="none"/>
+                            <circle cx="20" cy="16" r="1.5" fill="currentColor" stroke="none"/>
+                            <path d="M11.5 21c2.6 1.8 6.4 1.8 9 0"/>
+                        </svg>
                     </div>
 
                     <h3>

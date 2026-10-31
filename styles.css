@@ -1208,6 +1208,18 @@ main.tariffs-page {
     font-weight: bold;
 }
 
+.cms-logo__icon {
+    width: 27px;
+    height: 27px;
+    overflow: visible;
+    color: #f4f1ff;
+    stroke: currentColor;
+    stroke-width: 1.65;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 5px rgba(216, 207, 255, 0.34));
+}
+
 .cms-card h3 {
     margin: 0 0 10px;
 
@@ -5321,8 +5333,7 @@ body.home-page {
     pointer-events: none;
     z-index: 3;
 }
-.about-studio__eyebrow { display: block; font-size: 10px; font-weight: 600; letter-spacing: .45em; color: #7b82ff; }
-.about-studio h2 { margin: 10px 0 12px; color: #fff; font-size: clamp(38px, 4vw, 56px); font-weight: 750; line-height: 1.05; letter-spacing: -.035em; }
+.about-studio h2 { margin: 0 0 12px; color: #fff; font-size: clamp(32px, 3.6vw, 48px); font-weight: 750; line-height: 1.1; letter-spacing: -.035em; }
 .about-studio h2 span { color: #a58aff; background: linear-gradient(110deg,#d8d5ff,#a382ff 65%,#7b82ff); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .about-studio__description { max-width: 640px; margin: 0; color: #c8c6e7; font-size: 17px; line-height: 1.45; }
 .about-studio__benefits { display: flex; justify-content: space-between; gap: 24px; padding: 0; margin: 24px 0 0; list-style: none; }
