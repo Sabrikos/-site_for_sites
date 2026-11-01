@@ -6,40 +6,57 @@
   box-sizing: border-box;
 }
 
+/* Решения для повседневных процессов и реальные демопроекты. */
+.work-solutions{position:relative;margin:80px auto 110px;max-width:1400px;padding:0 40px;color:#e9e5ff}
+.work-solutions__heading{max-width:820px;margin-bottom:38px}
+.work-solutions__eyebrow{font-size:11px;letter-spacing:.2em;color:#a89aff;margin-bottom:18px}
+.work-solutions__heading h2{font-size:clamp(34px,4.5vw,64px);line-height:1.1;margin:0 0 18px}
+.work-solutions__heading h2 span{color:#a99afa}
+.work-solutions__heading>p:last-child{font-size:16px;line-height:1.7;color:#bcb7d3}
+.work-solutions__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.work-solutions__grid article{min-height:190px;padding:24px;border:1px solid #7773ba55;border-radius:12px;background:#211e3b}
+.work-solutions__grid article>span{font-size:11px;color:#ad9fff;letter-spacing:.12em}
+.work-solutions__grid h3{font-size:21px;line-height:1.2;margin:18px 0 12px;color:#f5f1ff}
+.work-solutions__grid p{font-size:14px;line-height:1.65;color:#c3bdd8;margin:0}
+.work-solutions__grid .work-solutions__cta{background:#393166}
+.work-solutions__cta h3{margin-top:0}
+.work-solutions__cta a,.portfolio-link{display:inline-flex;align-items:center;gap:15px;margin-top:20px;color:#e3d8ff;font-weight:600;text-decoration:none;border-bottom:1px solid #a998ff;padding:8px 0}
+.work-solutions__cta a:focus-visible,.portfolio-link:focus-visible,.portfolio-image:focus-visible{outline:2px solid #e3d8ff;outline-offset:5px}
+.portfolio-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.portfolio-image{display:block;overflow:hidden;aspect-ratio:16/9;background:#19182d}
+.portfolio-image img{width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.portfolio-image:hover img{transform:scale(1.04)}
+.portfolio-card .project-content p{max-width:55ch}
+@media(max-width:900px){.work-solutions__grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.work-solutions{padding:0 20px;margin:65px auto 80px}.work-solutions__grid,.portfolio-grid{grid-template-columns:1fr}.work-solutions__grid article{min-height:0}.work-solutions__heading h2{font-size:34px}}
+@media(prefers-reduced-motion:reduce){.portfolio-image img{transition:none}}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: var(--navigation-offset, 100px);
-    scrollbar-width: thin;
-    scrollbar-color: #656dff #11122f;
+    scrollbar-width: none;
 }
 
 html::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-html::-webkit-scrollbar-track {
-    background: #11122f;
-}
-
-html::-webkit-scrollbar-thumb {
-    border: 2px solid #11122f;
-    border-radius: 999px;
-    background: #656dff;
-}
-
-html::-webkit-scrollbar-thumb:hover {
-    background: #858bff;
+    width: 0;
+    height: 0;
 }
 
 body {
   margin: 0;
 
-  font-family: Arial, sans-serif;
+    font-family: Arial, sans-serif;
 
   color: #1f2937;
 
   background: #f3f4f6;
+
+    scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 /* ==================================================
@@ -6540,3 +6557,19 @@ main.checkout-page .checkout-empty-desktop p { margin: 0 0 18px; font-size: 14px
     main.cart-page #cartPageEmpty h3 { font-size: 21px; margin-bottom: 8px; }
     main.cart-page #cartPageEmpty p { margin: 0 0 18px; font-size: 14px; line-height: 1.5; }
 }
+
+#projects .projects-grid.portfolio-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:640px){#projects .projects-grid.portfolio-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Все движущиеся части взяты из исходного изображения. */
+.contact-alien{aspect-ratio:1086 / 1448}
+.contact-alien__original,.contact-alien__rig{position:absolute;inset:0;display:block;width:100%;height:100%}
+.contact-alien__rig{visibility:hidden;overflow:visible}
+.contact-alien.is-ready .contact-alien__rig{visibility:visible}
+.contact-alien.is-ready .contact-alien__original{visibility:hidden}
+.contact-alien__arm{transform-origin:660px 885px;transform:rotate(var(--alien-arm-angle,0deg))}
+.contact-alien__eyes{transform:translate(var(--alien-eye-x,0px),var(--alien-eye-y,0px))}
+.contact-alien__lids{opacity:0;transition:opacity .09s ease}
+.contact-alien.is-blinking .contact-alien__lids{opacity:1}
+@media(prefers-reduced-motion:reduce){.contact-alien__rig{visibility:hidden!important}.contact-alien.is-ready .contact-alien__original{visibility:visible!important}}
+

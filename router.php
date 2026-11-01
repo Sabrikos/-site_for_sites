@@ -12,7 +12,8 @@ if ($path !== '/' && $extension === 'php') {
     $blocked = $blocked || !(in_array(ltrim($path, '/'), $publicPages, true) ||
         preg_match('~^/(?:api/chat|admin/(?:index|login|logout|orders|order|chats|chat-api|services|tariffs|faq))\.php$~', $path));
 } elseif ($path !== '/') {
-    $blocked = $blocked || !in_array($extension, ['css', 'js', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'ico', 'svg', 'woff', 'woff2'], true);
+    $portfolioPage = preg_match('~^/portfolio/(?:apex-detailing|ramen-404)/(?:index|404)\.html$~', $path);
+    $blocked = $blocked || (!$portfolioPage && !in_array($extension, ['css', 'js', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'ico', 'svg', 'woff', 'woff2'], true));
 }
 if ($blocked) {
     require __DIR__ . '/404.php';

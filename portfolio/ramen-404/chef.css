@@ -1,0 +1,106 @@
+/* Chef 404: cut-paper silhouette, not a sticker. All rules are character scoped. */
+.chef-mount { --chef-ink:#242723; --chef-paper:#e6ddc9; --chef-red:#bd4535; --chef-head-x:0px; --chef-head-y:0px; --chef-eye-x:0px; --chef-eye-y:0px; display:block; pointer-events:none; contain:layout style; }
+.chef-figure { display:block; width:100%; height:auto; max-height:100%; overflow:visible; }
+.chef-ground { stroke:var(--chef-paper); stroke-width:1; opacity:.3; }
+.chef-leg,.chef-shoe,.chef-hair { fill:var(--chef-ink); stroke:var(--chef-paper); stroke-width:1; }
+.chef-jacket,.chef-sleeve { fill:var(--chef-ink); stroke:var(--chef-paper); stroke-width:1.5; stroke-linejoin:round; }
+.chef-collar,.chef-jacket-seam { fill:none; stroke:var(--chef-paper); stroke-width:1; opacity:.75; }
+.chef-apron { fill:var(--chef-paper); stroke:var(--chef-ink); stroke-width:1.4; }
+.chef-apron-line { fill:none; stroke:var(--chef-ink); stroke-width:1.1; }
+.chef-label { fill:var(--chef-red); }
+.chef-mark { fill:var(--chef-paper); font:7px 'Courier New',monospace; }
+.chef-hand,.chef-face,.chef-neck { fill:#c0a789; stroke:var(--chef-ink); stroke-width:1.4; }
+.chef-headband { fill:var(--chef-paper); stroke:var(--chef-ink); stroke-width:1; }
+.chef-brow,.chef-nose,.chef-mouth { fill:none; stroke:var(--chef-ink); stroke-width:1.3; stroke-linecap:round; }
+.chef-eyes { fill:none; stroke:var(--chef-ink); stroke-width:2.5; stroke-linecap:round; transform:translate(var(--chef-eye-x),var(--chef-eye-y)); }
+.chef-head { transform:translate(var(--chef-head-x),var(--chef-head-y)); transform-origin:91px 94px; transition:transform .35s cubic-bezier(.2,.6,.3,1); }
+.chef-surprise-mouth { fill:var(--chef-ink); opacity:0; }
+.chef-arm-left { transform-origin:65px 109px; transition:transform .5s cubic-bezier(.2,.6,.3,1); }
+.chef-arm-right { transform-origin:117px 108px; transition:transform .5s cubic-bezier(.2,.6,.3,1); }
+.chef-towel { fill:var(--chef-paper); stroke:var(--chef-ink); stroke-width:1; transform-origin:42px 177px; }
+.chef-towel-line { fill:none; stroke:var(--chef-red); stroke-width:1; }
+.chef-tool-ladle { fill:none; stroke:var(--chef-paper); stroke-width:2; }
+.chef-ladle-cup { fill:#8e9891; stroke:var(--chef-ink); stroke-width:1; }
+.chef-tool-chopsticks { fill:none; stroke:#b29365; stroke-width:2; opacity:0; }
+.chef-noodles { stroke:var(--chef-paper); stroke-width:1.5; }
+.chef-pot { fill:var(--chef-ink); stroke:var(--chef-paper); stroke-width:1.5; opacity:0; transition:opacity .25s; }
+.chef-soup { fill:#aa7144; stroke:none; }
+.chef-serving-bowl { fill:var(--chef-red); stroke:var(--chef-paper); stroke-width:1; opacity:0; transform:translateY(10px); transform-origin:95px 180px; transition:opacity .2s,transform .5s cubic-bezier(.2,.6,.3,1); }
+.chef-serving-bowl ellipse { fill:var(--chef-ink); }
+.chef-bowl-lines { fill:none; stroke:var(--chef-paper); stroke-width:1.5; }
+.chef-ticket { fill:var(--chef-paper); stroke:var(--chef-ink); stroke-width:1; opacity:0; transform:translateY(5px); transition:opacity .2s,transform .35s; }
+.chef-ticket-lines { fill:none; stroke:var(--chef-ink); stroke-width:1; }
+.chef-stamp { fill:none; stroke:var(--chef-red); stroke-width:1.6; opacity:0; transform-origin:139px 137px; }
+.chef-toppings { fill:#8a9b71; opacity:0; transform-origin:133px 143px; }
+.chef-state-watching .chef-brow { transform:translateY(-.5px); }
+.chef-state-cooking.chef-is-active .chef-arm-right { animation:chef-stir 1.3s ease-in-out infinite; }
+.chef-state-cooking.chef-is-active .chef-pot { opacity:1; }
+.chef-state-cooking.chef-is-active[data-chef-stage=noodles] .chef-tool-ladle { opacity:0; }
+.chef-state-cooking.chef-is-active[data-chef-stage=noodles] .chef-tool-chopsticks { opacity:1; }
+.chef-state-cooking.chef-is-active[data-chef-stage=noodles] .chef-arm-right { animation:chef-lift 1.2s ease-in-out both; }
+.chef-state-cooking.chef-is-active[data-chef-stage=toppings] .chef-toppings,.chef-state-cooking.chef-is-active[data-chef-stage=protein] .chef-toppings { animation:chef-toss .9s cubic-bezier(.25,.5,.4,1) both; }
+.chef-state-waiting.chef-is-active .chef-head { transform:translateY(1px) rotate(-2deg); }
+.chef-state-waiting.chef-is-active .chef-arm-right { transform:rotate(-8deg); }
+.chef-state-waiting.chef-is-active .chef-tool-ladle { opacity:.25; }
+.chef-state-waiting.chef-is-active[data-chef-stage=ticket] .chef-ticket,.chef-state-approved.chef-is-active[data-chef-stage=ticket] .chef-ticket { opacity:1; transform:none; }
+.chef-state-surprised .chef-surprise-mouth { opacity:1; }
+.chef-state-surprised .chef-mouth { opacity:0; }
+.chef-state-surprised .chef-brow { transform:translateY(-2px); }
+.chef-state-surprised.chef-is-active .chef-head { animation:chef-take .6s ease-out both; }
+.chef-state-approved.chef-is-active .chef-head { animation:chef-nod .75s ease-in-out both; }
+.chef-state-approved.chef-is-active .chef-stamp { animation:chef-stamp-in .5s .15s ease-out both; }
+.chef-state-approved.chef-is-active[data-chef-stage=ticket] .chef-arm-right { transform:rotate(-16deg); }
+.chef-state-busy.chef-is-active[data-chef-stage=wipe] .chef-arm-left { animation:chef-wipe 1.5s ease-in-out both; }
+.chef-state-busy.chef-is-active[data-chef-stage=wipe] .chef-towel { animation:chef-cloth 1.5s ease-in-out both; }
+.chef-state-serving.chef-is-active .chef-serving-bowl { opacity:1; transform:translateX(11px) translateY(-3px); }
+.chef-state-serving.chef-is-active .chef-arm-left { transform:rotate(-35deg); }
+.chef-state-serving.chef-is-active .chef-arm-right { transform:rotate(23deg); }
+.chef-state-serving.chef-is-active .chef-towel,.chef-state-serving.chef-is-active .chef-tool-ladle { opacity:0; }
+.chef-state-sleeping .chef-head { transform:rotate(-6deg) translateY(2px); }
+.chef-state-sleeping .chef-eyes { transform:scaleY(.35); transform-origin:90px 62px; }
+.chef-mount[data-chef=lost] .chef-serving-bowl { opacity:1; transform:none; fill:var(--chef-ink); }
+.chef-mount[data-chef=lost] .chef-bowl-lines { opacity:0; }
+.chef-mount[data-chef=lost] .chef-arm-left { transform:rotate(-35deg); }
+.chef-mount[data-chef=lost] .chef-arm-right { transform:rotate(23deg); }
+.chef-mount[data-chef=lost] .chef-towel,.chef-mount[data-chef=lost] .chef-tool-ladle { opacity:0; }
+/* The doorway companion is a complete seated shiba, drawn in the same warm ink. */
+.chef-dog { --chef-dog-fur:#b97943; --chef-dog-edge:#654730; --chef-dog-cream:#eadbc1; --chef-dog-dark:#302b25; filter:drop-shadow(0 4px 3px #110d0840); }
+.chef-dog-shadow { fill:#1b1712; opacity:.35; }
+.chef-dog-tail,.chef-dog-haunch,.chef-dog-body,.chef-dog-face { fill:var(--chef-dog-fur); stroke:var(--chef-dog-edge); stroke-width:1.2; stroke-linejoin:round; }
+.chef-dog-tail-tip,.chef-dog-chest,.chef-dog-mask,.chef-dog-brow,.chef-dog-muzzle { fill:var(--chef-dog-cream); stroke:none; }
+.chef-dog-haunch { fill:#a9673a; }
+.chef-dog-foreleg,.chef-dog-rear-paw { fill:var(--chef-dog-cream); stroke:#957148; stroke-width:1.2; stroke-linejoin:round; }
+.chef-dog-rear-paw { fill:#b27a49; }
+.chef-dog-foreleg-near { fill:#e2cfad; }
+.chef-dog-toes,.chef-dog-mouth,.chef-dog-fur-line { fill:none; stroke:var(--chef-dog-dark); stroke-width:1.1; stroke-linecap:round; }
+.chef-dog-toes { opacity:.6; }
+.chef-dog-fur-line { opacity:.45; }
+.chef-dog-head { transform:translate(var(--chef-head-x),var(--chef-head-y)); transform-origin:80px 104px; transition:transform .4s cubic-bezier(.2,.6,.3,1); }
+.chef-dog-ear-left,.chef-dog-ear-right { fill:var(--chef-dog-fur); stroke:var(--chef-dog-edge); stroke-width:1.2; stroke-linejoin:round; transition:transform .4s ease; }
+.chef-dog-ear-left { transform:rotate(var(--chef-ear-left,0deg)); transform-origin:56px 50px; }
+.chef-dog-ear-right { transform:rotate(var(--chef-ear-right,0deg)); transform-origin:103px 45px; }
+.chef-dog-ear-inner { fill:#81543d; stroke:none; }
+.chef-dog-eyes { fill:var(--chef-dog-dark); transform:translate(var(--chef-eye-x),var(--chef-eye-y)); }
+.chef-dog-blink { transform-origin:80px 67px; animation:chef-dog-blink 11s linear infinite; }
+.chef-dog-nose { fill:var(--chef-dog-dark); }
+.chef-dog-collar,.chef-dog-collar-knot { fill:#b84c36; stroke:#763c2c; stroke-width:.8; }
+.chef-dog-bowl { fill:#ab4b36; stroke:#e0c9a5; stroke-width:1.1; }
+.chef-dog-bowl ellipse { fill:#413b30; }
+.chef-dog-bowl-rim { fill:none; stroke:#dfbf99; stroke-width:.8; }
+.chef-state-surprised.chef-is-active .chef-dog-ear-right,.chef-state-busy.chef-is-active[data-chef-stage=listen] .chef-dog-ear-right { animation:chef-dog-listen 1s ease-in-out both; }
+.chef-state-approved.chef-is-active .chef-dog-head { animation:chef-dog-tilt .8s ease-in-out both; }
+.chef-state-sleeping .chef-dog-blink { animation:none; transform:scaleY(.12); }
+.chef-is-offscreen .chef-figure *,.chef-is-paused .chef-figure * { animation-play-state:paused!important; }
+.chef-motion-reduced .chef-figure * { animation:none!important; transition:none!important; }
+@keyframes chef-stir { 0%,100% { transform:rotate(-3deg); } 50% { transform:rotate(5deg) translateY(2px); } }
+@keyframes chef-lift { 0% { transform:rotate(0deg); } 50%,80% { transform:rotate(-12deg) translateY(-11px); } 100% { transform:rotate(-9deg) translateY(-8px); } }
+@keyframes chef-toss { 0% { opacity:0; transform:translate(7px,-8px) rotate(-10deg); } 20% { opacity:1; transform:translate(-4px,-23px) rotate(10deg); } 75% { opacity:1; transform:translate(-34px,55px) rotate(65deg); } 100% { opacity:0; transform:translate(-37px,65px) rotate(75deg); } }
+@keyframes chef-nod { 0%,100% { transform:rotate(0deg); } 35% { transform:rotate(3deg) translateY(3px); } 70% { transform:rotate(-1deg); } }
+@keyframes chef-take { 25% { transform:translateY(-2px) rotate(-2deg); } 100% { transform:none; } }
+@keyframes chef-wipe { 0%,100% { transform:rotate(0deg); } 30%,65% { transform:rotate(-28deg) translate(8px,5px); } 48% { transform:rotate(-18deg) translate(3px,5px); } }
+@keyframes chef-cloth { 40% { transform:rotate(-10deg); } 70% { transform:rotate(8deg); } }
+@keyframes chef-stamp-in { 0% { opacity:0; transform:scale(1.2); } 35%,100% { opacity:1; transform:scale(1); } }
+@keyframes chef-dog-blink { 0%,46%,48%,100% { transform:scaleY(1); } 47% { transform:scaleY(.12); } }
+@keyframes chef-dog-listen { 0%,100% { transform:rotate(var(--chef-ear-right,0deg)); } 35%,65% { transform:rotate(5deg); } }
+@keyframes chef-dog-tilt { 0%,100% { transform:translate(var(--chef-head-x),var(--chef-head-y)); } 45% { transform:rotate(-2deg) translateY(1px); } }
+@media(prefers-reduced-motion:reduce) { .chef-figure * { animation:none!important; transition:none!important; } }

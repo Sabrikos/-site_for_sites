@@ -334,6 +334,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </section>
 
+        <section class="work-solutions" aria-labelledby="work-solutions-title">
+            <div class="work-solutions__heading"><p class="work-solutions__eyebrow">ДЛЯ РАБОТЫ И БИЗНЕСА</p><h2 id="work-solutions-title">Меньше рутины.<br><span>Больше времени на дело.</span></h2><p>Подберём решение под ваши процессы: от первой идеи до работающего инструмента.</p></div>
+            <div class="work-solutions__grid">
+                <article><span>01</span><h3>Автоматизация задач</h3><p>Поможем сократить ручной ввод, собрать данные и настроить повторяющиеся процессы.</p></article>
+                <article><span>02</span><h3>Таблицы и отчёты</h3><p>Приведём данные в порядок, настроим расчёты и понятные отчёты для ежедневной работы.</p></article>
+                <article><span>03</span><h3>Боты и заявки</h3><p>Создадим Telegram-бота или форму для обращений, уведомлений и типовых вопросов.</p></article>
+                <article><span>04</span><h3>Внутренние инструменты</h3><p>Разработаем небольшую панель, каталог или личный кабинет для задач вашей команды.</p></article>
+                <article><span>05</span><h3>Связь между сервисами</h3><p>Поможем передавать данные между сайтом, таблицами и другими системами при наличии доступа.</p></article>
+                <article class="work-solutions__cta"><h3>Расскажите, что отнимает время</h3><p>Опишите процесс в форме — обсудим задачу и оценим объём.</p><a href="#application">Обсудить решение <span aria-hidden="true">↗</span></a></article>
+            </div>
+        </section>
+
         <!-- наши технологии -->
 
         <section class="technologies-section studio-stack" id="technologies" aria-labelledby="stack-title">
@@ -606,133 +618,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </section>
 
         <!-- наши проекты -->
-
-        <section class="projects-section planet-panel"
-            id="projects">
-            <div class="section-heading">
-
-                <h2>
-                    Наши <span>проекты</span>
-                </h2>
-
-                <p>
-                    Несколько примеров сайтов и решений,
-                    над которыми мы работали.
-                </p>
-
-            </div>
-
-
-            <div class="projects-grid">
-
-
-                <article class="project-card">
-
-                    <div class="project-preview project-preview-one">
-
-                        <span>
-                            Интернет-магазин
-                        </span>
-
-                    </div>
-
-
-                    <div class="project-content">
-
-                        <span class="project-type">
-                            Интернет-магазин
-                        </span>
-
-                        <h3>
-                            Aura Store
-                        </h3>
-
-                        <p>
-                            Интернет-магазин с каталогом,
-                            карточками товаров и корзиной.
-                        </p>
-
-
-                        <div class="project-tags">
-
-                            <span>PHP</span>
-
-                            <span>JavaScript</span>
-
-                            <span>MySQL</span>
-
-                        </div>
-
-                    </div>
-
-                </article>
-
-
-                <article class="project-card">
-
-                    <div class="project-preview project-preview-two">
-
-                        <span>
-                            Сайт услуг
-                        </span>
-
-                    </div>
-
-
-                    <div class="project-content">
-
-                        <span class="project-type">
-                            Корпоративный сайт
-                        </span>
-
-                        <h3>
-                            Beauty Studio
-                        </h3>
-
-                        <p>
-                            Сайт салона с услугами,
-                            формой обратной связи и адаптивным дизайном.
-                        </p>
-
-
-                        <div class="project-tags">
-
-                            <span>HTML</span>
-
-                            <span>CSS</span>
-
-                            <span>PHP</span>
-
-                        </div>
-
-                    </div>
-
-                </article>
-
-
-                <article class="project-card project-coming">
-
-                    <div class="coming-content">
-
-                        <span>
-                            Новый проект
-                        </span>
-
-                        <h3>
-                            Скоро здесь будет ещё один проект
-                        </h3>
-
-                        <p>
-                            Мы постоянно пополняем портфолио новыми работами.
-                        </p>
-
-                    </div>
-
-                </article>
-
-
-            </div>
-
+        <section class="projects-section planet-panel" id="projects" aria-labelledby="projects-title">
+          <div class="section-heading"><h2 id="projects-title">Наши <span>проекты</span></h2><p>Демонстрационные сайты: можно открыть и попробовать основные сценарии.</p></div>
+          <div class="projects-grid portfolio-grid">
+            <article class="project-card portfolio-card"><a class="portfolio-image" href="portfolio/apex-detailing/index.html" aria-label="Открыть демосайт APEX DETAILING"><img src="portfolio/apex-detailing/assets/images/hero.webp" alt="Автомобиль на тёмном фоне — первый экран APEX DETAILING" loading="lazy"></a><div class="project-content"><span class="project-type">ДЕТЕЙЛИНГ · ДЕМО</span><h3>APEX DETAILING</h3><p>Сайт студии ухода за автомобилями: услуги, подбор автомобиля, калькулятор и демонстрационная форма записи.</p><div class="project-tags"><span>Интерактив</span><span>Адаптивный дизайн</span></div><a class="portfolio-link" href="portfolio/apex-detailing/index.html">Открыть демосайт <span aria-hidden="true">↗</span></a></div></article>
+            <article class="project-card portfolio-card"><a class="portfolio-image" href="portfolio/ramen-404/index.html" aria-label="Открыть демосайт раменной"><img src="portfolio/ramen-404/assets/images/street.webp" alt="Вход в раменную на вечерней улице" loading="lazy"></a><div class="project-content"><span class="project-type">РАМЕННАЯ · ДЕМО</span><h3>Раменная</h3><p>Сайт с интерактивным меню, конструктором рамена, персонажем, галереей и картой с маршрутом. «ПАР» — рабочее название.</p><div class="project-tags"><span>Интерактив</span><span>Анимация</span></div><a class="portfolio-link" href="portfolio/ramen-404/index.html">Открыть демосайт <span aria-hidden="true">↗</span></a></div></article>
+          </div>
         </section>
         </div>
         <!-- контакты -->
@@ -970,6 +861,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <?php renderFooter(); ?>
 <script src="service-select.js?v=2"></script>
+
 <script src="cursor-stars.js?v=native-scroll-1"></script>
 <script src="planet-panels.js?v=25"></script>
 <script src="sphere-code-loop.js?v=canvas-render-2"></script>
