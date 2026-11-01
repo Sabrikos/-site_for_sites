@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../app.php';
+require_once __DIR__ . '/ConsentService.php';
 
 final class OrderService
 {
@@ -15,11 +16,10 @@ final class OrderService
         return mb_strlen($value, 'UTF-8');
     }
 
-    public static function validateCustomer(array $input, bool $requireEmail = true): array
+    public static function validateCustomer(array $input): array
     {
         $name = trim((string) ($input['customer_name'] ?? ''));
         $phone = trim((string) ($input['customer_phone'] ?? ''));
-        $email = trim((string) ($input['customer_email'] ?? ''));
         $comment = trim((string) ($input['project_comment'] ?? ''));
         $errors = [];
 
@@ -29,14 +29,11 @@ final class OrderService
         if (!preg_match('/^[0-9+()\-\s]{7,30}$/u', $phone)) {
             $errors[] = 'Введите корректный номер телефона.';
         }
-        if (($requireEmail || $email !== '') && (self::length($email) > 255 || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
-            $errors[] = 'Введите корректный email.';
-        }
         if (self::length($comment) > 1000) {
             $errors[] = 'Комментарий не должен быть длиннее 1000 символов.';
         }
 
-        return [$errors, compact('name', 'phone', 'email', 'comment')];
+        return [$errors, compact('name', 'phone', 'comment')];
     }
 
     public static function validRequestToken(?string $token): bool
@@ -44,7 +41,7 @@ final class OrderService
         return is_string($token) && preg_match('/^[a-f0-9]{64}$/', $token) === 1;
     }
 
-    public function createCartOrder(array $customer, array $tariffIds, string $requestToken): array
+    public function createCartOrder(array $customer, array $tariffIds, string $requestToken, array $consent): array
     {
         $tariffIds = array_values(array_unique(array_map('intval', $tariffIds)));
         if ($tariffIds === [] || count($tariffIds) > self::MAX_ITEMS) {
@@ -76,10 +73,10 @@ final class OrderService
             ];
         }
 
-        return $this->persist($customer, $items, $requestToken, 'website_cart');
+        return $this->persist($customer, $items, $requestToken, 'website_cart', $consent);
     }
 
-    public function createLead(array $customer, int $serviceId, string $requestToken): array
+    public function createLead(array $customer, int $serviceId, string $requestToken, array $consent): array
     {
         $statement = $this->pdo->prepare('SELECT name FROM services WHERE id = ? AND active = 1');
         $statement->execute([$serviceId]);
@@ -93,10 +90,10 @@ final class OrderService
             'service_name' => (string) $service['name'],
             'tariff_name' => 'Заявка без выбранного тарифа',
             'price' => 0,
-        ]], $requestToken, 'website_lead');
+        ]], $requestToken, 'website_lead', $consent);
     }
 
-    private function persist(array $customer, array $items, string $requestToken, string $source): array
+    private function persist(array $customer, array $items, string $requestToken, string $source, array $consent): array
     {
         $total = array_sum(array_column($items, 'price'));
         $this->pdo->beginTransaction();
@@ -109,16 +106,18 @@ final class OrderService
             }
 
             $order = $this->pdo->prepare('INSERT INTO orders
-                (customer_name, phone, email, project_comment, total, status, source, request_token)
+                (customer_name, phone, project_comment, total, status, source, request_token, personal_data_expires_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-            $order->execute([$customer['name'], $customer['phone'], $customer['email'],
-                $customer['comment'] !== '' ? $customer['comment'] : null, $total, 'new', $source, $requestToken]);
+            $order->execute([$customer['name'], $customer['phone'],
+                $customer['comment'] !== '' ? $customer['comment'] : null, $total, 'new', $source, $requestToken,
+                $consent['retention_until']]);
             $orderId = (int) $this->pdo->lastInsertId();
             $item = $this->pdo->prepare('INSERT INTO order_items
                 (order_id, tariff_id, service_name, tariff_name, price) VALUES (?, ?, ?, ?, ?)');
             foreach ($items as $entry) {
                 $item->execute([$orderId, $entry['tariff_id'], $entry['service_name'], $entry['tariff_name'], $entry['price']]);
             }
+            ConsentService::record($this->pdo, $orderId, $consent);
             $this->pdo->commit();
             return ['id' => $orderId, 'created' => true, 'total' => $total];
         } catch (Throwable $error) {

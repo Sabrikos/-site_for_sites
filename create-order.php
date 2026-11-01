@@ -18,7 +18,6 @@ $errors = [];
 $successOrderId = null;
 $customerName = trim((string) ($_POST['customer_name'] ?? ''));
 $customerPhone = trim((string) ($_POST['customer_phone'] ?? ''));
-$customerEmail = trim((string) ($_POST['customer_email'] ?? ''));
 $projectComment = trim((string) ($_POST['project_comment'] ?? ''));
 $personalDataConsent = isset($_POST['personal_data_consent']);
 
@@ -31,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!appCsrfValid('order_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
         $errors[] = 'Срок действия формы истёк. Обновите страницу и повторите отправку.';
     }
-    [$customerErrors, $customer] = OrderService::validateCustomer($_POST, false);
+    [$customerErrors, $customer] = OrderService::validateCustomer($_POST);
     $errors = array_merge($errors, $customerErrors);
 
     if (!$personalDataConsent) {
@@ -84,7 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if ($errors === []) {
         try {
-            $result = (new OrderService($pdo))->createCartOrder($customer, $tariffIds, $requestToken);
+            $consent = ConsentService::evidence('website_cart', $requestToken);
+            $result = (new OrderService($pdo))->createCartOrder($customer, $tariffIds, $requestToken, $consent);
             $successOrderId = $result['id'];
             appRotateCsrf('order_csrf');
             $_SESSION['order_request_token'] = bin2hex(random_bytes(32));
@@ -95,9 +95,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 '<b>🚀 НОВАЯ ЗАЯВКА Vega Studio</b>\n'
                     . 'Источник: 🌐 Сайт\n'
                     . 'Заказ: #' . $successOrderId . "\n"
-                    . 'Клиент: ' . appTelegramEscape($customerName) . "\n"
-                    . 'Телефон: ' . appTelegramEscape($customerPhone) . "\n"
-                    . 'Email: ' . appTelegramEscape($customerEmail) . "\n"
                     . 'Сумма: ' . number_format((int) $result['total'], 0, '', ' ') . ' ₽',
                 '📋 Открыть заказ',
                 appUrl('admin/order.php?id=' . $successOrderId),
@@ -213,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         <label class="form-consent">
                             <input type="checkbox" name="personal_data_consent" value="1" required>
-                            <span>Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</span>
+                            <span>Я даю <a href="consent.php" target="_blank">согласие на обработку персональных данных</a>. С <a href="privacy.php" target="_blank">политикой обработки персональных данных</a> ознакомлен.</span>
                         </label>
 
                         <button type="submit" class="contact-submit">Отправить заявку</button><p class="checkout-free-note">Обсуждение проекта бесплатно</p>

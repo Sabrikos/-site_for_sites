@@ -13,7 +13,6 @@ $title = 'Vega Studio';
 $subtitle = 'Продвигаем ваш бизнес в сети';
 $customerName = '';
 $customerPhone = '';
-$customerEmail = '';
 $projectType = '';
 $projectTheme = '';
 $selectedService = null;
@@ -62,7 +61,6 @@ $services = $stmt->fetchAll();
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerName = trim($_POST['customer_name'] ?? '');
     $customerPhone = trim($_POST['customer_phone'] ?? '');
-    $customerEmail = '';
     $projectType = trim($_POST['project_type'] ?? '');
     $projectTheme = trim($_POST['project_theme'] ?? '');
     $personalDataConsent = isset($_POST['personal_data_consent']);
@@ -73,9 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     [$customerErrors, $customer] = OrderService::validateCustomer([
         'customer_name' => $customerName,
         'customer_phone' => $customerPhone,
-        'customer_email' => $customerEmail,
         'project_comment' => $projectTheme,
-    ], false);
+    ]);
     $errors = array_merge($errors, $customerErrors);
 
     $serviceId = filter_var($projectType, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
@@ -100,16 +97,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($errors === []) {
         try {
-            $result = (new OrderService($pdo))->createLead($customer, (int) $serviceId, $requestToken);
+            $consent = ConsentService::evidence('website_lead', $requestToken);
+            $result = (new OrderService($pdo))->createLead($customer, (int) $serviceId, $requestToken, $consent);
             $successOrderId = $result['id'];
             appRotateCsrf('home_lead_csrf');
             $_SESSION['home_lead_request_token'] = bin2hex(random_bytes(32));
             if ($result['created']) {
                 try {
-                    appSendTelegram('<b>Новая заявка Vega Studio</b>\nИсточник: главная форма\nЗаказ: #' . $successOrderId
-                        . '\nКлиент: ' . appTelegramEscape($customer['name'])
-                        . '\nТелефон: ' . appTelegramEscape($customer['phone'])
-                        . '\nEmail: ' . appTelegramEscape($customer['email']), 'Открыть заказ', appUrl('admin/order.php?id=' . $successOrderId));
+                    appSendTelegram('<b>Новая заявка Vega Studio</b>\nИсточник: главная форма\nЗаказ: #' . $successOrderId,
+                        'Открыть заказ', appUrl('admin/order.php?id=' . $successOrderId));
                 } catch (Throwable $error) {
                     appLog('Lead notification failed after commit', ['order_id' => $successOrderId, 'type' => get_class($error)]);
                 }
@@ -335,14 +331,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </section>
 
         <section class="work-solutions" aria-labelledby="work-solutions-title">
-            <div class="work-solutions__heading"><p class="work-solutions__eyebrow">ДЛЯ РАБОТЫ И БИЗНЕСА</p><h2 id="work-solutions-title">Меньше рутины.<br><span>Больше времени на дело.</span></h2><p>Подберём решение под ваши процессы: от первой идеи до работающего инструмента.</p></div>
+            <div class="work-solutions__heading">
+                <h2 id="work-solutions-title">Автоматизация <span>бизнеса</span></h2>
+                <p>Меньше ручной работы — больше времени на главное. Подберём инструмент под ваши процессы.</p>
+            </div>
             <div class="work-solutions__grid">
-                <article><span>01</span><h3>Автоматизация задач</h3><p>Поможем сократить ручной ввод, собрать данные и настроить повторяющиеся процессы.</p></article>
-                <article><span>02</span><h3>Таблицы и отчёты</h3><p>Приведём данные в порядок, настроим расчёты и понятные отчёты для ежедневной работы.</p></article>
-                <article><span>03</span><h3>Боты и заявки</h3><p>Создадим Telegram-бота или форму для обращений, уведомлений и типовых вопросов.</p></article>
-                <article><span>04</span><h3>Внутренние инструменты</h3><p>Разработаем небольшую панель, каталог или личный кабинет для задач вашей команды.</p></article>
-                <article><span>05</span><h3>Связь между сервисами</h3><p>Поможем передавать данные между сайтом, таблицами и другими системами при наличии доступа.</p></article>
-                <article class="work-solutions__cta"><h3>Расскажите, что отнимает время</h3><p>Опишите процесс в форме — обсудим задачу и оценим объём.</p><a href="#application">Обсудить решение <span aria-hidden="true">↗</span></a></article>
+                <article class="work-solution-card">
+                    <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M13 3 5 14h6l-1 7 9-12h-6l1-6Z"/></svg></span><h3>Автоматизация задач</h3></div>
+                    <p>Поможем сократить ручной ввод, собрать данные и настроить повторяющиеся процессы.</p>
+                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Автоматизация задач">Обсудить <span aria-hidden="true">↗</span></a>
+                </article>
+                <article class="work-solution-card">
+                    <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M9 9v11m5-7h3m-3 4h3"/></svg></span><h3>Таблицы и отчёты</h3></div>
+                    <p>Приведём данные в порядок, настроим расчёты и понятные отчёты для ежедневной работы.</p>
+                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Таблицы и отчёты">Обсудить <span aria-hidden="true">↗</span></a>
+                </article>
+                <article class="work-solution-card">
+                    <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="7" width="16" height="13" rx="4"/><path d="M12 3v4M2 12v4m20-4v4M9 16h6"/><circle cx="9" cy="12" r=".8"/><circle cx="15" cy="12" r=".8"/></svg></span><h3>Боты и заявки</h3></div>
+                    <p>Создадим Telegram-бота или форму для обращений, уведомлений и типовых вопросов.</p>
+                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Боты и заявки">Обсудить <span aria-hidden="true">↗</span></a>
+                </article>
+                <article class="work-solution-card">
+                    <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M9 9v11m4-7h4m-4 4h4M6 6.5h.01"/></svg></span><h3>Внутренние инструменты</h3></div>
+                    <p>Разработаем небольшую панель, каталог или личный кабинет для задач вашей команды.</p>
+                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Внутренние инструменты">Обсудить <span aria-hidden="true">↗</span></a>
+                </article>
+                <article class="work-solution-card">
+                    <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="8" width="7" height="8" rx="2"/><rect x="15" y="8" width="7" height="8" rx="2"/><path d="M9 10h6m-6 4h6m-3-7 3 3-3 3"/></svg></span><h3>Связь между сервисами</h3></div>
+                    <p>Поможем передавать данные между сайтом, таблицами и другими системами при наличии доступа.</p>
+                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Связь между сервисами">Обсудить <span aria-hidden="true">↗</span></a>
+                </article>
+                <article class="work-solutions__cta"><h3>Что отнимает ваше время?</h3><p>Расскажите о задаче — предложим решение и оценим объём работ.</p><a href="#application">Обсудить задачу</a></article>
             </div>
         </section>
 
@@ -619,10 +638,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <!-- наши проекты -->
         <section class="projects-section planet-panel" id="projects" aria-labelledby="projects-title">
-          <div class="section-heading"><h2 id="projects-title">Наши <span>проекты</span></h2><p>Демонстрационные сайты: можно открыть и попробовать основные сценарии.</p></div>
+          <div class="section-heading"><h2 id="projects-title">Наши <span>проекты</span></h2></div>
           <div class="projects-grid portfolio-grid">
-            <article class="project-card portfolio-card"><a class="portfolio-image" href="portfolio/apex-detailing/index.html" aria-label="Открыть демосайт APEX DETAILING"><img src="portfolio/apex-detailing/assets/images/hero.webp" alt="Автомобиль на тёмном фоне — первый экран APEX DETAILING" loading="lazy"></a><div class="project-content"><span class="project-type">ДЕТЕЙЛИНГ · ДЕМО</span><h3>APEX DETAILING</h3><p>Сайт студии ухода за автомобилями: услуги, подбор автомобиля, калькулятор и демонстрационная форма записи.</p><div class="project-tags"><span>Интерактив</span><span>Адаптивный дизайн</span></div><a class="portfolio-link" href="portfolio/apex-detailing/index.html">Открыть демосайт <span aria-hidden="true">↗</span></a></div></article>
-            <article class="project-card portfolio-card"><a class="portfolio-image" href="portfolio/ramen-404/index.html" aria-label="Открыть демосайт раменной"><img src="portfolio/ramen-404/assets/images/street.webp" alt="Вход в раменную на вечерней улице" loading="lazy"></a><div class="project-content"><span class="project-type">РАМЕННАЯ · ДЕМО</span><h3>Раменная</h3><p>Сайт с интерактивным меню, конструктором рамена, персонажем, галереей и картой с маршрутом. «ПАР» — рабочее название.</p><div class="project-tags"><span>Интерактив</span><span>Анимация</span></div><a class="portfolio-link" href="portfolio/ramen-404/index.html">Открыть демосайт <span aria-hidden="true">↗</span></a></div></article>
+            <article class="project-card portfolio-card"><a class="portfolio-image" href="portfolio/apex-detailing/index.html" aria-label="Открыть демосайт APEX DETAILING"><img src="portfolio/apex-detailing/assets/images/hero.webp" alt="Автомобиль на тёмном фоне — первый экран APEX DETAILING" loading="lazy"></a><div class="project-content"><span class="project-type">ДЕТЕЙЛИНГ · ДЕМО</span><h3>APEX DETAILING</h3><p>Сайт детейлинг-студии с подбором автомобиля, калькулятором услуг и демоформой записи.</p><div class="project-tags"><span>Интерактив</span><span>Адаптивный дизайн</span></div><a class="portfolio-link" href="portfolio/apex-detailing/index.html">Открыть <span aria-hidden="true">↗</span></a></div></article>
+            <article class="project-card portfolio-card"><a class="portfolio-image" href="portfolio/ramen-404/index.html" aria-label="Открыть демосайт раменной"><img src="portfolio/ramen-404/assets/images/street.webp" alt="Вход в раменную на вечерней улице" loading="lazy"></a><div class="project-content"><span class="project-type">РАМЕННАЯ · ДЕМО</span><h3>Раменная</h3><p>Сайт раменной с интерактивным меню, конструктором рамена, галереей и картой.</p><div class="project-tags"><span>Интерактив</span><span>Анимация</span></div><a class="portfolio-link" href="portfolio/ramen-404/index.html">Открыть <span aria-hidden="true">↗</span></a></div></article>
+            <article class="project-card portfolio-card">
+              <a class="portfolio-image" href="portfolio/tiho/index.html" aria-label="Открыть демосайт ТИХО">
+                <img src="portfolio/tiho/assets/stars.png" alt="Вязаные подушки-звёзды в тёплом домашнем интерьере — изделия ТИХО" loading="lazy">
+              </a>
+              <div class="project-content">
+                <span class="project-type">МАСТЕРСКАЯ · ДЕМО</span>
+                <h3>ТИХО</h3>
+                <p>Сайт мастерской вязаных изделий с каталогом, фильтрами, избранным и подбором оттенков.</p>
+                <div class="project-tags"><span>Интерактивный каталог</span><span>Адаптивный дизайн</span></div>
+                <a class="portfolio-link" href="portfolio/tiho/index.html">Открыть <span aria-hidden="true">↗</span></a>
+              </div>
+            </article>
           </div>
         </section>
         </div>
@@ -805,7 +836,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <div class="form-consent">
                         <input type="checkbox" id="home_personal_data_consent" name="personal_data_consent" value="1" required>
-                        <label for="home_personal_data_consent">Я согласен на обработку персональных данных и ознакомлен с <a href="privacy.php" target="_blank">политикой конфиденциальности</a>.</label>
+                        <label for="home_personal_data_consent">Я даю <a href="consent.php" target="_blank">согласие на обработку персональных данных</a>. С <a href="privacy.php" target="_blank">политикой обработки персональных данных</a> ознакомлен.</label>
                     </div>
 
                     <button

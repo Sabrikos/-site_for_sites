@@ -30,7 +30,7 @@ final class ChatService
         $statement->execute([$sessionKey]);
         $conversation = $statement->fetch();
         if (!$conversation) {
-            $this->pdo->prepare('INSERT INTO chat_conversations (session_key) VALUES (?)')->execute([$sessionKey]);
+            $this->pdo->prepare('INSERT INTO chat_conversations (session_key, personal_data_expires_at) VALUES (?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR))')->execute([$sessionKey]);
             $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
             $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я виртуальный помощник Vega Studio. Расскажите, какой проект вы планируете.');
         }
@@ -40,7 +40,7 @@ final class ChatService
 
     public function startFreshConversation(string $sessionKey): array
     {
-        $this->pdo->prepare('INSERT INTO chat_conversations (session_key, status) VALUES (?, ?)')->execute([$sessionKey, 'bot']);
+        $this->pdo->prepare('INSERT INTO chat_conversations (session_key, status, personal_data_expires_at) VALUES (?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR))')->execute([$sessionKey, 'bot']);
         $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
         $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я снова готов помочь. Расскажите, какой у вас вопрос.');
         $this->pdo->prepare('INSERT IGNORE INTO chat_assistant_state (conversation_id) VALUES (?)')->execute([$conversation['id']]);
@@ -51,7 +51,8 @@ final class ChatService
     {
         $this->pdo->prepare('INSERT INTO chat_messages (conversation_id, sender, message) VALUES (?, ?, ?)')->execute([$id, $sender, $text]);
         $messageId = (int) $this->pdo->lastInsertId();
-        $this->pdo->prepare('UPDATE chat_conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?')->execute([$id]);
+        $this->pdo->prepare('UPDATE chat_conversations SET updated_at = CURRENT_TIMESTAMP,
+            personal_data_expires_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR) WHERE id = ?')->execute([$id]);
         return $messageId;
     }
 

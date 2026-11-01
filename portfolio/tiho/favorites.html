@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#303d2d" />
+    <meta
+      name="description"
+      content="Любимые вещи и пожелания к изделиям ТИХО. Сохраните свою подборку домашнего тепла."
+    />
+    <title>Избранное — ТИХО</title>
+    <link rel="icon" href="assets/logo.png?v=1" type="image/png" />
+    <link rel="stylesheet" href="assets/fonts.css" />
+    <link rel="stylesheet" href="style.css?v=3" />
+    <link rel="stylesheet" href="redesign.css?v=3" />
+    <link rel="stylesheet" href="warmth.css?v=15" />
+    <link rel="stylesheet" href="favorites.css?v=3" />
+    <script src="catalog.js?v=1" defer></script>
+    <script src="saved-items.js?v=2" defer></script>
+    <script src="script.js?v=9" defer></script>
+    <script src="favorites.js?v=2" defer></script>
+  </head>
+  <body class="saved-page">
+    <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <symbol id="arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 5l7 7-7 7"></path></symbol>
+      <symbol id="heart" viewBox="0 0 24 24">
+        <path
+          d="M20.5 5.5c-2-2-5-1.5-8.5 2-3.5-3.5-6.5-4-8.5-2s-2 5 0 7L12 21l8.5-8.5c2-2 2-5 0-7Z"
+        ></path>
+      </symbol>
+      <symbol id="home" viewBox="0 0 32 32">
+        <path d="m3 15 13-12 13 12M7 12v17h7V19h6v10h6V12" />
+      </symbol>
+      <symbol id="search" viewBox="0 0 32 32">
+        <circle cx="14" cy="14" r="9" />
+        <path d="m21 21 8 8" />
+      </symbol>
+    </svg>
+    <a class="skip-link" href="#main">Перейти к содержимому</a>
+    <header class="header">
+      <a class="brand" href="index.html" aria-label="ТИХО — на главную">
+        <img class="brand-logo" src="assets/logo.png" alt="" width="64" height="64" />
+        <div class="brand-copy">тихо<span>вещи с теплом</span></div>
+      </a>
+      <nav id="navigation" aria-label="Основное меню">
+        <a href="index.html#collection">Коллекция</a><a href="index.html#philosophy">О вещах</a
+        ><a href="index.html#custom">На заказ</a><a href="index.html#questions">Вопросы</a>
+      </nav>
+      <div class="header-actions">
+        <a class="search-toggle" href="index.html#collection" aria-label="Найти изделие"
+          ><svg aria-hidden="true"><use href="#search"></use></svg></a
+        ><a
+          class="favorite-toggle"
+          href="favorites.html"
+          aria-current="page"
+          aria-label="Открыть избранное"
+        >
+          <svg><use href="#heart"></use></svg><span id="favorite-count">0</span></a
+        ><button
+          type="button"
+          class="header-link"
+          data-order
+          aria-haspopup="dialog"
+          aria-controls="order-dialog"
+        >
+          Ваша идея <svg aria-hidden="true"><use href="#arrow"></use></svg></button
+        ><button
+          class="menu-toggle"
+          aria-label="Открыть меню"
+          aria-expanded="false"
+          aria-controls="navigation"
+        >
+          <span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main" class="saved-main wrap">
+      <a class="saved-back" href="index.html#collection">← Вернуться к коллекции</a>
+      <div class="saved-heading">
+        <div>
+          <p class="eyebrow">ИЗБРАННОЕ · ВЕЩИ И ВАШИ ИДЕИ</p>
+          <h1>Ваше маленькое<br /><em>собрание тепла.</em></h1>
+        </div>
+        <p>
+          Вещи, которые откликнулись, и детали будущих изделий. Сохраните то, к чему хочется
+          вернуться.
+        </p>
+      </div>
+      <div class="saved-tabs" role="group" aria-label="Что показать в избранном">
+        <button type="button" class="active" data-saved-filter="all" aria-pressed="true">
+          Всё <span id="tab-all-count">0</span>
+        </button>
+        <button type="button" data-saved-filter="products" aria-pressed="false">
+          Вещи <span id="tab-products-count">0</span>
+        </button>
+        <button type="button" data-saved-filter="wishes" aria-pressed="false">
+          Пожелания <span id="tab-wishes-count">0</span>
+        </button>
+      </div>
+      <div class="saved-layout">
+        <div class="saved-content">
+          <section id="saved-empty" class="saved-empty" hidden>
+            <svg aria-hidden="true"><use href="#heart"></use></svg>
+            <h2 id="saved-empty-title">Тепло начинается с выбора.</h2>
+            <p id="saved-empty-text"></p>
+            <div class="saved-empty-actions">
+              <a class="button" href="index.html#collection">Найти свою вещь →</a
+              ><button type="button" class="text-link" data-order>Собрать пожелания ↗</button>
+            </div>
+          </section>
+          <section
+            id="saved-products-section"
+            class="saved-section"
+            aria-labelledby="saved-products-title"
+            hidden
+          >
+            <div class="saved-section-heading">
+              <h2 id="saved-products-title">Любимые вещи</h2>
+              <span id="saved-product-count">0 вещей</span>
+            </div>
+            <div id="saved-products-grid" class="saved-products-grid"></div>
+          </section>
+          <section
+            id="saved-wishes-section"
+            class="saved-section"
+            aria-labelledby="saved-wishes-title"
+            hidden
+          >
+            <div class="saved-section-heading">
+              <h2 id="saved-wishes-title">Ваши пожелания</h2>
+              <span id="saved-wish-count">0 пожеланий</span>
+            </div>
+            <div id="saved-wishes-grid" class="saved-wishes-grid"></div>
+          </section>
+        </div>
+        <aside class="saved-summary" aria-label="Ваша подборка">
+          <p class="eyebrow">БЛИЖЕ К ВАШЕМУ ДОМУ</p>
+          <h2>Сохранённое<br />рядом.</h2>
+          <dl>
+            <div>
+              <dt>В вашей подборке</dt>
+              <dd><span id="saved-total">0</span></dd>
+            </div>
+          </dl>
+          <button type="button" class="button" data-order>Добавить свою идею →</button>
+          <a class="saved-summary-link" href="index.html#collection">Продолжить выбирать</a>
+          <p>
+            Подборка сохраняется в этом браузере. Цвет, размер и стоимость обсуждаются с мастером —
+            сохранение пожеланий ещё не оформляет заказ.
+          </p>
+        </aside>
+      </div>
+    </main>
+    <footer class="footer wrap">
+      <div class="footer-top">
+        <a href="index.html" class="brand">тихо<span>вещи с теплом</span></a>
+        <p>Для дома, в котором<br />хорошо быть собой.</p>
+        <a href="index.html#collection">В коллекцию ↗</a>
+      </div>
+      <div class="footer-bottom">
+        <span>© ТИХО, 2026</span><span>Вязаные изделия ручной работы</span
+        ><button id="about-demo">Данные и сохранённые вещи</button>
+      </div>
+    </footer>
+    <dialog id="product-dialog" class="product-dialog" aria-labelledby="detail-title">
+      <button class="dialog-close" aria-label="Закрыть">×</button>
+      <div class="product-dialog-grid">
+        <img id="detail-image" src="assets/owl.png" alt="Корзинка «Совушка»" loading="lazy" />
+        <div class="detail-content">
+          <p class="eyebrow">РАССМОТРЕТЬ ПОБЛИЖЕ</p>
+          <h2 id="detail-title">Корзинка «Совушка»</h2>
+          <p id="detail-description">
+            Розово-сиреневая корзинка с выразительными глазами и разноцветными кисточками. Немного
+            сказки и своё место для небольших сокровищ.
+          </p>
+          <p id="detail-price" class="detail-price">Стоимость — по запросу</p>
+          <dl>
+            <div>
+              <dt>Цвет и размер</dt>
+              <dd>Обсуждаем индивидуально</dd>
+            </div>
+            <div>
+              <dt>Срок изготовления</dt>
+              <dd>Уточняем перед заказом</dd>
+            </div>
+          </dl>
+          <button
+            class="button detail-favorite"
+            id="detail-favorite"
+            data-favorite="owl"
+            aria-pressed="false"
+            type="button"
+          >
+            В избранное ♡
+          </button>
+          <button class="button" id="order-product">
+            Хочу такую вещь <svg><use href="#arrow"></use></svg>
+          </button>
+          <p class="form-note">Соберите пожелания к изделию, чтобы обсудить детали с мастером.</p>
+        </div>
+      </div>
+    </dialog>
+    <dialog id="order-dialog" class="order-dialog" aria-label="Пожелания к изделию">
+      <button class="dialog-close" aria-label="Закрыть">×</button>
+      <p class="eyebrow">НАЧНЁМ С ВАШЕЙ ИДЕИ</p>
+      <h2>Каким будет<br /><em>ваше тепло?</em></h2>
+      <p class="order-intro">Соберите детали будущей вещи в одном месте.</p>
+      <form id="order-form">
+        <div class="form-row">
+          <label
+            >Что будем вязать?<select name="item">
+              <option>Пуф «Изумруд»</option>
+              <option>Корзины «Карамель»</option>
+              <option>Корзинка «Лаванда»</option>
+              <option>Корзинка «Совушка»</option>
+              <option>Подушки «Звёзды»</option>
+              <option>Рождественские сапожки</option>
+              <option>Праздничные корзины</option>
+              <option>Моя идея</option>
+            </select></label
+          ><label
+            >Любимый оттенок<select name="color">
+              <option>Лаванда</option>
+              <option>Молочный</option>
+              <option>Изумруд</option>
+              <option>Карамель</option>
+              <option>Ягодный</option>
+              <option>Другой — расскажу ниже</option>
+            </select></label
+          >
+        </div>
+        <label
+          >Размер или пожелания<input
+            name="size"
+            maxlength="80"
+            placeholder="Например, корзина диаметром 25 см" /></label
+        ><label
+          >Что для вас важно?<textarea
+            name="idea"
+            maxlength="1000"
+            rows="3"
+            placeholder="Цвет под интерьер, особенный узор, подарок близкому…"
+          ></textarea></label
+        ><button class="button" type="submit">
+          Собрать мои пожелания <svg><use href="#arrow"></use></svg>
+        </button>
+        <p class="form-note">
+          Нажмите «Собрать мои пожелания» — изделие с вашей заметкой сразу появится в избранном.
+        </p>
+      </form>
+    </dialog>
+    <dialog id="demo-dialog" class="order-dialog" aria-label="Данные и сохранённые вещи">
+      <button class="dialog-close" aria-label="Закрыть">×</button>
+      <p class="eyebrow">ВАШ ВЫБОР — У ВАС</p>
+      <h2>Сохранённое<br /><em>рядом.</em></h2>
+      <p>
+        Избранные изделия и пожелания сохраняются в этом браузере на вашем устройстве. Вы можете
+        удалить их кнопкой ниже.
+      </p>
+      <p>
+        Форма пожеланий работает локально: не отправляет сообщения и не оформляет заказ. На сайте
+        нет рекламных и аналитических счётчиков.
+      </p>
+      <button class="button" id="clear-favorites">Очистить избранное</button>
+    </dialog>
+    <div class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

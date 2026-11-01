@@ -12,6 +12,7 @@ require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/services/ChatService.php';
 require_once __DIR__ . '/services/AiAssistant.php';
 require_once __DIR__ . '/services/SupportRelay.php';
+require_once __DIR__ . '/services/ConsentService.php';
 
 function tgSend(int|string $chatId, string $text, array $extra = []): bool
 {
@@ -67,7 +68,12 @@ function tgAdminName(array $from): string
 
 function tgUpsertProfile(PDO $pdo, int $chatId, array $from): void
 {
-    $statement = $pdo->prepare('INSERT INTO telegram_profiles (chat_id, user_id, username, first_name, last_name, language_code) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), username = VALUES(username), first_name = VALUES(first_name), last_name = VALUES(last_name), language_code = VALUES(language_code), last_activity = CURRENT_TIMESTAMP');
+    $statement = $pdo->prepare('INSERT INTO telegram_profiles
+        (chat_id, user_id, username, first_name, last_name, language_code, personal_data_expires_at)
+        VALUES (?, ?, ?, ?, ?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR))
+        ON DUPLICATE KEY UPDATE user_id = VALUES(user_id), username = VALUES(username),
+        first_name = VALUES(first_name), last_name = VALUES(last_name), language_code = VALUES(language_code),
+        last_activity = CURRENT_TIMESTAMP, personal_data_expires_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR)');
     $statement->execute([$chatId, (int) ($from['id'] ?? $chatId), $from['username'] ?? null, $from['first_name'] ?? null, $from['last_name'] ?? null, $from['language_code'] ?? null]);
 }
 
@@ -215,7 +221,8 @@ function tgAiReply(PDO $pdo, int $chatId, string $text, array $from): bool
 
 function tgSession(PDO $pdo, int $chatId): array
 {
-    $statement = $pdo->prepare('SELECT chat_id, state, selected_tariff_id, conversation_id, human_mode FROM telegram_sessions WHERE chat_id = ? LIMIT 1');
+    $statement = $pdo->prepare('SELECT chat_id, state, selected_tariff_id, conversation_id, human_mode,
+        consent_accepted_at, consent_version FROM telegram_sessions WHERE chat_id = ? LIMIT 1');
     $statement->execute([$chatId]);
     $row = $statement->fetch();
     if ($row) {
@@ -223,7 +230,8 @@ function tgSession(PDO $pdo, int $chatId): array
     }
 
     $pdo->prepare('INSERT INTO telegram_sessions (chat_id, state) VALUES (?, NULL)')->execute([$chatId]);
-    return ['chat_id' => $chatId, 'state' => null, 'selected_tariff_id' => null, 'conversation_id' => null, 'human_mode' => 0];
+    return ['chat_id' => $chatId, 'state' => null, 'selected_tariff_id' => null, 'conversation_id' => null,
+        'human_mode' => 0, 'consent_accepted_at' => null, 'consent_version' => null];
 }
 
 function tgSetSession(PDO $pdo, int $chatId, ?string $state, ?int $tariffId = null): void
@@ -509,18 +517,23 @@ function tgCreateOrder(PDO $pdo, int $chatId, array $from, array $contact, array
     }
     $name = trim(($contact['first_name'] ?? $from['first_name'] ?? 'Telegram') . ' ' . ($contact['last_name'] ?? $from['last_name'] ?? ''));
     $phone = mb_substr((string) ($contact['phone_number'] ?? ('telegram:' . $chatId)), 0, 30, 'UTF-8');
-    $email = 'telegram_' . abs($chatId) . '@telegram.local';
-    $username = isset($from['username']) ? '@' . $from['username'] : 'без username';
     $total = (int) $tariff['price'];
-    $comment = 'Заявка из Telegram. Chat ID: ' . $chatId . '. Username: ' . $username . '. Нужно связаться и уточнить детали.';
+    $comment = 'Заявка из Telegram. Нужно связаться и уточнить детали.';
+    $session = tgSession($pdo, $chatId);
+    $acceptedAt = (string) ($session['consent_accepted_at'] ?? '');
+    if ($acceptedAt === '' || ($session['consent_version'] ?? '') !== ConsentService::CONSENT_VERSION) {
+        throw new DomainException('Personal data consent is required');
+    }
+    $consent = ConsentService::evidence('telegram_order', 'telegram:' . $chatId, $acceptedAt);
 
     $pdo->beginTransaction();
     try {
         $orderStatement = $pdo->prepare(
-            'INSERT INTO orders (customer_name, phone, email, project_comment, total, status, source)
+            'INSERT INTO orders (customer_name, phone, project_comment, total, status, source, personal_data_expires_at)
                VALUES (?, ?, ?, ?, ?, ?, ?)'
         );
-        $orderStatement->execute([$name !== '' ? $name : 'Telegram user', $phone, $email, $comment, $total, 'new', 'telegram']);
+        $orderStatement->execute([$name !== '' ? $name : 'Telegram user', $phone, $comment, $total, 'new', 'telegram',
+            $consent['retention_until']]);
         $orderId = (int) $pdo->lastInsertId();
 
         $itemStatement = $pdo->prepare(
@@ -534,6 +547,7 @@ function tgCreateOrder(PDO $pdo, int $chatId, array $from, array $contact, array
             $tariff['tariff_name'],
             $total,
         ]);
+        ConsentService::record($pdo, $orderId, $consent);
 
         $pdo->commit();
         return $orderId;
@@ -611,8 +625,9 @@ function tgHandleMessage(PDO $pdo, array $message): void
     }
 
     if ($text === '/order' || $text === '🛒 Оставить заявку') {
-        tgSetSession($pdo, $chatId, 'waiting_tariff');
-        tgSend($chatId, tgTariffsText($pdo) . "\n\nОтправьте номер тарифа, который хотите заказать.");
+        tgSetSession($pdo, $chatId, 'waiting_order_consent');
+        $pdo->prepare('UPDATE telegram_sessions SET consent_accepted_at = NULL, consent_version = NULL WHERE chat_id = ?')->execute([$chatId]);
+        tgSend($chatId, "Для оформления заявки мы обработаем имя, номер телефона, выбранную услугу и текст обращения. Цель — связаться с вами и подготовить предложение; срок хранения — не более одного года.\n\nОзнакомьтесь с <a href=\"" . appUrl('consent.php') . "\">согласием</a> и <a href=\"" . appUrl('privacy.php') . "\">политикой</a>. Если согласны, отправьте отдельным сообщением: <b>Согласен</b>.");
         return;
     }
 
@@ -628,6 +643,18 @@ function tgHandleMessage(PDO $pdo, array $message): void
 
     if ($text === '📞 Контакты') {
         tgSend($chatId, 'Оставьте заявку или напишите специалисту через кнопку «Позвать специалиста». Подтверждённые контакты Vega Studio сообщит администратор.', tgMenu());
+        return;
+    }
+
+    if (($session['state'] ?? null) === 'waiting_order_consent') {
+        if (!in_array(mb_strtolower($text, 'UTF-8'), ['согласен', 'даю согласие'], true)) {
+            tgSend($chatId, 'Чтобы продолжить оформление, отправьте отдельным сообщением: <b>Согласен</b>. Для отмены используйте /cancel.');
+            return;
+        }
+        $acceptedAt = gmdate('Y-m-d H:i:s');
+        $pdo->prepare('UPDATE telegram_sessions SET state = ?, selected_tariff_id = NULL, consent_accepted_at = ?, consent_version = ? WHERE chat_id = ?')
+            ->execute(['waiting_tariff', $acceptedAt, ConsentService::CONSENT_VERSION, $chatId]);
+        tgSend($chatId, tgTariffsText($pdo) . "\n\nОтправьте номер тарифа, который хотите заказать.");
         return;
     }
 
@@ -667,6 +694,7 @@ function tgHandleMessage(PDO $pdo, array $message): void
 
         $orderId = tgCreateOrder($pdo, $chatId, $from, $message['contact'], $tariff);
         tgSetSession($pdo, $chatId, null);
+        $pdo->prepare('UPDATE telegram_sessions SET consent_accepted_at = NULL, consent_version = NULL WHERE chat_id = ?')->execute([$chatId]);
         tgNotifyAdminNewOrder($orderId, 'Telegram', (int) $tariff['price']);
         tgSend($chatId, 'Заявка #' . $orderId . ' создана. Менеджер свяжется с вами.', [
             'reply_markup' => json_encode(['remove_keyboard' => true], JSON_UNESCAPED_UNICODE),

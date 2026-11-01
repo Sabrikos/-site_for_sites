@@ -79,8 +79,6 @@ CREATE TABLE orders (
 
     phone VARCHAR(30) NOT NULL,
 
-    email VARCHAR(255) NOT NULL,
-
     project_comment TEXT NULL,
 
     total INT UNSIGNED NOT NULL,
@@ -97,11 +95,64 @@ CREATE TABLE orders (
 
     request_token CHAR(64) NULL,
 
+    personal_data_expires_at DATETIME NULL,
+
+    personal_data_erased_at DATETIME NULL,
+
     INDEX idx_orders_status (status),
 
     INDEX idx_orders_created_at (created_at),
 
-    UNIQUE KEY uq_orders_request_token (request_token)
+    UNIQUE KEY uq_orders_request_token (request_token),
+
+    INDEX idx_orders_personal_data_expiry (personal_data_expires_at, personal_data_erased_at)
+
+) ENGINE=InnoDB;
+
+
+/* ==============================================
+   СОГЛАСИЯ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ
+============================================== */
+
+CREATE TABLE personal_data_consents (
+
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+
+    order_id BIGINT UNSIGNED NOT NULL,
+
+    purpose_code VARCHAR(64) NOT NULL,
+
+    consent_version VARCHAR(40) NOT NULL,
+
+    privacy_policy_version VARCHAR(40) NOT NULL,
+
+    consent_text TEXT NOT NULL,
+
+    source VARCHAR(30) NOT NULL,
+
+    accepted_at DATETIME NOT NULL,
+
+    evidence_hash CHAR(64) NOT NULL,
+
+    retention_until DATETIME NOT NULL,
+
+    withdrawn_at DATETIME NULL,
+
+    withdrawal_channel VARCHAR(30) NULL,
+
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    UNIQUE KEY uq_personal_data_consents_order_purpose (order_id, purpose_code),
+
+    INDEX idx_personal_data_consents_retention (retention_until, withdrawn_at),
+
+    CONSTRAINT fk_personal_data_consents_order
+
+        FOREIGN KEY (order_id)
+
+        REFERENCES orders(id)
+
+        ON DELETE CASCADE
 
 ) ENGINE=InnoDB;
 
@@ -363,9 +414,15 @@ CREATE TABLE chat_conversations (
         DEFAULT CURRENT_TIMESTAMP
         ON UPDATE CURRENT_TIMESTAMP,
 
+    personal_data_expires_at DATETIME NULL,
+
+    personal_data_erased_at DATETIME NULL,
+
     INDEX idx_chat_session_key (session_key),
 
-    INDEX idx_chat_status (status)
+    INDEX idx_chat_status (status),
+
+    INDEX idx_chat_personal_data_expiry (personal_data_expires_at, personal_data_erased_at)
 
 ) ENGINE=InnoDB;
 
@@ -404,6 +461,16 @@ CREATE TABLE telegram_sessions (
     state VARCHAR(60) NULL,
 
     selected_tariff_id INT UNSIGNED NULL,
+
+    draft_data JSON NULL,
+
+    human_mode TINYINT(1) NOT NULL DEFAULT 0,
+
+    conversation_id BIGINT UNSIGNED NULL,
+
+    consent_accepted_at DATETIME NULL,
+
+    consent_version VARCHAR(40) NULL,
 
     updated_at TIMESTAMP
         DEFAULT CURRENT_TIMESTAMP

@@ -35,7 +35,6 @@ $statement = $pdo->query(
         o.id,
         o.customer_name,
         o.phone,
-        o.email,
         o.project_comment,
         o.total,
         o.status,
@@ -43,7 +42,7 @@ $statement = $pdo->query(
         GROUP_CONCAT(CONCAT(oi.service_name, ": ", oi.tariff_name, " (", oi.price, " ₽)") SEPARATOR ", ") AS items
      FROM orders o
      LEFT JOIN order_items oi ON oi.order_id = o.id
-     GROUP BY o.id, o.customer_name, o.phone, o.email, o.project_comment, o.total, o.status, o.created_at
+     GROUP BY o.id, o.customer_name, o.phone, o.project_comment, o.total, o.status, o.created_at
      ORDER BY o.created_at DESC, o.id DESC'
 );
 $orders = $statement->fetchAll();
@@ -97,7 +96,7 @@ function adminOrderStatusLabel(string $status): string
                                 <span class="cart-product-service"><?= appEscape(adminOrderStatusLabel($order['status'])) ?></span>
                                 <h3><a href="order.php?id=<?= (int) $order['id'] ?>">Заказ №<?= (int) $order['id'] ?></a></h3>
                                 <p><?= appEscape($order['customer_name']) ?></p>
-                                <p><?= appEscape($order['phone']) ?>, <?= appEscape($order['email']) ?></p>
+                                <p><?= appEscape($order['phone']) ?></p>
                                 <p><?= appEscape($order['items']) ?></p>
                                 <?php if (!empty($order['project_comment'])): ?><p><?= appEscape($order['project_comment']) ?></p><?php endif; ?>
                                 <small><?= appEscape($order['created_at']) ?></small>

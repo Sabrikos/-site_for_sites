@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../bd.php';
 require_once __DIR__ . '/TelegramService.php';
+require_once __DIR__ . '/ConsentService.php';
 
 final class TelegramBot
 {
@@ -84,19 +85,29 @@ final class TelegramBot
 
 	private function beginOrder(int $chatId): void
 	{
-		$this->saveSession($chatId, 'service', []);
-		$rows = $this->pdo->query('SELECT id, name FROM services WHERE active = 1 ORDER BY id')->fetchAll();
-		$keyboard = [];
-		foreach ($rows as $row) {
-			$keyboard[] = [['text' => $row['name'], 'callback_data' => 'service:' . (int) $row['id']]];
-		}
-		$this->telegram->sendMessage($chatId, 'Начнём оформление. Выберите услугу:', $keyboard);
+		$this->saveSession($chatId, 'consent', []);
+		$this->telegram->sendMessage($chatId, 'Для оформления заявки мы обработаем имя, номер телефона, выбранную услугу и текст обращения. Срок хранения — не более одного года. Ознакомьтесь с согласием: ' . appUrl('consent.php') . ' и политикой: ' . appUrl('privacy.php') . '. Если согласны, отправьте отдельным сообщением: <b>Согласен</b>.');
 	}
 
 	private function continueOrder(int $chatId, array $message, string $text, array $session): void
 	{
-		$data = json_decode((string) $session['data'], true) ?: [];
+		$data = json_decode((string) ($session['draft_data'] ?? '{}'), true) ?: [];
 		switch ($session['state']) {
+			case 'consent':
+				if (!in_array(mb_strtolower($text, 'UTF-8'), ['согласен', 'даю согласие'], true)) {
+					$this->telegram->sendMessage($chatId, 'Чтобы продолжить, отправьте отдельным сообщением: <b>Согласен</b>.');
+					return;
+				}
+				$data['consent_accepted_at'] = gmdate('Y-m-d H:i:s');
+				$data['consent_version'] = ConsentService::CONSENT_VERSION;
+				$this->saveSession($chatId, 'service', $data);
+				$rows = $this->pdo->query('SELECT id, name FROM services WHERE active = 1 ORDER BY id')->fetchAll();
+				$keyboard = [];
+				foreach ($rows as $row) {
+					$keyboard[] = [['text' => $row['name'], 'callback_data' => 'service:' . (int) $row['id']]];
+				}
+				$this->telegram->sendMessage($chatId, 'Выберите услугу:', $keyboard);
+				break;
 			case 'comment':
 				$data['comment'] = $text;
 				$this->saveSession($chatId, 'name', $data);
@@ -113,15 +124,6 @@ final class TelegramBot
 					return;
 				}
 				$data['phone'] = $text;
-				$this->saveSession($chatId, 'email', $data);
-				$this->telegram->sendMessage($chatId, 'Укажите email.');
-				break;
-			case 'email':
-				if (!filter_var($text, FILTER_VALIDATE_EMAIL)) {
-					$this->telegram->sendMessage($chatId, 'Проверьте формат email.');
-					return;
-				}
-				$data['email'] = $text;
 				$data['username'] = $message['from']['username'] ?? '';
 				$data['user_id'] = $chatId;
 				$this->saveSession($chatId, 'confirm', $data);
@@ -183,7 +185,11 @@ final class TelegramBot
 		$keyboard = [];
 		foreach ($rows as $row) $keyboard[] = [['text' => $row['name'], 'callback_data' => 'tariff:' . (int) $row['id']]];
 		$session = $this->session($chatId);
-		$data = json_decode((string) $session['data'], true) ?: [];
+		$data = json_decode((string) ($session['draft_data'] ?? '{}'), true) ?: [];
+		if (($data['consent_version'] ?? '') !== ConsentService::CONSENT_VERSION || empty($data['consent_accepted_at'])) {
+			$this->telegram->sendMessage($chatId, 'Согласие на обработку данных не зафиксировано. Начните оформление заново.');
+			return;
+		}
 		$data['service_id'] = $serviceId;
 		$this->saveSession($chatId, 'tariff', $data);
 		$this->telegram->sendMessage($chatId, 'Выберите тариф:', $keyboard);
@@ -192,7 +198,7 @@ final class TelegramBot
 	private function chooseTariff(int $chatId, int $tariffId): void
 	{
 		$session = $this->session($chatId);
-		$data = json_decode((string) $session['data'], true) ?: [];
+		$data = json_decode((string) ($session['draft_data'] ?? '{}'), true) ?: [];
 		$data['tariff_id'] = $tariffId;
 		$this->saveSession($chatId, 'comment', $data);
 		$this->telegram->sendMessage($chatId, 'Коротко опишите задачу или пожелания к проекту.');
@@ -226,7 +232,12 @@ final class TelegramBot
 	private function createOrder(int $chatId): void
 	{
 		$session = $this->session($chatId);
-		$data = json_decode((string) $session['data'], true) ?: [];
+		$data = json_decode((string) ($session['draft_data'] ?? '{}'), true) ?: [];
+		if (($data['consent_version'] ?? '') !== ConsentService::CONSENT_VERSION || empty($data['consent_accepted_at'])) {
+			$this->telegram->sendMessage($chatId, 'Согласие на обработку данных не зафиксировано. Начните оформление заново.');
+			return;
+		}
+		$consent = ConsentService::evidence('telegram_order', 'telegram:' . $chatId, (string) $data['consent_accepted_at']);
 		$statement = $this->pdo->prepare('SELECT t.id, t.name AS tariff_name, t.price, s.name AS service_name FROM tariffs t INNER JOIN services s ON s.id = t.service_id WHERE t.id = ? AND t.active = 1 AND s.active = 1');
 		$statement->execute([(int) $data['tariff_id']]);
 		$tariff = $statement->fetch();
@@ -236,14 +247,15 @@ final class TelegramBot
 		}
 		$this->pdo->beginTransaction();
 		try {
-			$order = $this->pdo->prepare('INSERT INTO orders (customer_name, phone, email, telegram_username, telegram_user_id, project_comment, total, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)');
-			$order->execute([$data['name'], $data['phone'], $data['email'], $data['username'] ?? null, $chatId, $data['comment'], $tariff['price'], 'new']);
+			$order = $this->pdo->prepare('INSERT INTO orders (customer_name, phone, project_comment, total, status, source, personal_data_expires_at) VALUES (?, ?, ?, ?, ?, ?, ?)');
+			$order->execute([$data['name'], $data['phone'], $data['comment'], $tariff['price'], 'new', 'telegram', $consent['retention_until']]);
 			$orderId = (int) $this->pdo->lastInsertId();
 			$item = $this->pdo->prepare('INSERT INTO order_items (order_id, tariff_id, service_name, tariff_name, price) VALUES (?, ?, ?, ?, ?)');
 			$item->execute([$orderId, $tariff['id'], $tariff['service_name'], $tariff['tariff_name'], $tariff['price']]);
+			ConsentService::record($this->pdo, $orderId, $consent);
 			$this->pdo->commit();
 			$this->saveSession($chatId, 'idle', []);
-			$this->telegram->sendMessage((string) appEnv('TELEGRAM_SUPPORT_CHAT_ID'), '<b>Новый заказ Vega Studio</b>\nЗаказ: #' . $orderId . '\nКлиент: ' . $this->esc($data['name']) . '\nTelegram: @' . $this->esc($data['username'] ?? '') . '\nТелефон: ' . $this->esc($data['phone']) . '\nEmail: ' . $this->esc($data['email']) . '\nУслуга: ' . $this->esc($tariff['service_name']) . '\nТариф: ' . $this->esc($tariff['tariff_name']));
+			$this->telegram->sendMessage((string) appEnv('TELEGRAM_SUPPORT_CHAT_ID'), '<b>Новый заказ Vega Studio</b>\nЗаказ: #' . $orderId . '\nУслуга: ' . $this->esc($tariff['service_name']) . '\nТариф: ' . $this->esc($tariff['tariff_name']));
 			$this->telegram->sendMessage($chatId, 'Заказ #' . $orderId . ' создан. Администратор свяжется с вами.');
 		} catch (Throwable $error) {
 			if ($this->pdo->inTransaction()) $this->pdo->rollBack();
@@ -255,16 +267,17 @@ final class TelegramBot
 	{
 		$statement = $this->pdo->prepare('SELECT * FROM telegram_sessions WHERE chat_id = ?');
 		$statement->execute([$chatId]);
-		return $statement->fetch() ?: ['state' => 'idle', 'data' => '{}', 'human_mode' => 0];
+		return $statement->fetch() ?: ['state' => 'idle', 'draft_data' => '{}', 'human_mode' => 0];
 	}
 	private function saveSession(int $chatId, string $state, array $data, bool $human = false): void
 	{
-		$statement = $this->pdo->prepare('REPLACE INTO telegram_sessions (chat_id, state, data, human_mode) VALUES (?, ?, ?, ?)');
+		$statement = $this->pdo->prepare('INSERT INTO telegram_sessions (chat_id, state, draft_data, human_mode)
+			VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE state = VALUES(state), draft_data = VALUES(draft_data), human_mode = VALUES(human_mode)');
 		$statement->execute([$chatId, $state, json_encode($data, JSON_UNESCAPED_UNICODE), $human ? 1 : 0]);
 	}
 	private function summary(array $data): string
 	{
-		return '<b>Проверьте данные заказа</b>\nУслуга: ' . $this->esc((string) $data['service_id']) . '\nТариф ID: ' . $this->esc((string) $data['tariff_id']) . '\nОписание: ' . $this->esc($data['comment']) . '\nИмя: ' . $this->esc($data['name']) . '\nТелефон: ' . $this->esc($data['phone']) . '\nEmail: ' . $this->esc($data['email']);
+		return '<b>Проверьте данные заказа</b>\nУслуга: ' . $this->esc((string) $data['service_id']) . '\nТариф ID: ' . $this->esc((string) $data['tariff_id']) . '\nОписание: ' . $this->esc($data['comment']) . '\nИмя: ' . $this->esc($data['name']) . '\nТелефон: ' . $this->esc($data['phone']);
 	}
 	private function containsAny(string $text, array $needles): bool
 	{

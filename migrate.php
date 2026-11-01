@@ -29,13 +29,14 @@ foreach ($files as $file) {
     }
     try {
         foreach (array_filter(array_map('trim', explode(';', $sql))) as $statement) {
-            if (preg_match('/^--\s*@if-missing-(column|index)\s+([A-Za-z0-9_]+)\s+([A-Za-z0-9_]+)\s*\R(.*)$/s', $statement, $match)) {
-                [, $kind, $table, $name, $statement] = $match;
+            if (preg_match('/^--\s*@if-(missing|present)-(column|index)\s+([A-Za-z0-9_]+)\s+([A-Za-z0-9_]+)\s*\R(.*)$/s', $statement, $match)) {
+                [, $condition, $kind, $table, $name, $statement] = $match;
                 $field = $kind === 'column' ? 'COLUMN_NAME' : 'INDEX_NAME';
                 $check = $pdo->prepare("SELECT 1 FROM information_schema." . ($kind === 'column' ? 'COLUMNS' : 'STATISTICS')
                     . " WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND $field = ? LIMIT 1");
                 $check->execute([$table, $name]);
-                if ($check->fetchColumn()) {
+                $exists = (bool) $check->fetchColumn();
+                if (($condition === 'missing' && $exists) || ($condition === 'present' && !$exists)) {
                     continue;
                 }
             }
