@@ -6,6 +6,7 @@ require_once __DIR__ . '/../app.php';
 require_once __DIR__ . '/../bd.php';
 require_once __DIR__ . '/../services/AiAssistant.php';
 require_once __DIR__ . '/../services/SupportRelay.php';
+require_once __DIR__ . '/../services/DecisionTree.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -16,6 +17,19 @@ function chatJson(array $payload, int $status = 200): never
     http_response_code($status);
     echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
+}
+
+function chatMenuSnapshot(PDO $pdo, array $snapshot, string $node, ?DecisionTree $tree = null): array
+{
+    if ($snapshot['status'] === 'bot') {
+        $tree ??= new DecisionTree((new AiAssistant($pdo))->catalog());
+        try {
+            $snapshot['choices'] = $tree->resolve($node)['choices'];
+        } catch (InvalidArgumentException) {
+            $snapshot['choices'] = $tree->resolve('root')['choices'];
+        }
+    }
+    return $snapshot;
 }
 
 function chatNotifyHumanRequest(int $id): void
@@ -68,8 +82,9 @@ try {
         }
         $conversation = $service->conversation($_SESSION['chat_session_key']);
         $token = appCsrfToken('chat_csrf');
+        $node = $_SESSION['chat_menu_node'] ?? 'root';
         session_write_close();
-        chatJson($service->snapshot((int) $conversation['id']) + [
+        chatJson(chatMenuSnapshot($pdo, $service->snapshot((int) $conversation['id']), $node) + [
             'csrf_token' => $token,
             'max_input_length' => assistantInt('AI_MAX_INPUT_LENGTH', 2000, 200, 4000),
         ]);
@@ -80,25 +95,57 @@ try {
     $conversation = $service->conversation($_SESSION['chat_session_key']);
     if (($conversation['status'] ?? '') === 'closed') {
         $conversation = $service->startFreshConversation($_SESSION['chat_session_key']);
+        unset($_SESSION['chat_menu_node']);
     }
     $id = (int) $conversation['id'];
     $afterId = filter_var($_POST['after_id'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
     if ($afterId === false) {
         chatJson(['error' => 'Некорректный номер сообщения.'], 422);
     }
-    session_write_close();
-    if ($action === 'poll') {
-        chatJson($service->snapshot($id, $afterId));
+    $node = $_SESSION['chat_menu_node'] ?? 'root';
+    $choice = $action === 'message' ? ($_POST['choice'] ?? null) : null;
+    if ($choice === null) {
+        session_write_close();
     }
+    if ($action === 'poll') {
+        chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), $node));
+    }
+
+    $tree = null;
+    $selection = null;
     $message = is_string($_POST['message'] ?? null) ? trim($_POST['message']) : '';
+    if ($choice !== null) {
+        if ($conversation['status'] !== 'bot') {
+            chatJson(['error' => 'Меню помощника сейчас недоступно.'], 409);
+        }
+        $tree = new DecisionTree((new AiAssistant($pdo))->catalog());
+        try {
+            $selection = $tree->resolve(is_string($choice) ? $choice : '');
+        } catch (InvalidArgumentException $error) {
+            chatJson(['error' => $error->getMessage()], 422);
+        }
+        $message = $selection['label'];
+    }
     if ($message === '' || !mb_check_encoding($message, 'UTF-8') || mb_strlen($message) > assistantInt('AI_MAX_INPUT_LENGTH', 2000, 200, 4000)) {
         chatJson(['error' => 'Проверьте длину и текст сообщения.'], 422);
     }
     if (!assistantLimit($pdo, 'chat_message:' . $ipKey, 20, 60)) {
         chatJson(['error' => 'Слишком много сообщений. Попробуйте через минуту.'], 429);
     }
-    $pending = $service->beginMessage($id, $message);
+    $pending = $service->beginMessage($id, $message, $selection === null ? null : 'bot');
     $handoff = $pending['handoff'];
+    if ($selection !== null) {
+        if ($pending['key'] !== null) {
+            $handoff = $service->finishMessage($id, $pending['key'], ['text' => $selection['text'], 'offered' => false]);
+        }
+        $node = $choice === 'human' ? 'root' : $choice;
+        $_SESSION['chat_menu_node'] = $node;
+        session_write_close();
+        if ($handoff) {
+            chatNotifyHumanRequest($id);
+        }
+        chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), $node, $tree));
+    }
     if (!$handoff && $pending['key'] === null) {
         $conversationState = $service->snapshot($id);
         if (in_array((string) ($conversationState['status'] ?? ''), ['waiting_human', 'human'], true)) {
@@ -123,7 +170,7 @@ try {
     if ($handoff) {
         chatNotifyHumanRequest($id);
     }
-    chatJson($service->snapshot($id, $afterId));
+    chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), $node));
 } catch (DomainException $error) {
     chatJson(['error' => $error->getMessage()], in_array($error->getCode(), [409, 422], true) ? $error->getCode() : 422);
 } catch (Throwable $error) {

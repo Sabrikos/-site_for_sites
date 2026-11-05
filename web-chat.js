@@ -12,6 +12,7 @@
             </div>
             <div class="web-chat-messages" role="log" aria-label="Сообщения" aria-live="off"></div>
             <p class="web-chat-error" role="alert" hidden></p>
+            <div class="web-chat-choices" role="group" aria-label="Меню услуг" hidden></div>
             <form class="web-chat-form">
                 <textarea name="message" rows="2" maxlength="2000" placeholder="Введите сообщение..." aria-label="Ваше сообщение" required></textarea>
                 <button type="submit" aria-label="Отправить сообщение">
@@ -27,6 +28,7 @@
   const panel = root.querySelector(".web-chat-panel");
   const list = root.querySelector(".web-chat-messages");
   const form = root.querySelector(".web-chat-form");
+  const choices = root.querySelector(".web-chat-choices");
   const textarea = form.querySelector("textarea");
   const submit = form.querySelector("button");
   const status = root.querySelector(".web-chat-status");
@@ -57,7 +59,25 @@
     resizeComposer();
   }
 
+  function renderChoices() {
+    const items = state.status === "bot" ? state.choices || [] : [];
+    const existing = Array.from(choices.children);
+    if (items.length !== existing.length || items.some(({ id, label }, i) =>
+      existing[i].value !== id || existing[i].textContent !== label)) {
+      choices.replaceChildren(...items.map(({ id, label }) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.value = id;
+        button.textContent = label;
+        return button;
+      }));
+    }
+    choices.hidden = items.length === 0;
+    for (const button of choices.children) button.disabled = sending || starting;
+  }
+
   function updateStatus() {
+    renderChoices();
     let text = "Vega Assistant в сети";
     let typing = false;
     if (state.status === "closed") text = "Диалог завершён";
@@ -142,7 +162,14 @@
     requestAnimationFrame(frame);
   }
 
-  async function request(action, body = {}) {
+  let requestQueue = Promise.resolve();
+  function request(action, body = {}) {
+    const pending = requestQueue.then(() => requestNow(action, body));
+    requestQueue = pending.catch(() => {});
+    return pending;
+  }
+
+  async function requestNow(action, body) {
     const response = await fetch("api/chat.php", {
       method: "POST",
       credentials: "same-origin",
@@ -201,6 +228,22 @@
   panel.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeChat();
   });
+  choices.addEventListener("click", async (event) => {
+    const button = event.target.closest("button");
+    if (!button || sending || starting || !csrf) return;
+    sending = true;
+    updateStatus();
+    showError();
+    try {
+      await request("message", { choice: button.value });
+    } catch (exception) {
+      showError(exception.message);
+    } finally {
+      sending = false;
+      updateStatus();
+    }
+  });
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const message = textarea.value.trim();
@@ -237,7 +280,8 @@
       !csrf ||
       document.hidden ||
       polling ||
-      starting
+      starting ||
+      sending
     )
       return;
     polling = true;
