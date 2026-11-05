@@ -32,7 +32,7 @@ final class ChatService
         if (!$conversation) {
             $this->pdo->prepare('INSERT INTO chat_conversations (session_key, personal_data_expires_at) VALUES (?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR))')->execute([$sessionKey]);
             $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
-            $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я виртуальный помощник Vega Studio. Расскажите, какой проект вы планируете.');
+            $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я виртуальный помощник Vega Studio. Выберите услугу в меню или расскажите о вашем проекте.');
         }
         $this->pdo->prepare('INSERT IGNORE INTO chat_assistant_state (conversation_id) VALUES (?)')->execute([$conversation['id']]);
         return $conversation;
@@ -114,13 +114,16 @@ final class ChatService
         $this->pdo->prepare('UPDATE chat_assistant_state SET generation_key = NULL, generation_started_at = NULL, handoff_offered = 0 WHERE conversation_id = ?')->execute([$id]);
     }
 
-    public function beginMessage(int $id, string $text): array
+    public function beginMessage(int $id, string $text, ?string $expectedStatus = null): array
     {
         $this->pdo->beginTransaction();
         try {
             $state = $this->lock($id);
             if ($state['status'] === 'closed') {
                 throw new DomainException('Диалог завершён.', 409);
+            }
+            if ($expectedStatus !== null && $state['status'] !== $expectedStatus) {
+                throw new DomainException('Статус чата изменился. Попробуйте ещё раз.', 409);
             }
             $human = $state['status'] === 'bot' && self::needsHuman($text, (bool) $state['handoff_offered']);
             if (!$human && $state['status'] === 'bot' && $state['generation_key'] && $state['pending']) {

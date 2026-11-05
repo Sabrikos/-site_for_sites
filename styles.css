@@ -6598,3 +6598,36 @@ main.checkout-page .checkout-empty-desktop p { margin: 0 0 18px; font-size: 14px
 .contact-alien.is-blinking .contact-alien__lids{opacity:1}
 @media(prefers-reduced-motion:reduce){.contact-alien__rig{visibility:hidden!important}.contact-alien.is-ready .contact-alien__original{visibility:visible!important}}
 
+
+.web-chat.is-open .web-chat-panel {
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto !important;
+}
+
+.web-chat-choices:not([hidden]) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: min(160px, 24vh);
+    overflow: auto;
+    padding: 8px 16px;
+}
+
+.web-chat-choices button {
+    border: 1px solid #8c7ae8;
+    border-radius: 12px;
+    padding: 8px 11px;
+    background: #24203e;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+.web-chat-choices button:hover:not(:disabled),
+.web-chat-choices button:focus-visible {
+    background: #463879;
+}
+
+.web-chat-choices button:disabled {
+    opacity: .55;
+    cursor: wait;
+}
