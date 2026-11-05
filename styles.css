@@ -4966,6 +4966,7 @@ main.tariffs-page .service-title p { overflow-wrap: anywhere; }
 .web-chat-form { margin: 0; align-items: end; }
 .web-chat-form textarea { box-sizing: border-box; min-width: 0; line-height: 1.4; }
 .web-chat-form button:disabled { opacity: .55; cursor: wait; }
+.web-chat .web-chat-form[hidden] { display: none !important; }
 .chat-typing-dots { display: inline-flex !important; gap: 3px; }
 .chat-typing-dots i { display: block; width: 4px; height: 4px; background: currentColor; border-radius: 50%; animation: chatTyping 1s ease-in-out infinite; }
 .chat-typing-dots i:nth-child(2) { animation-delay: .15s; }
