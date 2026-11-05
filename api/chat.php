@@ -111,11 +111,16 @@ try {
         chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), $node));
     }
 
+    $status = $conversation['status'];
+    if ($choice === null && !in_array($status, ['waiting_human', 'human'], true)) {
+        chatJson(['error' => 'Чтобы написать сообщение, нажмите «Позвать специалиста».'], 409);
+    }
+
     $tree = null;
     $selection = null;
     $message = is_string($_POST['message'] ?? null) ? trim($_POST['message']) : '';
     if ($choice !== null) {
-        if ($conversation['status'] !== 'bot') {
+        if ($status !== 'bot') {
             chatJson(['error' => 'Меню помощника сейчас недоступно.'], 409);
         }
         $tree = new DecisionTree((new AiAssistant($pdo))->catalog());
@@ -132,7 +137,7 @@ try {
     if (!assistantLimit($pdo, 'chat_message:' . $ipKey, 20, 60)) {
         chatJson(['error' => 'Слишком много сообщений. Попробуйте через минуту.'], 429);
     }
-    $pending = $service->beginMessage($id, $message, $selection === null ? null : 'bot');
+    $pending = $service->beginMessage($id, $message, $status);
     $handoff = $pending['handoff'];
     if ($selection !== null) {
         if ($pending['key'] !== null) {
@@ -146,30 +151,7 @@ try {
         }
         chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), $node, $tree));
     }
-    if (!$handoff && $pending['key'] === null) {
-        $conversationState = $service->snapshot($id);
-        if (in_array((string) ($conversationState['status'] ?? ''), ['waiting_human', 'human'], true)) {
-            supportNotify($pdo, $id, 'website', null, 'Пользователь сайта', '', $message);
-        }
-    }
-    if ($pending['key']) {
-        $allowApi = false;
-        if (appEnv('AI_API_KEY', appEnv('OPENAI_API_KEY')) && !AiAssistant::restricted($message)) {
-            $allowApi = assistantLimit($pdo, 'ai_conversation:' . $id, 20, 3600)
-                && assistantLimit($pdo, 'ai_ip:' . $ipKey, 40, 3600)
-                && assistantLimit($pdo, 'ai_global', assistantInt('AI_MAX_REQUESTS_PER_DAY', 100, 1, 5000), 86400);
-        }
-        try {
-            $reply = (new AiAssistant($pdo))->reply($id, $message, $allowApi);
-        } catch (Throwable $error) {
-            appLog('Assistant failed', ['type' => get_class($error)]);
-            $reply = ['text' => 'Не удалось подготовить ответ. Могу позвать администратора Vega Studio.', 'offered' => true];
-        }
-        $handoff = $service->finishMessage($id, $pending['key'], $reply);
-    }
-    if ($handoff) {
-        chatNotifyHumanRequest($id);
-    }
+    supportNotify($pdo, $id, 'website', null, 'Пользователь сайта', '', $message);
     chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), $node));
 } catch (DomainException $error) {
     chatJson(['error' => $error->getMessage()], in_array($error->getCode(), [409, 422], true) ? $error->getCode() : 422);

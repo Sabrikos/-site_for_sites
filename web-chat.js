@@ -13,7 +13,7 @@
             <div class="web-chat-messages" role="log" aria-label="Сообщения" aria-live="off"></div>
             <p class="web-chat-error" role="alert" hidden></p>
             <div class="web-chat-choices" role="group" aria-label="Меню услуг" hidden></div>
-            <form class="web-chat-form">
+            <form class="web-chat-form" hidden>
                 <textarea name="message" rows="2" maxlength="2000" placeholder="Введите сообщение..." aria-label="Ваше сообщение" required></textarea>
                 <button type="submit" aria-label="Отправить сообщение">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 17 8-17 8 3-8-3-8Zm3 8h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
@@ -53,10 +53,11 @@
   }
 
   function updateComposerState() {
-    const hasText = textarea.value.trim() !== "";
-    submit.disabled =
-      !hasText || sending || starting || state.status === "closed";
-    resizeComposer();
+    const canWrite = state.status === "waiting_human" || state.status === "human";
+    form.hidden = !canWrite;
+    textarea.disabled = !canWrite || starting;
+    submit.disabled = !canWrite || !textarea.value.trim() || sending || starting;
+    if (canWrite) resizeComposer();
   }
 
   function renderChoices() {
@@ -102,7 +103,6 @@
       for (let i = 0; i < 3; i++) dots.appendChild(document.createElement("i"));
       status.appendChild(dots);
     }
-    textarea.disabled = state.status === "closed" || starting;
     updateComposerState();
   }
 
@@ -212,7 +212,7 @@
         updateStatus();
       }
     }
-    textarea.focus();
+    (form.hidden ? close : textarea).focus();
   }
 
   function closeChat() {
@@ -236,6 +236,9 @@
     showError();
     try {
       await request("message", { choice: button.value });
+      if (button.value === "human" && !form.hidden && root.classList.contains("is-open")) {
+        textarea.focus();
+      }
     } catch (exception) {
       showError(exception.message);
     } finally {
@@ -247,7 +250,7 @@
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const message = textarea.value.trim();
-    if (!message || sending || starting || !csrf) return;
+    if (form.hidden || !message || sending || starting || !csrf) return;
     sending = true;
     updateStatus();
     showError();

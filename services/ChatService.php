@@ -32,7 +32,7 @@ final class ChatService
         if (!$conversation) {
             $this->pdo->prepare('INSERT INTO chat_conversations (session_key) VALUES (?)')->execute([$sessionKey]);
             $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
-            $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я виртуальный помощник Vega Studio. Выберите услугу в меню или расскажите о вашем проекте.');
+            $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я виртуальный помощник Vega Studio. Выберите услугу в меню или позовите специалиста.');
         }
         $this->pdo->prepare('INSERT IGNORE INTO chat_assistant_state (conversation_id) VALUES (?)')->execute([$conversation['id']]);
         return $conversation;
@@ -42,7 +42,7 @@ final class ChatService
     {
         $this->pdo->prepare('INSERT INTO chat_conversations (session_key, status) VALUES (?, ?)')->execute([$sessionKey, 'bot']);
         $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
-        $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я снова готов помочь. Расскажите, какой у вас вопрос.');
+        $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я снова готов помочь. Выберите услугу в меню или позовите специалиста.');
         $this->pdo->prepare('INSERT IGNORE INTO chat_assistant_state (conversation_id) VALUES (?)')->execute([$conversation['id']]);
         return $conversation;
     }
