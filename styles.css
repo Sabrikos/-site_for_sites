@@ -6587,7 +6587,8 @@ main.checkout-page .checkout-empty-desktop p { margin: 0 0 18px; font-size: 14px
 @media(max-width:1050px){#projects .projects-grid.portfolio-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){#projects .projects-grid.portfolio-grid{grid-template-columns:minmax(0,1fr);gap:16px}#projects .portfolio-card .project-content{padding:18px}}
 
-/* Automatic native video animation. */
+/* One complete video frame at a time: no overlapping poses or duplicate limbs. */
+
 .contact-section > .contact-alien { aspect-ratio:1086 / 1448; }
 .contact-alien__fallback,.contact-alien__canvas { position:absolute; inset:0; display:block; width:100%; height:100%; pointer-events:none; user-select:none; }
 .contact-alien__canvas[hidden],[data-contact-alien].is-ready .contact-alien__fallback { display:none; }
@@ -6729,3 +6730,6 @@ main.tariffs-page #other .tariffs-alien[data-contact-alien] { aspect-ratio:1244 
         height: calc(100dvh - 32px) !important;
     }
 }
+
+.web-chat-notice { font-size:12px; line-height:1.5; opacity:.8; padding:0 16px 10px; margin:0; }
+.web-chat .web-chat-panel .web-chat-form[hidden] { display:none !important; }

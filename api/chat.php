@@ -35,18 +35,10 @@ function chatMenuSnapshot(PDO $pdo, array $snapshot, string $node, ?DecisionTree
 function chatNotifyHumanRequest(int $id): void
 {
     try {
-        $statement = $GLOBALS['pdo']->prepare('SELECT customer_name, customer_contact FROM chat_conversations WHERE id = ?');
-        $statement->execute([$id]);
-        $conversation = $statement->fetch() ?: [];
-        supportNotify(
-            $GLOBALS['pdo'],
-            $id,
-            'website',
-            null,
-            (string) ($conversation['customer_name'] ?? 'Пользователь сайта'),
-            '',
-            'Пользователь сайта запросил помощь специалиста.',
-        );
+        if (assistantLimit($GLOBALS['pdo'], 'human_notification:' . $id, 1, 300)
+            && !supportNotifyWebsiteHumanRequest()) {
+            appLog('Website specialist alert delivery failed');
+        }
     } catch (Throwable $error) {
         appLog('Handoff notification failed', ['conversation_id' => $id]);
     }
@@ -68,7 +60,7 @@ try {
     }
     appStartSession();
     $action = is_string($_POST['action'] ?? null) ? $_POST['action'] : '';
-    if (!in_array($action, ['start', 'message', 'poll'], true)) {
+    if (!in_array($action, ['start', 'message', 'poll', 'cancel_waiting'], true)) {
         chatJson(['error' => 'Неизвестное действие.'], 400);
     }
     $ipKey = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? 'local');
@@ -102,6 +94,12 @@ try {
     if ($afterId === false) {
         chatJson(['error' => 'Некорректный номер сообщения.'], 422);
     }
+    if ($action === 'cancel_waiting' || ($action === 'message' && $conversation['status'] === 'waiting_human' && preg_match('/^(?:отмена|отменить|отменить вызов)[.!\s]*$/ui', trim((string) ($_POST['message'] ?? ''))))) {
+        $service->cancelWaiting($id);
+        $_SESSION['chat_menu_node'] = 'root';
+        session_write_close();
+        chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), 'root'));
+    }
     $node = $_SESSION['chat_menu_node'] ?? 'root';
     $choice = $action === 'message' ? ($_POST['choice'] ?? null) : null;
     if ($choice === null) {
@@ -112,6 +110,7 @@ try {
     }
 
     $status = $conversation['status'];
+    if ($choice === 'human' && in_array($status, ['waiting_human', 'human'], true)) { session_write_close(); chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), $node)); }
     if ($choice === null && !in_array($status, ['waiting_human', 'human'], true)) {
         chatJson(['error' => 'Чтобы написать сообщение, нажмите «Позвать специалиста».'], 409);
     }
@@ -151,7 +150,6 @@ try {
         }
         chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), $node, $tree));
     }
-    supportNotify($pdo, $id, 'website', null, 'Пользователь сайта', '', $message);
     chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), $node));
 } catch (DomainException $error) {
     chatJson(['error' => $error->getMessage()], in_array($error->getCode(), [409, 422], true) ? $error->getCode() : 422);

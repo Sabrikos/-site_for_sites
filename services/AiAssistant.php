@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/ChatService.php';
+require_once __DIR__ . '/GigaChatClient.php';
 
 final class AiAssistant
 {
@@ -10,6 +11,16 @@ final class AiAssistant
     private const OUT_OF_SCOPE = 'Я могу отвечать только на вопросы о Vega Studio, сайтах, услугах, тарифах и разработке. На этот вопрос я не могу ответить по существу, но могу позвать специалиста Vega Studio.';
 
     public function __construct(private PDO $pdo, private ?Closure $transport = null) {}
+
+    public static function configured(): bool
+    {
+        $provider = appEnv('AI_PROVIDER', 'openai-compatible');
+        if ($provider === 'gigachat') {
+            // Enable visitor traffic only after data processing terms are agreed.
+            return appEnv('GIGACHAT_CHAT_ENABLED', '0') === '1' && GigaChatClient::configured();
+        }
+        return $provider === 'openai-compatible' && (bool) appEnv('AI_API_KEY', appEnv('OPENAI_API_KEY'));
+    }
 
     public function history(int $conversationId): array
     {
@@ -201,8 +212,9 @@ final class AiAssistant
             return ['text' => self::OUT_OF_SCOPE, 'offered' => true, 'mode' => 'out_of_scope'];
         }
         $ids = $this->selectTariffs($message, $history, $catalog);
-        $key = appEnv('AI_API_KEY', appEnv('OPENAI_API_KEY'));
-        if ($key && $allowApi) {
+        $configured = self::configured();
+        $key = appEnv('AI_PROVIDER', 'openai-compatible') === 'gigachat' ? '' : appEnv('AI_API_KEY', appEnv('OPENAI_API_KEY'));
+        if ($configured && $allowApi) {
             try {
                 $result = $this->generate($key, $message, $history, $catalog, $faq);
                 if ($result['handoff']) {
@@ -215,7 +227,7 @@ final class AiAssistant
                 appLog('AI request failed', ['type' => get_class($error)]);
             }
         }
-        $prefix = $key ? 'Сейчас расширенный ответ недоступен. Вот основная информация.' : '';
+        $prefix = $configured ? 'Сейчас расширенный ответ недоступен. Вот основная информация.' : '';
         $text = self::normalize($message);
         if (preg_match('/^(?:да|нет|привет|здравствуйте|спасибо|ок)$/u', $text)) {
             return ['text' => 'Расскажите, какой проект вам нужен: сайт, интернет-магазин или автоматизация? Могу уточнить состав услуг и тарифы.', 'offered' => false, 'mode' => 'fallback'];
@@ -282,6 +294,14 @@ PROMPT;
         while (count($context['tariffs']) > 1 && mb_strlen(json_encode($context, JSON_UNESCAPED_UNICODE)) > 16000) {
             array_pop($context['tariffs']);
         }
+        if (appEnv('AI_PROVIDER', 'openai-compatible') === 'gigachat') {
+            // Prices and deadlines are appended from the database after generation.
+            // They are unnecessary in the provider's explanation/selection input.
+            foreach ($context['tariffs'] as &$tariff) {
+                unset($tariff['price'], $tariff['deadline']);
+            }
+            unset($tariff);
+        }
         $messages = [['role' => 'system', 'content' => $system],
             ['role' => 'system', 'content' => 'CONTEXT: ' . json_encode($context, JSON_UNESCAPED_UNICODE)]];
         $last = array_key_last($history);
@@ -293,15 +313,20 @@ PROMPT;
         foreach ($history as $row) {
             $messages[] = $row;
         }
-        $payload = ['model' => appEnv('AI_MODEL', 'gpt-4.1-mini'), 'messages' => $messages,
+        $giga = appEnv('AI_PROVIDER', 'openai-compatible') === 'gigachat';
+        $payload = ['model' => $giga ? appEnv('GIGACHAT_MODEL', 'GigaChat-2-Max') : appEnv('AI_MODEL', 'gpt-4.1-mini'), 'messages' => $messages,
             'max_tokens' => assistantInt('AI_MAX_OUTPUT_TOKENS', 900, 100, 2000),
             'response_format' => $this->responseFormat($schema)];
-        if (str_contains(strtolower((string) appEnv('AI_API_BASE_URL', '')), 'api.openai.com')) {
+        if (!$giga && str_contains(strtolower((string) appEnv('AI_API_BASE_URL', '')), 'api.openai.com')) {
             $payload['store'] = false;
             $payload['max_completion_tokens'] = $payload['max_tokens'];
             unset($payload['max_tokens']);
         }
-        $response = $this->transport ? ($this->transport)($payload) : $this->request($key, $payload);
+        if ($giga) {
+            $response = $this->transport ? ($this->transport)(GigaChatClient::prepare($payload)) : (new GigaChatClient())->complete($payload);
+        } else {
+            $response = $this->transport ? ($this->transport)($payload) : $this->request((string) $key, $payload);
+        }
         if (($response['choices'][0]['finish_reason'] ?? '') !== 'stop') {
             throw new RuntimeException('Incomplete provider reply');
         }
@@ -329,7 +354,7 @@ PROMPT;
     private function responseFormat(array $schema): array
     {
         $base = strtolower((string) appEnv('AI_API_BASE_URL', 'https://api.openai.com/v1'));
-        if (str_contains($base, 'api.openai.com')) {
+        if (appEnv('AI_PROVIDER', 'openai-compatible') === 'gigachat' || str_contains($base, 'api.openai.com')) {
             return ['type' => 'json_schema', 'json_schema' => ['name' => 'studio_reply', 'strict' => true, 'schema' => $schema]];
         }
 

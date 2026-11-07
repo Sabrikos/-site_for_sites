@@ -32,7 +32,7 @@ final class ChatService
         if (!$conversation) {
             $this->pdo->prepare('INSERT INTO chat_conversations (session_key, personal_data_expires_at) VALUES (?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR))')->execute([$sessionKey]);
             $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
-            $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я виртуальный помощник Vega Studio. Выберите услугу в меню или позовите специалиста.');
+            $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я помощник Vega Studio. Выберите услугу в меню или подключите специалиста.');
         }
         $this->pdo->prepare('INSERT IGNORE INTO chat_assistant_state (conversation_id) VALUES (?)')->execute([$conversation['id']]);
         return $conversation;
@@ -42,7 +42,7 @@ final class ChatService
     {
         $this->pdo->prepare('INSERT INTO chat_conversations (session_key, status, personal_data_expires_at) VALUES (?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR))')->execute([$sessionKey, 'bot']);
         $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
-        $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я снова готов помочь. Выберите услугу в меню или позовите специалиста.');
+        $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Выберите услугу в меню или подключите специалиста.');
         $this->pdo->prepare('INSERT IGNORE INTO chat_assistant_state (conversation_id) VALUES (?)')->execute([$conversation['id']]);
         return $conversation;
     }
@@ -65,16 +65,40 @@ final class ChatService
             FROM chat_conversations c LEFT JOIN chat_assistant_state s ON s.conversation_id = c.id WHERE c.id = ?');
         $statement->execute([$id]);
         $state = $statement->fetch();
-        $messages = $this->pdo->prepare('SELECT id, sender, message, created_at FROM chat_messages WHERE conversation_id = ? AND id > ? ORDER BY id LIMIT 100');
+        $order = $afterId === 0 ? 'DESC' : 'ASC';
+        $messages = $this->pdo->prepare('SELECT id, sender, message, created_at FROM chat_messages
+            WHERE conversation_id = ? AND id > ? ORDER BY id ' . $order . ' LIMIT 100');
         $messages->execute([$id, $afterId]);
+        $rows = $messages->fetchAll();
+        if ($afterId === 0) $rows = array_reverse($rows);
         return [
             'conversation_id' => $id,
             'status' => $state['status'],
             'assistant_typing' => $state['status'] === 'bot' && (bool) $state['assistant_typing'],
             'admin_online' => (bool) $state['admin_online'],
             'admin_typing' => $state['status'] === 'human' && (bool) $state['admin_typing'],
-            'messages' => $messages->fetchAll()
+            'messages' => $rows
         ];
+    }
+
+    public function adminConversations(int $adminId): array
+    {
+        $statement = $this->pdo->prepare("SELECT c.id, c.status, c.updated_at,
+            (SELECT message FROM chat_messages WHERE conversation_id = c.id ORDER BY id DESC LIMIT 1) AS last_message,
+            (SELECT COUNT(*) FROM chat_messages m WHERE m.conversation_id = c.id AND m.sender = 'user'
+                AND m.id > COALESCE(r.last_message_id, 0)) AS unread_count
+            FROM chat_conversations c
+            LEFT JOIN chat_admin_reads r ON r.conversation_id = c.id AND r.admin_id = ?
+            ORDER BY (c.status = 'waiting_human') DESC, (unread_count > 0) DESC, c.updated_at DESC, c.id DESC LIMIT 100");
+        $statement->execute([$adminId]);
+        return $statement->fetchAll();
+    }
+
+    public function markRead(int $id, int $adminId, int $messageId): void
+    {
+        $this->pdo->prepare('INSERT INTO chat_admin_reads (conversation_id, admin_id, last_message_id)
+            VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE last_message_id = GREATEST(last_message_id, VALUES(last_message_id))')
+            ->execute([$id, $adminId, $messageId]);
     }
 
     public static function needsHuman(string $message, bool $offered): bool
@@ -106,7 +130,7 @@ final class ChatService
     {
         $this->pdo->prepare("UPDATE chat_conversations SET status = 'waiting_human' WHERE id = ?")->execute([$id]);
         $this->clearGeneration($id);
-        $this->add($id, 'bot', 'Конечно. Я передал диалог администратору Vega Studio. Как только он подключится, вы сможете продолжить разговор здесь.');
+        $this->add($id, 'bot', 'Запрос на подключение специалиста сохранён. Продолжить разговор можно здесь, на сайте.');
     }
 
     private function clearGeneration(int $id): void
@@ -114,11 +138,32 @@ final class ChatService
         $this->pdo->prepare('UPDATE chat_assistant_state SET generation_key = NULL, generation_started_at = NULL, handoff_offered = 0 WHERE conversation_id = ?')->execute([$id]);
     }
 
+    public function cancelWaiting(int $id): void
+    {
+        $this->pdo->beginTransaction();
+        try {
+            $state = $this->lock($id);
+            if ($state['status'] !== 'waiting_human') {
+                throw new DomainException('Отменить можно только ожидание специалиста.', 409);
+            }
+            $this->pdo->prepare("UPDATE chat_conversations SET status = 'bot' WHERE id = ?")->execute([$id]);
+            $this->clearGeneration($id);
+            $this->add($id, 'bot', 'Вызов специалиста отменён. Выберите вопрос в меню помощника.');
+            $this->pdo->commit();
+        } catch (Throwable $error) {
+            $this->pdo->rollBack();
+            throw $error;
+        }
+    }
+
     public function beginMessage(int $id, string $text, ?string $expectedStatus = null): array
     {
         $this->pdo->beginTransaction();
         try {
             $state = $this->lock($id);
+            if ($expectedStatus !== null && $state['status'] !== $expectedStatus) {
+                throw new DomainException('Режим чата изменился. Обновите чат и повторите действие.', 409);
+            }
             if ($state['status'] === 'closed') {
                 throw new DomainException('Диалог завершён.', 409);
             }
@@ -175,7 +220,13 @@ final class ChatService
         $this->pdo->beginTransaction();
         try {
             $this->pdo->prepare('INSERT IGNORE INTO chat_assistant_state (conversation_id) SELECT id FROM chat_conversations WHERE id = ?')->execute([$id]);
-            $this->lock($id);
+            $state = $this->lock($id);
+            if ($action === 'reply' && !in_array($state['status'], ['waiting_human', 'human'], true)) {
+                throw new DomainException('Сначала посетитель должен вызвать специалиста.', 409);
+            }
+            if ($action === 'status' && $value === 'human' && !in_array($state['status'], ['waiting_human', 'human'], true)) {
+                throw new DomainException('Нет активного запроса специалиста.', 409);
+            }
             if ($action === 'reply' || $action === 'status') {
                 $status = $action === 'reply' ? 'human' : $value;
                 if (!in_array($status, ['bot', 'waiting_human', 'human', 'closed'], true)) {
@@ -205,27 +256,6 @@ final class ChatService
 
     public function telegramAdminAction(int $id, string $action, string $value = ''): void
     {
-        $this->pdo->beginTransaction();
-        try {
-            $this->lock($id);
-            if ($action === 'reply') {
-                if (trim($value) === '' || mb_strlen($value) > 4000) {
-                    throw new DomainException('Ответ должен содержать от 1 до 4000 символов.', 422);
-                }
-                $this->add($id, 'admin', trim($value));
-                $status = 'human';
-            } else {
-                $status = $value;
-                if (!in_array($status, ['bot', 'waiting_human', 'human', 'closed'], true)) {
-                    throw new DomainException('Некорректный статус.', 422);
-                }
-            }
-            $this->pdo->prepare('UPDATE chat_conversations SET status = ? WHERE id = ?')->execute([$status, $id]);
-            $this->clearGeneration($id);
-            $this->pdo->commit();
-        } catch (Throwable $error) {
-            $this->pdo->rollBack();
-            throw $error;
-        }
+        throw new DomainException('Ответы доступны только в админке сайта.', 410);
     }
 }

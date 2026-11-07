@@ -222,6 +222,7 @@ function appTelegramRequest(string $method, array $payload = []): ?array
             'header' => "Content-Type: application/x-www-form-urlencoded\r\n",
             'content' => http_build_query($payload),
             'timeout' => $method === 'getUpdates' ? 20 : 5,
+            'ignore_errors' => true,
         ],
     ]);
 
@@ -232,6 +233,9 @@ function appTelegramRequest(string $method, array $payload = []): ?array
     }
 
     $decoded = json_decode($result, true);
+    if (is_array($decoded) && empty($decoded['ok'])) {
+        appLog('Telegram API rejected request', ['method' => $method, 'error_code' => (int) ($decoded['error_code'] ?? 0)]);
+    }
     return is_array($decoded) ? $decoded : null;
 }
 

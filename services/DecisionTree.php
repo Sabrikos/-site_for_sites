@@ -22,6 +22,12 @@ final class DecisionTree
 
     public function resolve(string $choice): array
     {
+        $extras = [
+            'automation' => ['Автоматизация задач', 'Поможем сократить ручной ввод, собрать данные и настроить повторяющиеся процессы.'],
+            'reports' => ['Таблицы и отчёты', 'Приведём данные в порядок, настроим расчёты и понятные отчёты для ежедневной работы.'],
+            'internal' => ['Внутренние инструменты', 'Разработаем небольшую панель, каталог или личный кабинет для задач Вашей команды.'],
+            'integrations' => ['Связь между сервисами', 'Поможем передавать данные между сайтом, таблицами и другими системами, к которым у Вас есть доступ.'],
+        ];
         $menu = ['id' => 'root', 'label' => 'Все услуги'];
         $human = ['id' => 'human', 'label' => 'Позвать специалиста'];
         if ($choice === 'human') {
@@ -37,7 +43,33 @@ final class DecisionTree
             return [
                 'label' => $menu['label'],
                 'text' => $services ? 'Что Вы хотите заказать? Выберите услугу ниже.' : 'Список услуг сейчас обновляется. Нажмите «Позвать специалиста», чтобы обсудить задачу.',
-                'choices' => [...$services, $menu, $human],
+                'choices' => [...$services, ['id' => 'extras', 'label' => 'Другие задачи и вопросы'], $human],
+            ];
+        }
+        if ($choice === 'extras') {
+            $choices = [];
+            foreach ($extras as $id => $extra) {
+                $choices[] = ['id' => 'extra:' . $id, 'label' => $extra[0]];
+            }
+            return [
+                'label' => 'Другие задачи и вопросы',
+                'text' => 'Что Вас интересует? Выберите задачу или вопрос ниже.',
+                'choices' => [...$choices, ['id' => 'terms', 'label' => 'Оплата, договор и правки'], $menu, $human],
+            ];
+        }
+        if (str_starts_with($choice, 'extra:') && isset($extras[substr($choice, 6)])) {
+            [$label, $description] = $extras[substr($choice, 6)];
+            return [
+                'label' => $label,
+                'text' => $description . "\n\nСтоимость и сроки обсудим после знакомства с Вашей задачей.\nНажмите «Позвать специалиста», чтобы обсудить детали.",
+                'choices' => [['id' => 'extras', 'label' => 'Другие задачи и вопросы'], $menu, $human],
+            ];
+        }
+        if ($choice === 'terms') {
+            return [
+                'label' => 'Условия работы',
+                'text' => "Специалист расскажет:\n\n• Как проходит оплата.\n• Как заключается договор.\n• Как согласовываются правки и поддержка.\n\nНажмите «Позвать специалиста», чтобы уточнить условия для Вашего проекта.",
+                'choices' => [['id' => 'extras', 'label' => 'Другие задачи и вопросы'], $menu, $human],
             ];
         }
         if (!preg_match('/^(service|tariff):([1-9][0-9]*)$/D', $choice, $match)) {

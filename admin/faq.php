@@ -40,16 +40,15 @@ array_unshift($rows, ['id' => 0, 'question' => '', 'answer' => '', 'keywords' =>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>База знаний | Vega Studio</title>
     <link rel="stylesheet" href="../styles.css?v=<?= filemtime(__DIR__ . '/../styles.css') ?>">
+    <link rel="stylesheet" href="/admin/admin.css?v=<?= filemtime(__DIR__ . '/admin.css') ?>">
 </head>
 
 <body>
     <main class="admin-shell">
-        <aside class="admin-sidebar">
-            <a href="index.php">Обзор</a><a href="orders.php">Заказы</a><a href="chats.php">Чаты</a>
-            <a href="faq.php" aria-current="page">База знаний</a><a href="services.php">Услуги</a><a href="tariffs.php">Тарифы</a><a href="logout.php">Выход</a>
-        </aside>
+        <?php require __DIR__ . '/navigation.php'; ?>
         <section class="admin-content">
             <h1>База знаний</h1>
+            <p>Добавляйте готовые ответы на частые вопросы. Ассистент использует включённые записи при совпадении с вопросом клиента.</p>
             <?php if ($error): ?><p role="alert"><?= appEscape($error) ?></p><?php endif; ?>
             <?php foreach ($rows as $row): ?>
                 <form method="post" class="admin-edit-card">
@@ -58,8 +57,8 @@ array_unshift($rows, ['id' => 0, 'question' => '', 'answer' => '', 'keywords' =>
                     <input type="hidden" name="id" value="<?= (int) $row['id'] ?>">
                     <label>Вопрос <input name="question" maxlength="255" value="<?= appEscape($row['question']) ?>" required></label>
                     <label>Ответ <textarea name="answer" maxlength="2000" rows="4" required><?= appEscape($row['answer']) ?></textarea></label>
-                    <label>Ключевые слова <input name="keywords" maxlength="255" value="<?= appEscape($row['keywords']) ?>"></label>
-                    <label class="admin-check"><input type="checkbox" name="active" value="1" <?= $row['active'] ? 'checked' : '' ?>> Опубликован</label>
+                    <label>Ключевые слова <input name="keywords" placeholder="Например: сроки, разработка" maxlength="255" value="<?= appEscape($row['keywords']) ?>"></label>
+                    <label class="admin-check"><input type="checkbox" name="active" value="1" <?= $row['active'] ? 'checked' : '' ?>> Использовать в ответах ассистента</label>
                     <button type="submit"><?= $row['id'] ? 'Сохранить' : 'Добавить' ?></button>
                 </form>
             <?php endforeach; ?>

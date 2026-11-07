@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/services/OrderService.php';
+require_once __DIR__ . '/services/SupportRelay.php';
 require_once __DIR__ . '/layout.php';
 
 appStartSession();
@@ -102,14 +103,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $successOrderId = $result['id'];
             appRotateCsrf('home_lead_csrf');
             $_SESSION['home_lead_request_token'] = bin2hex(random_bytes(32));
-            if ($result['created']) {
-                try {
-                    appSendTelegram('<b>Новая заявка Vega Studio</b>\nИсточник: главная форма\nЗаказ: #' . $successOrderId,
-                        'Открыть заказ', appUrl('admin/order.php?id=' . $successOrderId));
-                } catch (Throwable $error) {
-                    appLog('Lead notification failed after commit', ['order_id' => $successOrderId, 'type' => get_class($error)]);
-                }
+            if ($result['created'] && !supportNotifyWebsiteOrder()) {
+                appLog('Website order notification was not delivered');
             }
+
         } catch (Throwable $error) {
             appLog('Lead create failed', ['type' => get_class($error)]);
             $errors[] = 'Не удалось сохранить заявку. Попробуйте ещё раз.';

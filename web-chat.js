@@ -61,7 +61,7 @@
   }
 
   function renderChoices() {
-    const items = state.status === "bot" ? state.choices || [] : [];
+    const items = state.status === "bot" ? state.choices || [] : state.status === "waiting_human" ? [{ id: "cancel_waiting", label: "Отменить вызов и вернуться к помощнику" }] : [];
     const existing = Array.from(choices.children);
     if (items.length !== existing.length || items.some(({ id, label }, i) =>
       existing[i].value !== id || existing[i].dataset.label !== label)) {
@@ -260,7 +260,8 @@
     updateStatus();
     showError();
     try {
-      await request("message", { choice: button.value });
+      if (button.value === "cancel_waiting") await request("cancel_waiting");
+      else await request("message", { choice: button.value });
       if (button.value === "human" && !form.hidden && root.classList.contains("is-open")) {
         textarea.focus();
       }

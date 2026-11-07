@@ -1,0 +1,6 @@
+window.VegaAlienClips = Object.freeze({
+  blink: {src:'blink-short.webp?v=24', width:300, height:400, columns:10, frames:32, fps:24},
+  head: {src:'head.webp', width:300, height:400, columns:10, frames:48, fps:24, from:44, to:4, anchor:.8},
+  wave: {"src": "wave-camera.webp?v=51834b3194b2", "width": 300, "height": 400, "columns": 10, "frames": 96, "fps": 24},
+  reach: {"src": "reach-natural.webp?v=0cc1f12111dd", "width": 300, "height": 400, "columns": 10, "frames": 89, "fps": 30, "track": {"start": 35, "end": 44, "holdMs": 1100, "points": [[35, 256.5, 192.0], [36, 256.5, 193.0], [37, 257.5, 192.5], [38, 258.0, 192.5], [39, 259.5, 196.5], [40, 265.5, 202.0], [41, 272.0, 206.5], [42, 280.0, 211.5], [43, 284.5, 213.5], [44, 288.5, 214.5]], "returnMirror": 88}}
+});
