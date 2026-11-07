@@ -164,7 +164,12 @@ function appApplySecurityHeaders(): void
     header('Referrer-Policy: strict-origin-when-cross-origin');
     header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
     header('X-Frame-Options: DENY');
-    header("Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'");
+    $publicAnalyticsPages = ['index.php', 'home.php', 'tariffs.php', 'create-order.php', 'privacy.php', 'consent.php'];
+    $scriptFile = realpath($_SERVER['SCRIPT_FILENAME'] ?? '') ?: '';
+    $allowAnalytics = in_array($scriptFile, array_map(static fn($name) => realpath(__DIR__ . '/' . $name), $publicAnalyticsPages), true);
+    $analyticsHost = $allowAnalytics ? ' https://mc.yandex.ru' : '';
+    $analyticsScripts = $allowAnalytics ? ' https://mc.yandex.ru https://yastatic.net' : '';
+    header("Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:$analyticsHost; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'$analyticsScripts; connect-src 'self'$analyticsHost");
     if (appEnv('APP_ENV', 'local') === 'production' && appIsHttps()) {
         header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
     }

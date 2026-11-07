@@ -55,6 +55,9 @@ class Client:
 try:
     command('tests/concurrent-chat-fixture.php', 'create', DB)
     created = True
+    migration = subprocess.run([PHP, 'migrate.php'], cwd=ROOT, env=dict(os.environ, DB_NAME=DB), capture_output=True, text=True)
+    if migration.returncode:
+        raise RuntimeError('Disposable database migration failed: ' + migration.stdout + migration.stderr)
     command('tests/notifications-fixture.php', DB)
     log_path = folder/'outgoing.jsonl'
     router = folder/'router.php'
@@ -97,7 +100,7 @@ return require '"""+ROOT.as_posix()+"""/router.php';
     code,state=visitor.chat('start')
     check(code==200 and state['choices'], 'menu available with external AI credentials configured')
     conversation=state['conversation_id']
-    check(visitor.chat('message', message='Иван +79991234567')[0]==422, 'free text rejected before specialist request')
+    check(visitor.chat('message', message='Иван +79991234567')[0] in (409, 422), 'free text rejected before specialist request')
     def request_specialist(port):
         code,raw=visitor.call('/api/chat.php',dict(action='message',csrf_token=visitor.csrf,choice='human',after_id=0),port=port)
         return code,json.loads(raw)

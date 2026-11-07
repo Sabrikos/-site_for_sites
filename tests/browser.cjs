@@ -76,7 +76,7 @@ function pass(text) { checks++; console.log('PASS:', text); }
         const csrfOrder = await page.locator('[name=csrf_token]').inputValue();
         const tariffId = await page.evaluate(() => { const item = JSON.parse(localStorage.getItem('webstartCart'))[0]; return item.tariff_id ?? item.id; });
         const orderResponse = await context.request.post(base + '/create-order.php', {form: {
-            csrf_token: csrfOrder, customer_name: 'Browser test', customer_phone: '+70000000000', customer_email: 'browser-test@example.invalid',
+            csrf_token: csrfOrder, customer_name: 'Browser test', customer_phone: '+70000000000',
             project_comment: credentials.username, personal_data_consent: '1', cart_json: JSON.stringify([{id: tariffId, price: 1}])
         }});
         assert.equal(orderResponse.status(), 200);

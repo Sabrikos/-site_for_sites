@@ -15,9 +15,10 @@ $blocked = preg_match('~(?:^|/)[.]|\x00|^/(?:storage|services|migrations|tests|d
 $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 if ($path !== '/' && $extension === 'php') {
     $blocked = $blocked || !(in_array(ltrim($path, '/'), $publicPages, true) ||
-        preg_match('~^/(?:api/chat|admin/(?:index|login|logout|orders|order|chats|chat-api|services|tariffs|faq))\.php$~', $path));
+        preg_match('~^/(?:api/(?:chat|analytics-consent)|admin/(?:index|login|logout|orders|order|chats|chat-api|services|tariffs|faq))\.php$~', $path));
 } elseif ($path !== '/') {
-    $portfolioPage = preg_match('~^/portfolio/(?:apex-detailing|ramen-404)/(?:index|404)\.html$~', $path);
+    $portfolioPage = preg_match('~^/portfolio/(?:apex-detailing|ramen-404)/(?:index|404)\.html$~', $path)
+        || preg_match('~^/portfolio/tiho/(?:index|favorites)\.html$~', $path);
     $blocked = $blocked || (!$portfolioPage && !in_array($extension, ['css', 'js', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'ico', 'svg', 'woff', 'woff2'], true));
 }
 if ($blocked) {

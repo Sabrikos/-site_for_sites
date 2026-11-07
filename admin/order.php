@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../app.php';
 require_once __DIR__ . '/../bd.php';
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/../services/PersonalDataService.php';
 
 requireAdmin();
 
@@ -14,8 +15,21 @@ if ($orderId === false) {
     exit('Заказ не найден.');
 }
 
+$personalDataCsrf = appCsrfToken('admin_personal_data');
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'withdraw_personal_data') {
+    if (!appCsrfValid('admin_personal_data', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
+        http_response_code(403);
+        exit('Недействительный токен формы.');
+    }
+    PersonalDataService::withdrawAndErase($pdo, (int) $orderId, 'admin_request');
+    appRotateCsrf('admin_personal_data');
+    header('Location: order.php?id=' . (int) $orderId);
+    exit;
+}
+
 $orderStatement = $pdo->prepare(
-    'SELECT id, customer_name, phone, email, project_comment, total, status, created_at
+    'SELECT id, customer_name, phone, project_comment, total, status, created_at,
+            personal_data_expires_at, personal_data_erased_at
      FROM orders
      WHERE id = ?
      LIMIT 1'
@@ -31,6 +45,13 @@ if (!$order) {
 $itemsStatement = $pdo->prepare('SELECT service_name, tariff_name, price FROM order_items WHERE order_id = ? ORDER BY id');
 $itemsStatement->execute([(int) $orderId]);
 $items = $itemsStatement->fetchAll();
+
+$consentStatement = $pdo->prepare(
+    'SELECT consent_version, privacy_policy_version, accepted_at, retention_until, withdrawn_at
+     FROM personal_data_consents WHERE order_id = ? ORDER BY id DESC LIMIT 1'
+);
+$consentStatement->execute([(int) $orderId]);
+$consent = $consentStatement->fetch();
 
 ?>
 <!DOCTYPE html>
@@ -60,13 +81,27 @@ $items = $itemsStatement->fetchAll();
                         <h3>Клиент</h3>
                         <p><?= appEscape($order['customer_name']) ?></p>
                         <p><?= appEscape($order['phone']) ?></p>
-                        <p><?= appEscape($order['email']) ?></p>
+                        <p>Срок хранения персональных данных: <?= appEscape((string) ($order['personal_data_expires_at'] ?? 'не задан')) ?></p>
+                        <?php if ($consent): ?>
+                            <p>Согласие: <?= appEscape($consent['consent_version']) ?>, принято <?= appEscape($consent['accepted_at']) ?></p>
+                            <p>Версия политики: <?= appEscape($consent['privacy_policy_version']) ?></p>
+                        <?php endif; ?>
                         <?php if (!empty($order['project_comment'])): ?><p><?= appEscape($order['project_comment']) ?></p><?php endif; ?>
                     </div>
                     <div class="cart-product-actions">
                         <strong><?= appMoney((int) $order['total']) ?></strong>
                     </div>
                 </article>
+
+                <?php if (empty($order['personal_data_erased_at'])): ?>
+                    <form method="post" onsubmit="return confirm('Зафиксировать отзыв согласия и удалить контактные данные этой заявки?');">
+                        <input type="hidden" name="csrf_token" value="<?= appEscape($personalDataCsrf) ?>">
+                        <input type="hidden" name="action" value="withdraw_personal_data">
+                        <button type="submit" class="cart-back-button">Зафиксировать отзыв и удалить персональные данные</button>
+                    </form>
+                <?php else: ?>
+                    <p>Персональные данные удалены: <?= appEscape($order['personal_data_erased_at']) ?></p>
+                <?php endif; ?>
 
                 <h2>Выбранные тарифы</h2>
                 <?php foreach ($items as $item): ?>

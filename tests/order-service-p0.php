@@ -17,25 +17,41 @@ try {
     $customer = [
         'name' => 'P0 Integration Test',
         'phone' => '+79990000000',
-        'email' => 'p0-test@example.invalid',
         'comment' => 'Temporary integration test record.',
     ];
     $orders = new OrderService($pdo);
 
-    $lead = $orders->createLead($customer, (int) $service['id'], $tokens[0]);
-    $leadRepeat = $orders->createLead($customer, (int) $service['id'], $tokens[0]);
+    $leadConsent = ConsentService::evidence('test_lead', $tokens[0]);
+    $cartConsent = ConsentService::evidence('test_cart', $tokens[1]);
+
+    $lead = $orders->createLead($customer, (int) $service['id'], $tokens[0], $leadConsent);
+    $leadRepeat = $orders->createLead($customer, (int) $service['id'], $tokens[0], $leadConsent);
     if (!$lead['created'] || $leadRepeat['created'] || $lead['id'] !== $leadRepeat['id'] || $lead['total'] !== 0) {
         throw new RuntimeException('Lead idempotency failed.');
     }
 
-    $cart = $orders->createCartOrder($customer, [(int) $tariff['id']], $tokens[1]);
-    $cartRepeat = $orders->createCartOrder($customer, [(int) $tariff['id']], $tokens[1]);
+    $cart = $orders->createCartOrder($customer, [(int) $tariff['id']], $tokens[1], $cartConsent);
+    $cartRepeat = $orders->createCartOrder($customer, [(int) $tariff['id']], $tokens[1], $cartConsent);
     if (!$cart['created'] || $cartRepeat['created'] || $cart['id'] !== $cartRepeat['id']
         || $cart['total'] !== (int) $tariff['price']) {
         throw new RuntimeException('Cart idempotency or server-side price failed.');
     }
 
-    echo "PASS: lead and cart persistence, idempotency, and database price.\n";
+    $consentCheck = $pdo->prepare(
+        'SELECT COUNT(*) FROM personal_data_consents
+         WHERE order_id IN (?, ?) AND consent_version = ? AND privacy_policy_version = ?'
+    );
+    $consentCheck->execute([
+        $lead['id'],
+        $cart['id'],
+        ConsentService::CONSENT_VERSION,
+        ConsentService::PRIVACY_POLICY_VERSION,
+    ]);
+    if ((int) $consentCheck->fetchColumn() !== 2) {
+        throw new RuntimeException('Consent evidence persistence failed.');
+    }
+
+    echo "PASS: orders, idempotency, database price, and consent evidence.\n";
 } finally {
     $placeholders = implode(',', array_fill(0, count($tokens), '?'));
     $ids = $pdo->prepare("SELECT id FROM orders WHERE request_token IN ($placeholders)");

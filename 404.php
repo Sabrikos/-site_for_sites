@@ -13,6 +13,7 @@ header('Content-Type: text/html; charset=utf-8');
   <link rel="stylesheet" href="/error-page.css?v=hero-hover-3">
 </head>
 <body>
+<?php require __DIR__ . '/analytics.php'; ?>
 <main class="error-page">
   <div class="scene-frame">
     <img class="error-page__scene" src="/assets/images/404-space-scene.png?v=20260922-2" width="1672" height="941" alt="" aria-hidden="true" draggable="false" fetchpriority="high">
