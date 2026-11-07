@@ -1,0 +1,7 @@
+# Built-in imagegen edit prompt
+
+Edit target: the attached EXACT purple seated alien PNG, for a layered interactive website puppet. Precise object edit, NOT redesign. Keep canvas framing, proportions, camera, glossy purple material, lighting and all existing pixels outside the specified edited regions as close as possible. TWO small surgical changes only: (1) completely remove the alien's arm and resting hand on the VIEWER'S LEFT (the arm that runs down the left side of torso to the resting fingers next to the left knee). Reconstruct the narrow left edge of the torso behind that removed arm, smoothly and anatomically, and keep the legs untouched. Leave the OTHER arm and hand on viewer right exactly unchanged. The removed arm will be added as a separate original layer by code; do not replace it or add any limbs. (2) Remove both black/purple pupils/irises/highlights from inside both eyes, leaving clean pearly white eye interiors in the EXACT original eye openings, with original black eyelid rim and subtle shading. Do not change eye silhouettes, head, smile, antennae, ears, torso, feet or seated pose. Transparent background with clean alpha, no backdrop, no text, no shadow plane. Output a single full-body clean plate, same character and framing, no sprite sheet.
+
+Edit target: assets/images/contact-alien.png
+Saved project asset: assets/alien/puppet-clean-plate.png
+Tool: built-in imagegen, transparent_background=true.

@@ -6561,15 +6561,15 @@ main.checkout-page .checkout-empty-desktop p { margin: 0 0 18px; font-size: 14px
 #projects .projects-grid.portfolio-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:640px){#projects .projects-grid.portfolio-grid{grid-template-columns:minmax(0,1fr)}}
 
-/* Все движущиеся части взяты из исходного изображения. */
-.contact-alien{aspect-ratio:1086 / 1448}
-.contact-alien__original,.contact-alien__rig{position:absolute;inset:0;display:block;width:100%;height:100%}
-.contact-alien__rig{visibility:hidden;overflow:visible}
-.contact-alien.is-ready .contact-alien__rig{visibility:visible}
-.contact-alien.is-ready .contact-alien__original{visibility:hidden}
-.contact-alien__arm{transform-origin:660px 885px;transform:rotate(var(--alien-arm-angle,0deg))}
-.contact-alien__eyes{transform:translate(var(--alien-eye-x,0px),var(--alien-eye-y,0px))}
-.contact-alien__lids{opacity:0;transition:opacity .09s ease}
-.contact-alien.is-blinking .contact-alien__lids{opacity:1}
-@media(prefers-reduced-motion:reduce){.contact-alien__rig{visibility:hidden!important}.contact-alien.is-ready .contact-alien__original{visibility:visible!important}}
+/* One complete video frame at a time: no overlapping poses or duplicate limbs. */
+.contact-section > .contact-alien { aspect-ratio:1086 / 1448; }
+.contact-alien__fallback,.contact-alien__canvas { position:absolute; inset:0; display:block; width:100%; height:100%; pointer-events:none; user-select:none; }
+.contact-alien__canvas[hidden],[data-contact-alien].is-ready .contact-alien__fallback { display:none; }
+main.tariffs-page #other .tariffs-alien[data-contact-alien] { aspect-ratio:1244 / 1264; }
 
+
+.web-chat-choices { display:flex; flex-wrap:wrap; gap:8px; padding:12px 16px; max-height:180px; overflow:auto; }
+.web-chat-choices button { border:1px solid #7364ce; border-radius:12px; padding:9px 12px; background:#24203e; color:#fff; font:inherit; cursor:pointer; }
+.web-chat-choices button:hover { background:#463879; }
+.web-chat-notice { font-size:12px; line-height:1.5; opacity:.8; padding:0 16px 10px; margin:0; }
+.web-chat .web-chat-panel .web-chat-form[hidden] { display:none !important; }

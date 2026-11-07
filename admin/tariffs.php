@@ -48,11 +48,12 @@ $rows = $pdo->query(
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тарифы | Vega Studio</title>
     <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="/admin/admin.css?v=<?= filemtime(__DIR__ . '/admin.css') ?>">
 </head>
 
 <body>
     <main class="admin-shell">
-        <aside class="admin-sidebar"><a href="index.php">Dashboard</a><a href="orders.php">Заказы</a><a href="chats.php">Чаты</a><a href="services.php">Услуги</a><a href="tariffs.php">Тарифы</a><a href="logout.php">Выход</a></aside>
+        <?php require __DIR__ . '/navigation.php'; ?>
         <section class="admin-content">
             <h1>Тарифы</h1>
             <?php if ($message !== ''): ?><div class="success"><?= appEscape($message) ?></div><?php endif; ?>

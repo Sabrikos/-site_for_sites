@@ -1,0 +1,57 @@
+const assert = require('node:assert/strict');
+const {chromium, request} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+(async () => {
+  const base = process.env.VEGA_NOTIFICATION_TEST_URL;
+  assert.equal(base, 'http://127.0.0.1:8121', 'Disposable test server required');
+  const browser = await chromium.launch({headless:true, executablePath:process.env.CHROMIUM_EXECUTABLE});
+  const page = await browser.newPage({viewport:{width:375,height:812}});
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  try {
+    await page.goto(base+'/admin/login.php');
+    await page.locator('#username').fill('test-notifications');
+    await page.locator('#password').fill('DisposableTestPassword!');
+    await Promise.all([page.waitForURL('**/admin/orders.php'),page.locator('button[type=submit]').click()]);
+    await page.goto(base+'/admin/chats.php');
+    const visitor = await request.newContext({baseURL:base});
+    let state = await (await visitor.post('/api/chat.php',{form:{action:'start'}})).json();
+    const csrf = state.csrf_token;
+    state = await (await visitor.post('/api/chat.php',{form:{action:'message',csrf_token:csrf,choice:'human'}})).json();
+    const id = state.conversation_id;
+    const marker = 'Телефон +79990001122 MobileVisitor';
+    await visitor.post('/api/chat.php',{form:{action:'message',csrf_token:csrf,message:marker}});
+    const link = page.locator('.admin-chat-list-item').filter({hasText:marker});
+    await link.waitFor({state:'visible',timeout:8000});
+    assert.match(await link.innerText(), /Новых сообщений/);
+    console.log('PASS mobile overview refreshes new waiting conversations and unread messages');
+    await link.click();
+    await page.locator('#adminReply').waitFor();
+    await page.waitForTimeout(200);
+    const overflow = await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth);
+    assert.equal(overflow,false,'Mobile page must fit viewport');
+    const textarea = await page.locator('#adminReply').boundingBox();
+    const button = await page.locator('.admin-reply-form button').boundingBox();
+    assert.ok(textarea.y>=0 && button.y+button.height<=816, JSON.stringify({textarea,button}));
+    const reply='Ответ через мобильную админку';
+    await page.locator('#adminReply').fill(reply);
+    await page.locator('.admin-reply-form button').click();
+    await page.locator('#adminReply').waitFor({state:'visible'});
+    await page.waitForFunction(()=>document.querySelector('#adminReply').value==='');
+    const result=await(await visitor.post('/api/chat.php',{form:{action:'poll',csrf_token:csrf}})).json();
+    assert.ok(result.messages.some(message=>message.message===reply && message.sender==='admin'));
+    await page.screenshot({path:process.env.VEGA_NOTIFICATION_TEST_SCREENSHOT,fullPage:true});
+    console.log('PASS mobile transcript and composer fit 375px; operator reply reaches website visitor');
+    assert.deepEqual(errors,[]);
+    await visitor.dispose();
+    const visitorPage = await browser.newPage({viewport:{width:375,height:812}});
+    await visitorPage.goto(base+'/home.php');
+    await visitorPage.locator('.web-chat-toggle').click();
+    await visitorPage.getByRole('button',{name:'Позвать специалиста',exact:true}).waitFor();
+    assert.equal(await visitorPage.locator('.web-chat-form').isVisible(),false);
+    await visitorPage.getByRole('button',{name:'Позвать специалиста',exact:true}).click();
+    await visitorPage.locator('.web-chat-form').waitFor({state:'visible'});
+    console.log('PASS mobile visitor menu opens free input after specialist request');
+  } finally {
+    await browser.close();
+  }
+})().catch(error=>{console.error(error);process.exitCode=1;});

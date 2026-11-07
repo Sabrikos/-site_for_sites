@@ -12,6 +12,8 @@
             </div>
             <div class="web-chat-messages" role="log" aria-label="Сообщения" aria-live="off"></div>
             <p class="web-chat-error" role="alert" hidden></p>
+            <div class="web-chat-choices" aria-label="Варианты ответа"></div>
+            <p class="web-chat-notice">Выберите пункт меню. Переписка со специалистом ведётся на сайте. Не отправляйте пароли и платёжные данные.</p>
             <form class="web-chat-form">
                 <textarea name="message" rows="2" maxlength="2000" placeholder="Введите сообщение..." aria-label="Ваше сообщение" required></textarea>
                 <button type="submit" aria-label="Отправить сообщение">
@@ -27,6 +29,8 @@
   const panel = root.querySelector(".web-chat-panel");
   const list = root.querySelector(".web-chat-messages");
   const form = root.querySelector(".web-chat-form");
+  const choices = root.querySelector(".web-chat-choices");
+  const notice = root.querySelector(".web-chat-notice");
   const textarea = form.querySelector("textarea");
   const submit = form.querySelector("button");
   const status = root.querySelector(".web-chat-status");
@@ -53,11 +57,43 @@
   function updateComposerState() {
     const hasText = textarea.value.trim() !== "";
     submit.disabled =
-      !hasText || sending || starting || state.status === "closed";
+      !hasText || sending || starting || !["waiting_human", "human"].includes(state.status);
     resizeComposer();
   }
 
   function updateStatus() {
+    form.hidden = state.status === 'bot' || state.status === 'closed';
+    notice.textContent = state.status === 'bot'
+      ? 'Выберите пункт меню. Переписка со специалистом ведётся на сайте. Не отправляйте пароли и платёжные данные.'
+      : 'Сообщения доступны специалисту на сайте. Не отправляйте пароли и платёжные данные.';
+    choices.replaceChildren();
+    if (state.status === 'waiting_human') {
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = 'Отменить вызов и вернуться к помощнику';
+      cancel.disabled = sending || starting;
+      cancel.addEventListener('click', async () => {
+        if (sending || !csrf) return;
+        sending = true; updateStatus(); showError();
+        try { await request('cancel_waiting'); }
+        catch (e) { showError(e.message); }
+        finally { sending = false; updateStatus(); }
+      });
+      choices.appendChild(cancel);
+    }
+    if (state.status === 'bot') for (const choice of state.choices || []) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.textContent = choice.label;
+      button.disabled = sending || starting;
+      button.addEventListener('click', async () => {
+        if (sending || !csrf) return;
+        sending = true; updateStatus(); showError();
+        try { await request('message', {choice: choice.id}); }
+        catch (e) { showError(e.message); }
+        finally { sending = false; updateStatus(); }
+      });
+      choices.appendChild(button);
+    }
     let text = "Vega Assistant в сети";
     let typing = false;
     if (state.status === "closed") text = "Диалог завершён";
@@ -67,7 +103,7 @@
     } else if (state.status === "waiting_human" || state.status === "human") {
       text = state.admin_online
         ? "Администратор в сети"
-        : "Администратор подключён, ожидаем ответа";
+        : "Ожидаем специалиста";
     } else if (sending || state.assistant_typing || animated.size) {
       text = "Vega Assistant печатает";
       typing = true;
@@ -82,7 +118,7 @@
       for (let i = 0; i < 3; i++) dots.appendChild(document.createElement("i"));
       status.appendChild(dots);
     }
-    textarea.disabled = state.status === "closed" || starting;
+    textarea.disabled = !["waiting_human", "human"].includes(state.status) || starting;
     updateComposerState();
   }
 
@@ -142,7 +178,15 @@
     requestAnimationFrame(frame);
   }
 
-  async function request(action, body = {}) {
+  let requestQueue = Promise.resolve();
+  function request(action, body = {}) {
+    // Apply snapshots in order, including polls already running before a handoff.
+    const pending = requestQueue.then(() => requestNow(action, body));
+    requestQueue = pending.catch(() => {});
+    return pending;
+  }
+
+  async function requestNow(action, body = {}) {
     const response = await fetch("api/chat.php", {
       method: "POST",
       credentials: "same-origin",
@@ -185,7 +229,7 @@
         updateStatus();
       }
     }
-    textarea.focus();
+    (form.hidden ? close : textarea).focus();
   }
 
   function closeChat() {
@@ -204,7 +248,7 @@
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const message = textarea.value.trim();
-    if (!message || sending || starting || !csrf) return;
+    if (form.hidden || !message || sending || starting || !csrf) return;
     sending = true;
     updateStatus();
     showError();
@@ -237,7 +281,8 @@
       !csrf ||
       document.hidden ||
       polling ||
-      starting
+      starting ||
+      sending
     )
       return;
     polling = true;

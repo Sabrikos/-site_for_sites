@@ -12,8 +12,8 @@ if (!in_array('--live', $argv, true)) {
     echo "Use --live for one real AI request with a synthetic question and public catalog.\n";
     exit(2);
 }
-if (!appEnv('AI_API_KEY', appEnv('OPENAI_API_KEY'))) {
-    echo "AI key is missing. Configure .env first. No request sent.\n";
+if (!AiAssistant::configured()) {
+    echo "AI provider is not enabled/configured. No request sent.\n";
     exit(2);
 }
 $reply = (new AiAssistant($pdo))->reply(0, 'Расскажи подробнее про Лендинг Бизнес и AI-ассистента.');

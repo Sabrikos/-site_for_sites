@@ -49,7 +49,7 @@ final class TelegramService
 
 	public function getUpdates(int $offset = 0): ?array
 	{
-		return $this->request('getUpdates', ['offset' => $offset, 'timeout' => 20, 'allowed_updates' => ['message', 'callback_query']]);
+		return null;
 	}
 
 	private function request(string $method, array $payload): ?array

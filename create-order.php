@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/layout.php';
 require_once __DIR__ . '/services/OrderService.php';
+require_once __DIR__ . '/services/SupportRelay.php';
 
 appStartSession();
 
@@ -89,23 +90,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             appRotateCsrf('order_csrf');
             $_SESSION['order_request_token'] = bin2hex(random_bytes(32));
 
-            if ($result['created']) {
-                try {
-                    appSendTelegram(
-                '<b>🚀 НОВАЯ ЗАЯВКА Vega Studio</b>\n'
-                    . 'Источник: 🌐 Сайт\n'
-                    . 'Заказ: #' . $successOrderId . "\n"
-                    . 'Клиент: ' . appTelegramEscape($customerName) . "\n"
-                    . 'Телефон: ' . appTelegramEscape($customerPhone) . "\n"
-                    . 'Email: ' . appTelegramEscape($customerEmail) . "\n"
-                    . 'Сумма: ' . number_format((int) $result['total'], 0, '', ' ') . ' ₽',
-                '📋 Открыть заказ',
-                appUrl('admin/order.php?id=' . $successOrderId),
-                    );
-                } catch (Throwable $error) {
-                    appLog('Order notification failed after commit', ['order_id' => $successOrderId, 'type' => get_class($error)]);
-                }
+            if ($result['created'] && !supportNotifyWebsiteOrder()) {
+                appLog('Website order notification was not delivered');
             }
+
         } catch (Throwable $error) {
             appLog('Order create failed', ['type' => get_class($error)]);
             $errors[] = 'Не удалось сохранить заказ. Попробуйте ещё раз.';

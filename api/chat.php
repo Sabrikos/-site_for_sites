@@ -6,6 +6,7 @@ require_once __DIR__ . '/../app.php';
 require_once __DIR__ . '/../bd.php';
 require_once __DIR__ . '/../services/AiAssistant.php';
 require_once __DIR__ . '/../services/SupportRelay.php';
+require_once __DIR__ . '/../services/DecisionTree.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -13,6 +14,10 @@ header('X-Content-Type-Options: nosniff');
 
 function chatJson(array $payload, int $status = 200): never
 {
+    if ($status === 200 && isset($GLOBALS['tree'])) {
+        try { $payload['choices'] = $GLOBALS['tree']->resolve($_SESSION['chat_tree_node'] ?? 'root')['choices']; }
+        catch (InvalidArgumentException $error) { $payload['choices'] = $GLOBALS['tree']->resolve('root')['choices']; }
+    }
     http_response_code($status);
     echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
@@ -21,18 +26,10 @@ function chatJson(array $payload, int $status = 200): never
 function chatNotifyHumanRequest(int $id): void
 {
     try {
-        $statement = $GLOBALS['pdo']->prepare('SELECT customer_name, customer_contact FROM chat_conversations WHERE id = ?');
-        $statement->execute([$id]);
-        $conversation = $statement->fetch() ?: [];
-        supportNotify(
-            $GLOBALS['pdo'],
-            $id,
-            'website',
-            null,
-            (string) ($conversation['customer_name'] ?? 'Пользователь сайта'),
-            '',
-            'Пользователь сайта запросил помощь специалиста.',
-        );
+        if (assistantLimit($GLOBALS['pdo'], 'human_notification:' . $id, 1, 300)
+            && !supportNotifyWebsiteHumanRequest()) {
+            appLog('Website specialist alert delivery failed');
+        }
     } catch (Throwable $error) {
         appLog('Handoff notification failed', ['conversation_id' => $id]);
     }
@@ -54,11 +51,12 @@ try {
     }
     appStartSession();
     $action = is_string($_POST['action'] ?? null) ? $_POST['action'] : '';
-    if (!in_array($action, ['start', 'message', 'poll'], true)) {
+    if (!in_array($action, ['start', 'message', 'poll', 'cancel_waiting'], true)) {
         chatJson(['error' => 'Неизвестное действие.'], 400);
     }
     $ipKey = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? 'local');
     $service = new ChatService($pdo);
+    $tree = new DecisionTree((new AiAssistant($pdo))->catalog());
     if ($action === 'start') {
         if (empty($_SESSION['chat_session_key'])) {
             if (!assistantLimit($pdo, 'chat_start:' . $ipKey, 30, 3600)) {
@@ -68,6 +66,7 @@ try {
         }
         $conversation = $service->conversation($_SESSION['chat_session_key']);
         $token = appCsrfToken('chat_csrf');
+        $_SESSION['chat_tree_node'] = 'root';
         session_write_close();
         chatJson($service->snapshot((int) $conversation['id']) + [
             'csrf_token' => $token,
@@ -78,18 +77,44 @@ try {
         chatJson(['error' => 'Обновите страницу и откройте чат снова.'], 403);
     }
     $conversation = $service->conversation($_SESSION['chat_session_key']);
+    if ($action === 'cancel_waiting' && ($conversation['status'] ?? '') !== 'waiting_human') {
+        throw new DomainException('Отменить можно только ожидание специалиста.', 409);
+    }
     if (($conversation['status'] ?? '') === 'closed') {
         $conversation = $service->startFreshConversation($_SESSION['chat_session_key']);
+        $_SESSION['chat_tree_node'] = 'root';
     }
     $id = (int) $conversation['id'];
     $afterId = filter_var($_POST['after_id'] ?? 0, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
     if ($afterId === false) {
         chatJson(['error' => 'Некорректный номер сообщения.'], 422);
     }
-    session_write_close();
-    if ($action === 'poll') {
+    if ($action === 'cancel_waiting' || ($action === 'message' && $conversation['status'] === 'waiting_human' && preg_match('/^(?:отмена|отменить|отменить вызов)[.!\s]*$/ui', trim((string) ($_POST['message'] ?? ''))))) {
+        $service->cancelWaiting($id);
+        $_SESSION['chat_tree_node'] = 'root';
+        session_write_close();
         chatJson($service->snapshot($id, $afterId));
     }
+    if ($action === 'poll') {
+        session_write_close();
+        chatJson($service->snapshot($id, $afterId));
+    }
+    $choice = is_string($_POST['choice'] ?? null) ? $_POST['choice'] : '';
+    if ($choice === 'human' && in_array($conversation['status'], ['waiting_human', 'human'], true)) {
+        session_write_close();
+        chatJson($service->snapshot($id, $afterId));
+    }
+    if ($choice !== '' && $conversation['status'] !== 'bot') {
+        chatJson(['error' => 'Режим чата изменился. Обновите меню.'], 409);
+    }
+    $treeReply = null;
+    if ($conversation['status'] === 'bot') {
+        try { $choice = is_string($_POST['choice'] ?? null) ? $_POST['choice'] : ''; $treeReply = $tree->resolve($choice); }
+        catch (InvalidArgumentException $error) { chatJson(['error'=>$error->getMessage()],422); }
+        $_SESSION['chat_tree_node'] = $choice === 'human' ? 'root' : $choice;
+        $_POST['message'] = $treeReply['label'];
+    }
+    session_write_close();
     $message = is_string($_POST['message'] ?? null) ? trim($_POST['message']) : '';
     if ($message === '' || !mb_check_encoding($message, 'UTF-8') || mb_strlen($message) > assistantInt('AI_MAX_INPUT_LENGTH', 2000, 200, 4000)) {
         chatJson(['error' => 'Проверьте длину и текст сообщения.'], 422);
@@ -97,23 +122,21 @@ try {
     if (!assistantLimit($pdo, 'chat_message:' . $ipKey, 20, 60)) {
         chatJson(['error' => 'Слишком много сообщений. Попробуйте через минуту.'], 429);
     }
-    $pending = $service->beginMessage($id, $message);
-    $handoff = $pending['handoff'];
-    if (!$handoff && $pending['key'] === null) {
-        $conversationState = $service->snapshot($id);
-        if (in_array((string) ($conversationState['status'] ?? ''), ['waiting_human', 'human'], true)) {
-            supportNotify($pdo, $id, 'website', null, 'Пользователь сайта', '', $message);
+    try {
+        $pending = $service->beginMessage($id, $message, $conversation['status']);
+    } catch (DomainException $error) {
+        if ($choice === 'human' && $error->getCode() === 409) {
+            $snapshot = $service->snapshot($id, $afterId);
+            if (in_array($snapshot['status'], ['waiting_human', 'human'], true)) {
+                chatJson($snapshot);
+            }
         }
+        throw $error;
     }
+    $handoff = $pending['handoff'];
     if ($pending['key']) {
-        $allowApi = false;
-        if (appEnv('AI_API_KEY', appEnv('OPENAI_API_KEY')) && !AiAssistant::restricted($message)) {
-            $allowApi = assistantLimit($pdo, 'ai_conversation:' . $id, 20, 3600)
-                && assistantLimit($pdo, 'ai_ip:' . $ipKey, 40, 3600)
-                && assistantLimit($pdo, 'ai_global', assistantInt('AI_MAX_REQUESTS_PER_DAY', 100, 1, 5000), 86400);
-        }
         try {
-            $reply = (new AiAssistant($pdo))->reply($id, $message, $allowApi);
+            $reply = ['text'=>$treeReply['text'] ?? $tree->resolve('root')['text'], 'offered'=>false, 'mode'=>'tree'];
         } catch (Throwable $error) {
             appLog('Assistant failed', ['type' => get_class($error)]);
             $reply = ['text' => 'Не удалось подготовить ответ. Могу позвать администратора Vega Studio.', 'offered' => true];

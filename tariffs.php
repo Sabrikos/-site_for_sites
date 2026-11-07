@@ -302,7 +302,14 @@ foreach ($tariffs as $tariff) {
 
 
                         <?php if ($service['slug'] === 'other'): ?>
-                            <img class="tariffs-alien" src="assets/images/tariffs-alien.png" width="1244" height="1264" alt="" aria-hidden="true" loading="lazy" draggable="false">
+                            <?php if (is_file(__DIR__ . '/assets/alien/tariffs/idle-manifest.js')): ?>
+                                <div class="tariffs-alien" data-contact-alien aria-hidden="true">
+                                    <img class="contact-alien__fallback" src="assets/alien/tariffs/idle-full-poster.png" width="320" height="326" alt="" loading="lazy" draggable="false">
+                                    <canvas class="contact-alien__canvas" width="320" height="326" hidden></canvas>
+                                </div>
+                            <?php else: ?>
+                                <img class="tariffs-alien" src="assets/images/tariffs-alien.png" width="1244" height="1264" alt="" aria-hidden="true" loading="lazy" draggable="false">
+                            <?php endif; ?>
                         <?php endif; ?>
                     </section>
 
@@ -769,6 +776,10 @@ foreach ($tariffs as $tariff) {
     <div class="cart-vega-nebula tariffs-ursa-major-nebula" id="ursa-major-note" role="tooltip" aria-hidden="true">Большая медведица</div>
     <div class="cart-vega-nebula tariffs-reference-nebula" id="reference-constellation-note" role="tooltip" aria-hidden="true">Орион</div>
     <script src="cursor-stars.js?v=constellations-7"></script>
+    <?php if (is_file(__DIR__ . '/assets/alien/tariffs/idle-manifest.js')): ?>
+        <script src="assets/alien/tariffs/idle-manifest.js?v=<?= filemtime(__DIR__ . '/assets/alien/tariffs/idle-manifest.js') ?>" defer></script>
+        <script src="contact-alien-idle.js?v=<?= filemtime(__DIR__ . '/contact-alien-idle.js') ?>" defer></script>
+    <?php endif; ?>
 </body>
 
 </html>

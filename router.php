@@ -5,6 +5,11 @@ declare(strict_types=1);
 // Only public pages and assets are served by the local PHP server.
 $path = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
 $path = str_replace('\\', '/', $path);
+if ($path === '/admin' || $path === '/admin/') {
+    header('Location: /admin/index.php');
+    return true;
+}
+
 $publicPages = ['404.php', 'index.php', 'home.php', 'tariffs.php', 'cart.php', 'create-order.php', 'privacy.php', 'telegram-webhook.php'];
 $blocked = preg_match('~(?:^|/)[.]|\x00|^/(?:storage|services|migrations|tests|docs)(?:/|$)~i', $path);
 $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));

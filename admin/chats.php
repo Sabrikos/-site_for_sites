@@ -6,7 +6,7 @@ require_once __DIR__ . '/auth.php';
 requireAdmin();
 require_once __DIR__ . '/../bd.php';
 require_once __DIR__ . '/../services/ChatService.php';
-require_once __DIR__ . '/../services/SupportRelay.php';
+
 
 $chatService = new ChatService($pdo);
 $error = '';
@@ -24,15 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new DomainException('Некорректное действие.');
         }
         $newStatus = (string) ($_POST['value'] ?? '');
-        $before = $pdo->prepare('SELECT status, session_key FROM chat_conversations WHERE id = ?');
-        $before->execute([$postId]);
-        $previous = $before->fetch() ?: [];
         $chatService->adminAction($postId, (int) $_SESSION['admin_id'], $action, $newStatus);
-        if ($action === 'status' && $newStatus === 'closed' && ($previous['status'] ?? '') === 'human') {
-            $chatService->add($postId, 'bot', '✅ Разговор со специалистом завершён. Vega Assistant снова доступен. Если появятся вопросы, просто напишите сообщение.');
-            supportNotify($pdo, $postId, str_starts_with((string) ($previous['session_key'] ?? ''), 'telegram:') ? 'telegram' : 'website', null, 'Диалог #' . $postId, '', 'Диалог завершён администратором.');
-            $pdo->prepare('DELETE FROM telegram_assignments WHERE conversation_id = ?')->execute([$postId]);
-        }
         header('Location: chats.php?id=' . $postId, true, 303);
         exit;
     } catch (Throwable $exception) {
@@ -40,9 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 $csrf = appCsrfToken('admin_csrf');
-$conversations = $pdo->query('SELECT c.id, c.status, c.updated_at,
-    (SELECT message FROM chat_messages WHERE conversation_id = c.id ORDER BY id DESC LIMIT 1) AS last_message
-    FROM chat_conversations c ORDER BY c.updated_at DESC, c.id DESC LIMIT 50')->fetchAll();
+$conversations = $chatService->adminConversations((int) $_SESSION['admin_id']);
 $currentChat = null;
 $messages = [];
 if ($chatId) {
@@ -52,44 +42,46 @@ if ($chatId) {
     if ($currentChat) {
         $chatService->adminAction($chatId, (int) $_SESSION['admin_id'], 'poll');
         $messages = $chatService->snapshot($chatId)['messages'];
+        if ($messages) {
+            $chatService->markRead($chatId, (int) $_SESSION['admin_id'], (int) end($messages)['id']);
+        }
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" class="admin-chat-document">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
     <title>Чаты | Vega Studio</title>
     <link rel="stylesheet" href="../styles.css?v=<?= filemtime(__DIR__ . '/../styles.css') ?>">
+    <link rel="stylesheet" href="/admin/admin.css?v=<?= filemtime(__DIR__ . '/admin.css') ?>">
     <script src="chats.js?v=<?= filemtime(__DIR__ . '/chats.js') ?>" defer></script>
 </head>
 
 <body>
     <main class="admin-shell">
-        <aside class="admin-sidebar">
-            <a href="index.php">Обзор</a><a href="orders.php">Заказы</a>
-            <a href="chats.php" aria-current="page">Чаты</a><a href="faq.php">База знаний</a>
-            <a href="services.php">Услуги</a><a href="tariffs.php">Тарифы</a><a href="logout.php">Выход</a>
-        </aside>
-        <section class="admin-content">
+        <?php require __DIR__ . '/navigation.php'; ?>
+        <section class="admin-content" data-admin-chat-csrf="<?= appEscape($csrf) ?>">
             <h1>Чаты</h1>
             <p class="admin-chat-error" role="alert"><?= appEscape($error) ?></p>
             <div class="admin-chat-layout">
-                <div class="admin-chat-list">
+                <nav id="adminChatList" class="admin-chat-list" aria-label="Последние диалоги">
                     <?php if (!$conversations): ?><p>Диалогов пока нет.</p><?php endif; ?>
                     <?php foreach ($conversations as $row): ?>
-                        <a class="admin-chat-list-item" href="chats.php?id=<?= (int) $row['id'] ?>" <?= (int) $row['id'] === (int) $chatId ? 'aria-current="page"' : '' ?>>
-                            <strong>#<?= (int) $row['id'] ?> · <?= appEscape($allowedStatuses[$row['status']] ?? $row['status']) ?></strong>
-                            <span><?= appEscape(mb_substr((string) $row['last_message'], 0, 90)) ?></span>
+                        <a class="admin-chat-list-item" href="chats.php?id=<?= (int) $row['id'] ?>#chatThread" <?= (int) $row['id'] === (int) $chatId ? 'aria-current="page"' : '' ?>>
+                            <strong>#<?= (int) $row['id'] ?> <span class="admin-chat-badge is-<?= appEscape($row['status']) ?>"><?= appEscape($allowedStatuses[$row['status']] ?? $row['status']) ?></span></strong>
+                            <span class="admin-chat-preview"><?= appEscape(mb_substr((string) $row['last_message'], 0, 90)) ?></span>
+                            <?php if ((int) $row['unread_count'] > 0): ?><small class="admin-chat-unread">Новых сообщений: <?= (int) $row['unread_count'] ?></small><?php endif; ?>
                         </a>
                     <?php endforeach; ?>
-                </div>
-                <div class="admin-chat-thread" data-chat-id="<?= $currentChat ? (int) $chatId : 0 ?>" data-csrf="<?= appEscape($csrf) ?>">
+                </nav>
+                <div id="chatThread" class="admin-chat-thread" data-status="<?= appEscape($currentChat['status'] ?? '') ?>" data-chat-id="<?= $currentChat ? (int) $chatId : 0 ?>" data-csrf="<?= appEscape($csrf) ?>">
                     <?php if (!$currentChat): ?>
-                        <p>Выберите диалог.</p>
+                        <p><?= $chatId ? 'Диалог не найден. Выберите другой из списка.' : 'Выберите диалог, чтобы открыть переписку.' ?></p>
                     <?php else: ?>
+                        <a class="admin-chat-back" href="#adminChatList">К списку диалогов</a>
                         <h2>Диалог #<?= (int) $chatId ?></h2>
                         <p class="admin-chat-status"><?= appEscape($allowedStatuses[$currentChat['status']] ?? '') ?></p>
                         <div class="admin-chat-actions">

@@ -7,6 +7,8 @@ require_once __DIR__ . '/../services/AiAssistant.php';
 appEnsureAssistantTables($pdo);
 putenv('AI_API_KEY=');
 putenv('OPENAI_API_KEY=');
+putenv('AI_PROVIDER=openai-compatible');
+putenv('AI_API_BASE_URL=https://api.openai.com/v1');
 putenv('TELEGRAM_BOT_TOKEN=');
 $count = 0;
 function check(bool $condition, string $name): void {
