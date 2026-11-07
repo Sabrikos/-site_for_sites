@@ -2,9 +2,23 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/TariffPresentation.php';
+
 final class DecisionTree
 {
     public function __construct(private array $catalog) {}
+
+    private function serviceReply(array $row): string
+    {
+        return match ($row['slug']) {
+            'landing' => "Какой сайт Вам нужен?\n\n• Для одной услуги или товара.\n• Для подробного рассказа о компании.\n• С индивидуальным дизайном и функциями.\n\nВыберите подходящий тариф ниже.",
+            'shop' => "Какой интернет-магазин Вам нужен?\n\n• Небольшой каталог и корзина.\n• Магазин с онлайн-оплатой.\n• Магазин с подключением внешних сервисов.\n\nВыберите подходящий тариф ниже.",
+            'revision' => "Что нужно изменить на сайте?\n\n• Исправить отдельный элемент или ошибку.\n• Добавить страницы, блоки или функции.\n• Переработать несколько разделов.\n\nВыберите подходящий вариант ниже.",
+            'ai' => "Что именно Вас интересует?\n\n• Telegram-боты\n• AI-ассистенты и интеграции искусственного интеллекта",
+            'other' => "Нужна помощь с другой задачей?\n\nВыберите «Индивидуальный проект», чтобы узнать подробнее, или нажмите «Позвать специалиста», чтобы обсудить задачу.",
+            default => trim((string) ($row['service_description'] ?? '')) . "\n\nВыберите подходящий вариант ниже.",
+        };
+    }
 
     public function resolve(string $choice): array
     {
@@ -22,7 +36,7 @@ final class DecisionTree
             $services = array_reverse(array_values($services));
             return [
                 'label' => $menu['label'],
-                'text' => $services ? 'Выберите услугу, чтобы посмотреть тарифы.' : 'Список услуг сейчас обновляется.',
+                'text' => $services ? 'Что Вы хотите заказать? Выберите услугу ниже.' : 'Список услуг сейчас обновляется. Нажмите «Позвать специалиста», чтобы обсудить задачу.',
                 'choices' => [...$services, $menu, $human],
             ];
         }
@@ -44,7 +58,7 @@ final class DecisionTree
             ], $rows);
             return [
                 'label' => $row['service_name'],
-                'text' => trim($row['service_name'] . "\n" . ($row['service_description'] ?? '')),
+                'text' => $this->serviceReply($row),
                 'choices' => [...$choices, $menu, $human],
             ];
         }
@@ -52,11 +66,14 @@ final class DecisionTree
             ? 'по договорённости'
             : 'от ' . number_format((int) $row['price'], 0, '', ' ') . ' ₽';
         $deadline = $row['deadline'] ?: 'по договорённости';
+        $description = tariffPresentation($row['slug'], $row['tariff_name']);
+        $text = $description
+            ? implode("\n", array_map(static fn (string $item): string => count($description) > 1 ? '• ' . $item : $item, $description))
+            : trim((string) $row['description']);
         return [
             'label' => $row['tariff_name'],
-            'text' => $row['service_name'] . ' — ' . $row['tariff_name'] . "\n" . $row['description']
-                . "\nСтоимость: " . $price . "\nСрок: " . $deadline,
-            'choices' => [['id' => 'service:' . $row['service_id'], 'label' => 'Другие тарифы услуги'], $menu, $human],
+            'text' => $text . "\n\nСтоимость: " . $price . "\nСрок: " . $deadline,
+            'choices' => [['id' => 'service:' . $row['service_id'], 'label' => 'Другие варианты'], $menu, $human],
         ];
     }
 }
