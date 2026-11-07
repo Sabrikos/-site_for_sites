@@ -18,6 +18,7 @@ $title = 'Согласие на обработку персональных да
     <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicon-32x32.png?v=cursor-3">
 </head>
 <body>
+<?php require __DIR__ . '/analytics.php'; ?>
 <main class="cart-page">
     <section class="cart-products legal-document">
         <h1>Согласие на обработку персональных данных</h1>

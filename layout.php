@@ -120,6 +120,7 @@ function renderHeader()
     <script src="mobile-navigation.js?v=2" defer></script>
 
     <script src="web-chat.js?v=<?= filemtime(__DIR__ . '/web-chat.js') ?>" defer></script>
+    <?php require __DIR__ . '/analytics.php'; ?>
 
 <?php
 }

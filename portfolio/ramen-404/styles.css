@@ -121,3 +121,157 @@ section{scroll-margin-top:0}
 @media(max-width:374px){.hero-title>strong{font-size:43vw}.hero-window-chef{width:150px;right:2vw;bottom:14%}.hero-note>p{font-size:17px}.hero-note{bottom:24%}.hero-title>span{font-size:13px}}
 
 @media(min-width:768px){.hero-note{left:56%;top:27%;bottom:auto;max-width:32vw}}
+
+/* Readable typography across the menu, recipe builder and demo dialogs. */
+body { font-size:16px; }
+.eyebrow,.small-note,.subtle-button { font-size:13px; line-height:1.65; }
+.text-link,.button { font-size:16px; line-height:1.5; }
+.wordmark>span,.header .wordmark>span { font-size:12px; letter-spacing:.15em; }
+.desktop-nav,.reserve-link { font-size:16px; line-height:1.5; }
+.desktop-nav { gap:28px; }
+.header-actions { gap:24px; }
+.order-open { font-size:12px; letter-spacing:.04em; }
+.order-open>b { font-size:22px; }
+.hero-topline { font-size:12px; line-height:1.6; }
+.hero-topline>span:last-child { font-size:14px; }
+.hero-bottom>p { font-size:16px; line-height:1.6; }
+.hero-bottom>span,.hero-bottom>a { font-size:12px; line-height:1.6; }
+.noren-panel>small { font-size:13px; line-height:1.5; }
+.entrance-caption>span { font-size:16px; line-height:1.6; }
+.vertical-type { font-size:12px; }
+.story-copy { grid-template-columns:1fr; max-width:48ch; gap:20px; }
+.story-copy p,.kitchen-notes p,.menu-heading>p,#menu-photo-desc,
+.visit-copy>p:not(.eyebrow),.reservation-copy>p:not(.eyebrow),.lost-main p {
+  font-size:16px; line-height:1.7;
+}
+.story-detail figcaption { flex-wrap:wrap; font-size:12px; line-height:1.6; }
+.kitchen-voice>span,.kitchen-notes li>span,.menu-heading small,
+.menu-photo-label,.menu-photo-wrap figcaption .eyebrow,.ingredient-tag,
+.menu-group-title,.menu-item-number,.menu-fine-print,.menu-inline-note,
+.bowl-orbit>span,.chef-note>.eyebrow,.gallery-controls>span,
+.atmosphere-track figcaption span,.atmosphere-note,.hours dt,
+.reservation-demo,.form-title,.reservation-stamp span,
+.footer-message>p,.footer-bottom>div,.nav-dialog nav>a>small {
+  font-size:12px; line-height:1.65;
+}
+.kitchen-notes strong { font-size:21px; line-height:1.4; }
+.ingredient-tag { padding:5px 8px; }
+.menu-category { font-size:15px; min-height:44px; padding:10px 0; }
+.menu-item-description { font-size:16px; line-height:1.65; max-width:40ch; color:#625b4c; }
+.menu-item-price { font-size:16px; line-height:1.5; }
+.menu-item-number { min-width:24px; }
+.menu-item-copy { overflow-wrap:anywhere; }
+.menu-add { min-width:44px; min-height:44px; flex-shrink:0; font-size:24px; }
+#menu-feedback { font-size:14px; line-height:1.6; }
+.chef-note p { font-size:16px; line-height:1.6; }
+.build-console-top,.build-step-number { font-size:13px; line-height:1.5; }
+.build-console-top { flex-wrap:wrap; letter-spacing:.04em; }
+.build-steps { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); }
+.build-step { min-width:0; min-height:64px; color:#b2ad9f; }
+.build-step-title { font-size:14px; line-height:1.5; overflow-wrap:anywhere; }
+.build-step-number { margin-bottom:6px; }
+.build-options>p,.build-option-note,.build-option-price,
+.build-receipt>p { font-size:14px; line-height:1.65; }
+.build-option { grid-template-columns:minmax(0,1fr) auto; min-height:64px; }
+.build-option-title { font-size:16px; line-height:1.5; }
+.build-option-note { min-width:0; }
+.build-option-price { white-space:nowrap; }
+.build-navigation button,.build-receipt>.button { font-size:16px; min-height:44px; }
+.build-feedback { font-size:14px!important; line-height:1.6; }
+.atmosphere-track figcaption { font-size:16px; line-height:1.5; }
+.map-heading { font-size:13px; line-height:1.6; }
+.map-route-form>label,.field>label { font-size:14px; line-height:1.5; }
+.map-route-input>input,.map-route-input>select,.field input,.field select,
+.field input::placeholder { font-size:16px; line-height:1.5; }
+.map-route-input>.button,.map-route-form>.text-link { font-size:16px; }
+#map-status,.map-note,.field-error,.date-note,.consent,
+.reservation-form>p[role],.footer-bottom>p { font-size:14px; line-height:1.65; }
+.form-title { flex-wrap:wrap; }
+.reservation-form>.button { font-size:16px; }
+.footer-bottom>div { line-height:1.8; }
+.order-header h2>span,.order-demo-note,.order-line-note,.order-line-price,
+.order-quantity,.order-remove,.ticket-row,.ticket-details,.ticket-empty,
+.ticket-disclaimer,#order-feedback { font-size:14px; line-height:1.6; }
+.order-line-copy { grid-template-columns:minmax(0,1fr) auto; }
+.order-line-title { min-width:0; overflow-wrap:anywhere; }
+.order-line-price { white-space:nowrap; }
+.order-remove { min-height:44px; }
+.order-minus,.order-plus { min-width:44px; min-height:44px; font-size:20px; }
+.ticket-row { gap:12px; }
+.ticket-details { overflow-wrap:anywhere; }
+.ticket-total { font-size:15px; }
+.ticket-total output { font-size:24px; }
+.order-ticket>.button { font-size:15px; }
+#order-empty { font-size:16px; line-height:1.6; }
+.nav-dialog>p { font-size:16px; line-height:1.6; }
+.lost-header>.eyebrow { font-size:12px; }
+.lost-footer { flex-wrap:wrap; font-size:14px; line-height:1.6; }
+@media(min-width:768px) and (max-width:1100px) {
+  .desktop-nav { gap:18px; }
+  .header-actions { gap:18px; }
+  .story { grid-template-columns:.18fr 1fr .7fr; gap:3vw; }
+  .story-index .eyebrow { overflow-wrap:anywhere; }
+}
+@media(max-width:1000px) {
+  .order-body { grid-template-columns:minmax(0,1fr); }
+  .order-ticket { position:static; transform:none; }
+}
+@media(max-width:767px) {
+  .header-actions { gap:16px; }
+  .hero-topline { right:6vw; font-size:12px; letter-spacing:.03em; }
+  .hero-topline>span:first-child { max-width:80%; }
+  .hero-topline>span:last-child { font-size:13px; }
+  .hero-bottom { align-items:start; flex-wrap:wrap; gap:14px 20px; }
+  .hero-bottom>p { max-width:100%; font-size:15px; flex:1 1 100%; }
+  .hero-bottom>a { font-size:12px; gap:14px; }
+  .hero-window-chef { bottom:18%; }
+  .hero-note { bottom:34%; }
+  .noren-panel>small { font-size:12px; letter-spacing:.08em; }
+  .entrance-caption { right:6vw; }
+  .story-copy { max-width:100%; }
+  .story-main .text-link { font-size:16px; }
+  .story-detail figcaption { gap:8px; }
+  .kitchen-voice { font-size:20px; }
+  .kitchen-notes strong { font-size:20px; }
+  .menu-heading>p { max-width:100%; }
+  .menu-photo-wrap figcaption .eyebrow { font-size:12px; }
+  .menu-category { flex-shrink:0; }
+  .menu-select { display:grid; grid-template-columns:24px minmax(0,1fr); gap:10px 12px; }
+  .menu-item-number { grid-column:1; grid-row:1; }
+  .menu-item-copy { grid-column:2; grid-row:1; }
+  .menu-item-price { grid-column:2; grid-row:2; padding-top:0; }
+  .menu-add { align-self:start; margin-top:22px; }
+  .build-top { flex-wrap:wrap; gap:12px; }
+  .build-top .eyebrow,.build-top .small-note { font-size:12px; }
+  .build-console { padding:22px 18px; }
+  .build-steps { grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px 8px; }
+  .build-step[aria-current=step]:after { bottom:0; }
+  .build-spice-options .build-option-title { font-size:24px; }
+  .gallery-controls>span { font-size:12px; }
+  .atmosphere-track figcaption { flex-wrap:wrap; gap:8px; }
+  .hours { flex-wrap:wrap; gap:24px; }
+  .hours dt { max-width:none; }
+  .reservation-grid { grid-template-columns:minmax(0,1fr); gap:24px; }
+  .reservation-demo { font-size:12px; }
+  .footer-message>p { line-height:1.7; }
+  .footer-bottom { gap:28px; }
+  .order-line { grid-template-columns:minmax(0,1fr); }
+  .order-line-copy { gap:8px 12px; }
+  .order-line-price { grid-row:auto; }
+  .order-header .eyebrow { font-size:12px; }
+  .lost-header { gap:20px; }
+  .lost-header>.eyebrow { max-width:160px; }
+  .lost-footer { gap:14px; }
+  .no-js .desktop-nav { font-size:15px; }
+}
+@media(max-width:374px) {
+  .header-actions { gap:10px; }
+  .hero-topline { font-size:12px; }
+  .hero-bottom>p { font-size:15px; }
+  .hero-note>p { font-size:20px; }
+  .hero-window-chef { width:140px; bottom:20%; }
+  .build-option { padding:12px 10px; gap:6px 10px; }
+  .build-spice-options { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .order-line-copy { grid-template-columns:minmax(0,1fr); }
+  .order-line-price { grid-column:1; }
+}

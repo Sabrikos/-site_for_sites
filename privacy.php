@@ -23,6 +23,7 @@ function e(string $value): string
     <link rel="apple-touch-icon" href="assets/images/favicon-512.png?v=cursor-2">
 </head>
 <body>
+<?php require __DIR__ . '/analytics.php'; ?>
 <main class="cart-page">
     <section class="cart-products legal-document">
         <h1>Политика обработки персональных данных</h1>

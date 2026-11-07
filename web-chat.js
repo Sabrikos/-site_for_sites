@@ -64,12 +64,37 @@
     const items = state.status === "bot" ? state.choices || [] : [];
     const existing = Array.from(choices.children);
     if (items.length !== existing.length || items.some(({ id, label }, i) =>
-      existing[i].value !== id || existing[i].textContent !== label)) {
+      existing[i].value !== id || existing[i].dataset.label !== label)) {
       choices.replaceChildren(...items.map(({ id, label }) => {
         const button = document.createElement("button");
         button.type = "button";
         button.value = id;
-        button.textContent = label;
+        button.dataset.label = label;
+        button.classList.toggle("is-specialist", id === "human");
+        const icons = {
+          landing: '<rect x="4" y="3" width="16" height="12" rx="2"/><path d="m4 15-2 5h20l-2-5M9 17h6"/>',
+          shop: '<path d="M2 3h3l3 12h11l3-9H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>',
+          code: '<path d="m7 6-5 6 5 6m10-12 5 6-5 6M14 3l-4 18"/>',
+          ai: '<rect x="5" y="5" width="14" height="14" rx="3"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3m6-3v3M9 19v3m6-3v3M2 9h3m-3 6h3m14-6h3m-3 6h3"/>',
+          layers: '<path d="m12 3 10 6-10 6L2 9Zm-9 11 9 5 9-5M3 19l9 5 9-5"/>',
+          grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+          human: '<path d="M4 14v-3a8 8 0 0 1 16 0v3M20 17v1a3 3 0 0 1-3 3h-3"/><rect x="2" y="11" width="4" height="7" rx="2"/><rect x="18" y="11" width="4" height="7" rx="2"/>',
+        };
+        let icon = "layers";
+        if (id === "human") icon = "human";
+        else if (id === "root") icon = "grid";
+        else if (/\u043b\u0435\u043d\u0434\u0438\u043d\u0433/i.test(label)) icon = "landing";
+        else if (/\u043c\u0430\u0433\u0430\u0437\u0438\u043d/i.test(label)) icon = "shop";
+        else if (/\u0434\u043e\u0440\u0430\u0431\u043e\u0442/i.test(label)) icon = "code";
+        else if (/\u0438\u0438|ai/i.test(label)) icon = "ai";
+        const symbol = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        symbol.setAttribute("viewBox", "0 0 24 24");
+        symbol.setAttribute("aria-hidden", "true");
+        symbol.innerHTML = icons[icon];
+        const caption = document.createElement("span");
+        caption.className = "web-chat-choice-label";
+        caption.textContent = label;
+        button.append(symbol, caption);
         return button;
       }));
     }

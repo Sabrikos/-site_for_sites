@@ -6,30 +6,27 @@
 
   // Source: js/hero.js
   modules["js/hero.js"] = (() => {
-/** Two useful studio-light setups, with pointer light mapped to the photo scene. */
+/** Inspection light mapped to the photo scene. */
 function initHero(root, { reducedMotion = false } = {}) {
   if (!root) return;
 
   const scene = root.querySelector('.hero-scene');
-  const modeButtons = [...root.querySelectorAll('.light-mode[data-light-mode]')];
-  const modeName = root.querySelector('#light-mode-name');
+  const stateButtons = root.querySelectorAll('.hero-comparison [data-surface-state]');
+  // Comparing surfaces changes only the layer; the light stays in place.
+  for (const button of stateButtons) {
+    button.addEventListener('click', () => {
+      root.dataset.surfaceState = button.dataset.surfaceState;
+      for (const control of stateButtons) {
+        control.setAttribute('aria-pressed', String(control === button));
+      }
+    });
+  }
   const media = window.matchMedia('(prefers-reduced-motion: reduce)');
   const coarsePointer = window.matchMedia('(pointer: coarse)');
-  const modes = {
-    inspection: {
-      name: 'Контрольный свет', spreadX: '22%', spreadY: '30%',
-      exposure: 0.76, highlight: 0.7, reflection: 0.2,
-    },
-    soft: {
-      name: 'Мягкий бокс', spreadX: '45%', spreadY: '60%',
-      exposure: 0.96, highlight: 0.25, reflection: 0.07,
-    },
-  };
   let motionOff = reducedMotion || media.matches;
   let visible = true;
   let frame = 0;
   let lastTime = 0;
-  let automaticTime = 0;
   let lastPointer = null;
   const resting = {
     lightX: 0.56, lightY: 0.52, depthX: 0.5, depthY: 0.5,
@@ -37,26 +34,8 @@ function initHero(root, { reducedMotion = false } = {}) {
   };
   const target = { ...resting };
   const current = { ...resting };
+  const motionKeys = Object.keys(current);
   const clamp = (number, min = 0, max = 1) => Math.max(min, Math.min(max, number));
-
-  function setMode(name) {
-    const mode = modes[name];
-    if (!mode) return;
-    root.dataset.lightMode = name;
-    root.style.setProperty('--light-spread-x', mode.spreadX);
-    root.style.setProperty('--light-spread-y', mode.spreadY);
-    root.style.setProperty('--base-exposure', String(mode.exposure));
-    root.style.setProperty('--highlight-strength', String(mode.highlight));
-    root.style.setProperty('--reflection-strength', String(mode.reflection));
-    for (const button of modeButtons) {
-      button.setAttribute('aria-pressed', String(button.dataset.lightMode === name));
-    }
-    if (modeName) modeName.textContent = mode.name;
-  }
-
-  for (const button of modeButtons) {
-    button.addEventListener('click', () => setMode(button.dataset.lightMode));
-  }
 
   function apply() {
     root.style.setProperty('--light-x', `${current.lightX * 100}%`);
@@ -76,24 +55,15 @@ function initHero(root, { reducedMotion = false } = {}) {
     const elapsed = lastTime ? Math.min(40, time - lastTime) : 16;
     lastTime = time;
 
-    // A slow, controlled sweep replaces the mouse on touch devices.
-    if (coarsePointer.matches) {
-      automaticTime += elapsed;
-      target.lightX = 0.51 + Math.sin(automaticTime / 4200) * 0.23;
-      target.lightY = 0.5 + Math.cos(automaticTime / 5800) * 0.055;
-      target.depthX = 0.5;
-      target.depthY = 0.5;
-    }
-
     const ease = 1 - Math.pow(0.9, elapsed / 16.67);
     let unsettled = false;
-    for (const key of Object.keys(current)) {
+    for (const key of motionKeys) {
       current[key] += (target[key] - current[key]) * ease;
       const tolerance = key.startsWith('pointer') ? 0.08 : 0.0003;
       if (Math.abs(target[key] - current[key]) > tolerance) unsettled = true;
     }
     apply();
-    if (unsettled || coarsePointer.matches) frame = requestAnimationFrame(tick);
+    if (unsettled) frame = requestAnimationFrame(tick);
   }
 
   function schedule() {
@@ -110,7 +80,7 @@ function initHero(root, { reducedMotion = false } = {}) {
   }
 
   function positionPointer(clientX, clientY) {
-    if (!scene || motionOff || coarsePointer.matches) {
+    if (!scene) {
       root.classList.remove('has-light-pointer');
       return;
     }
@@ -126,8 +96,8 @@ function initHero(root, { reducedMotion = false } = {}) {
     // belong to the hero. These coordinate systems deliberately stay separate.
     target.lightX = clamp((clientX - sceneBounds.left) / sceneBounds.width);
     target.lightY = clamp((clientY - sceneBounds.top) / sceneBounds.height);
-    target.depthX = clamp((clientX - heroBounds.left) / Math.max(1, heroBounds.width));
-    target.depthY = clamp((clientY - heroBounds.top) / Math.max(1, heroBounds.height));
+    target.depthX = motionOff || coarsePointer.matches ? 0.5 : clamp((clientX - heroBounds.left) / Math.max(1, heroBounds.width));
+    target.depthY = motionOff || coarsePointer.matches ? 0.5 : clamp((clientY - heroBounds.top) / Math.max(1, heroBounds.height));
     target.pointerX = clientX - heroBounds.left;
     target.pointerY = clientY - heroBounds.top;
 
@@ -135,7 +105,11 @@ function initHero(root, { reducedMotion = false } = {}) {
       // The reticle should appear at the pointer, never fly from the corner.
       current.pointerX = target.pointerX;
       current.pointerY = target.pointerY;
+      current.lightX = target.lightX;
+      current.lightY = target.lightY;
     }
+    if (motionOff) Object.assign(current, target);
+    apply();
     schedule();
   }
 
@@ -147,19 +121,28 @@ function initHero(root, { reducedMotion = false } = {}) {
   }
 
   root.addEventListener('pointermove', (event) => {
-    if (event.pointerType === 'touch' || motionOff) return;
+    if (event.target.closest('.hero-comparison,a,button,input,textarea,select')) return;
     positionPointer(event.clientX, event.clientY);
     lastPointer = { x: event.clientX, y: event.clientY };
   }, { passive: true });
 
+  root.addEventListener('pointerdown', (event) => {
+    if (event.pointerType !== 'touch' || event.target.closest('.hero-comparison,a,button')) return;
+    positionPointer(event.clientX, event.clientY);
+    lastPointer = { x: event.clientX, y: event.clientY };
+  }, { passive: true });
+  function releaseTouch(event) {
+    if (event.pointerType !== 'touch') return;
+    lastPointer = null;
+    root.classList.remove('has-light-pointer');
+  }
+  root.addEventListener('pointercancel', releaseTouch, { passive: true });
+
   root.addEventListener('pointerleave', () => {
     lastPointer = null;
     root.classList.remove('has-light-pointer');
-    Object.assign(target, {
-      lightX: resting.lightX, lightY: resting.lightY,
-      depthX: resting.depthX, depthY: resting.depthY,
-    });
-    schedule();
+    // Keep the last inspected position for before/after comparison.
+    stop();
   }, { passive: true });
 
   window.addEventListener('scroll', updateScroll, { passive: true });
@@ -198,7 +181,11 @@ function initHero(root, { reducedMotion = false } = {}) {
     }, { rootMargin: '40px' }).observe(root);
   }
 
-  setMode(Object.hasOwn(modes, root.dataset.lightMode) ? root.dataset.lightMode : 'inspection');
+  root.style.setProperty('--light-spread-x', '22%');
+  root.style.setProperty('--light-spread-y', '30%');
+  root.style.setProperty('--base-exposure', '0.9');
+  root.style.setProperty('--highlight-strength', '0.7');
+  root.style.setProperty('--reflection-strength', '0.2');
   apply();
   updateScroll();
   schedule();
@@ -550,9 +537,7 @@ return { CAR_MODELS, findCarModel, carLabel };
 
   // Source: js/calculator.js
   modules["js/calculator.js"] = (() => {
-const { CAR_MODELS, findCarModel, carLabel } = modules["js/cars.js"];
-
-/** Illustrative prices in RUB. The local API repeats this calculation. */
+/** Illustrative prices in RUB, calculated only in this browser tab. */
 const SERVICES = Object.freeze({
   polish: Object.freeze({ title: 'Полировка кузова', price: 18000 }),
   ceramic: Object.freeze({ title: 'Керамическое покрытие', price: 24000 }),
@@ -589,43 +574,36 @@ function initCalculator(root, { reducedMotion = false } = {}) {
   const motionReduced = () => motionQuery?.matches ?? reducedMotion;
   const output = root.querySelector('#calc-total');
   const breakdown = root.querySelector('#calc-breakdown');
-  const book = root.querySelector('#calc-book');
+  const carName = root.querySelector('#car-name');
   const serviceInputs = [...root.querySelectorAll('input[name="calc-service"]')];
-  const makeSelect = root.querySelector('#car-make');
-  const modelSelect = root.querySelector('#car-model');
-  const carInfo = root.querySelector('#car-preset-info');
-  const typeInputs = [...root.querySelectorAll('input[name="car-type"]')];
-  const option = (label, value) => {
-    const node = doc.createElement('option');
-    node.textContent = label;
-    node.value = value;
-    return node;
+  const packageButtons = [...doc.querySelectorAll('[data-package]')];
+  const markPackage = selected => {
+    for (const button of packageButtons) {
+      const active = button === selected;
+      button.closest('.package')?.classList.toggle('is-selected', active);
+      button.setAttribute('aria-pressed', String(active));
+      button.firstChild.textContent = active ? 'Пакет выбран ' : 'Выбрать пакет ';
+      const icon = button.querySelector('[aria-hidden="true"]');
+      if (icon) icon.textContent = active ? '✓' : '↗';
+    }
   };
-  if (makeSelect) {
-    makeSelect.replaceChildren(option('Выберите марку', ''), ...[...new Set(CAR_MODELS.map(car => car.make))].map(make => option(make, make)));
-  }
-  const populateModels = () => {
-    if (!modelSelect) return;
-    const cars = CAR_MODELS.filter(car => car.make === makeSelect?.value);
-    modelSelect.replaceChildren(option('Выберите модель', ''), ...cars.map(car => option(car.model, car.id)));
-    modelSelect.disabled = cars.length === 0;
-  };
-  populateModels();
+  markPackage(null);
   let displayedTotal = 0;
   let frame = 0;
 
   const selection = () => {
-    const car = findCarModel(modelSelect?.value);
-    const carType = car?.carType ?? root.querySelector('input[name="car-type"]:checked')?.value ?? 'sedan';
     const services = serviceInputs.filter(input => input.checked && SERVICES[input.value]).map(input => input.value);
-    return { carId: car?.id ?? null, car: carLabel(car), carType, services, total: calculateTotal(carType, services) };
+    return {
+      car: (carName?.value ?? '').trim().replace(/\s+/g, ' ').slice(0, 80),
+      services,
+      // No body selector: all displayed estimates use the base service prices.
+      total: calculateTotal('sedan', services),
+    };
   };
-
   const showTotal = total => {
     displayedTotal = total;
     if (output) output.textContent = `${currency.format(total)} ₽`;
   };
-
   const animateTotal = (total, animate) => {
     cancelAnimationFrame(frame);
     if (motionReduced() || !animate) return showTotal(total);
@@ -634,352 +612,44 @@ function initCalculator(root, { reducedMotion = false } = {}) {
     const tick = now => {
       if (motionReduced()) return showTotal(total);
       const progress = Math.min((now - start) / 420, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      showTotal(Math.round(from + (total - from) * eased));
+      showTotal(Math.round(from + (total - from) * (1 - Math.pow(1 - progress, 3))));
       if (progress < 1) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
   };
-
+  const renderBreakdown = current => {
+    if (!breakdown) return;
+    const names = current.services.map(id => SERVICES[id].title).join(' + ');
+    // User-entered text is displayed as text, never parsed as HTML.
+    breakdown.textContent = [current.car, names || 'Выберите услуги для расчёта'].filter(Boolean).join(' · ');
+  };
   const render = (animate = true) => {
     const current = selection();
-    if (carInfo) carInfo.textContent = current.car
-      ? `${current.car} · кузов определён. ${current.carType === 'suv' ? 'В расчёте коэффициент 1,25.' : 'Базовая стоимость работ.'}`
-      : 'Нет вашей модели? Выберите кузов ниже, а название укажите в заявке.';
-    root.querySelectorAll('[data-car-preset]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.carPreset === current.carId)));
+    renderBreakdown(current);
     animateTotal(current.total, animate);
-    if (breakdown) {
-      const names = current.services.map(id => SERVICES[id].title).join(' + ');
-      breakdown.textContent = names
-        ? `${current.car || CAR_TYPES[current.carType]?.title || 'Седан'} · ${names}${current.carType === 'suv' ? ' · коэффициент 1,25' : ''}`
-        : 'Выберите хотя бы одну услугу для расчёта.';
-    }
-    if (book) {
-      book.disabled = current.services.length === 0;
-      book.setAttribute('aria-disabled', String(current.services.length === 0));
-    }
-    return current;
   };
-
+  carName?.addEventListener('input', () => renderBreakdown(selection()));
   root.addEventListener('change', event => {
-    if (event.target === makeSelect) {
-      populateModels();
-      typeInputs.forEach(input => { input.disabled = false; });
+    if (event.target.matches('input[name="calc-service"]')) {
+      markPackage(null);
       render();
-    } else if (event.target === modelSelect) {
-      const car = findCarModel(modelSelect.value);
-      typeInputs.forEach(input => {
-        input.disabled = Boolean(car);
-        if (car) input.checked = input.value === car.carType;
-      });
-      render();
-    } else if (event.target.matches('input[name="car-type"], input[name="calc-service"]')) render();
+    }
   });
-
-  root.querySelectorAll('[data-car-preset]').forEach(button => button.addEventListener('click', () => {
-    const car = findCarModel(button.dataset.carPreset);
-    if (!car || !makeSelect || !modelSelect) return;
-    makeSelect.value = car.make;
-    populateModels();
-    modelSelect.value = car.id;
-    modelSelect.dispatchEvent(new Event('change', { bubbles: true }));
-  }));
-  root.querySelector('[data-car-reset]')?.addEventListener('click', () => {
-    if (makeSelect) makeSelect.value = '';
-    populateModels();
-    typeInputs.forEach(input => { input.disabled = false; });
-    render();
-    makeSelect?.focus({ preventScroll: true });
-  });
-
-  doc.querySelectorAll('[data-package]').forEach(button => {
+  packageButtons.forEach(button => {
     const pack = PACKAGES[button.dataset.package];
     if (!pack) return;
     button.addEventListener('click', event => {
       event.preventDefault();
       serviceInputs.forEach(input => { input.checked = pack.services.includes(input.value); });
+      markPackage(button);
       render();
-      root.scrollIntoView({ behavior: motionReduced() ? 'instant' : 'smooth', block: 'start' });
-      (makeSelect ?? root.querySelector('input[name="car-type"]:checked'))?.focus({ preventScroll: true });
     });
   });
-
-  book?.addEventListener('click', event => {
-    event.preventDefault();
-    const current = selection();
-    if (!current.services.length) return;
-    doc.dispatchEvent(new CustomEvent('apex:selection', { detail: current }));
-    const booking = doc.querySelector('#booking');
-    booking?.scrollIntoView({ behavior: motionReduced() ? 'instant' : 'smooth', block: 'start' });
-    doc.querySelector('#booking-form input[name="name"]')?.focus({ preventScroll: true });
-  });
-
   render(false);
 }
 return { SERVICES, PACKAGES, CAR_TYPES, calculateTotal, initCalculator };
   })();
 
-  // Source: js/booking-api.js
-  modules["js/booking-api.js"] = (() => {
-/** Only an explicitly running loopback server may receive form data. */
-function isLocalBookingLocation(location) {
-  return ['http:', 'https:'].includes(location?.protocol)
-    && ['127.0.0.1', 'localhost', '[::1]'].includes(location?.hostname);
-}
-
-class BookingApiError extends Error {
-  constructor(message, { status = 0, fields = {} } = {}) {
-    super(message);
-    this.name = 'BookingApiError';
-    this.status = status;
-    this.fields = fields;
-  }
-}
-
-async function request(path, options, { location = globalThis.location, fetchFn = globalThis.fetch } = {}) {
-  if (!isLocalBookingLocation(location)) throw new BookingApiError('Для сохранения заявки откройте сайт через start.bat.');
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
-  try {
-    const response = await fetchFn(`${location.origin}${path}`, {
-      ...options, signal: controller.signal, cache: 'no-store', credentials: 'omit', mode: 'same-origin', redirect: 'error',
-    });
-    const body = await response.json().catch(() => null);
-    if (!response.ok || body?.ok !== true) {
-      const message = body?.error?.message;
-      throw new BookingApiError(typeof message === 'string' ? message : 'Сервис записи недоступен. Проверьте, что start.bat запущен.', {
-        status: response.status, fields: body?.error?.fields ?? {},
-      });
-    }
-    return body;
-  } catch (error) {
-    if (error instanceof BookingApiError) throw error;
-    throw new BookingApiError('Не удалось подтвердить сохранение. Проверьте сервер и повторите отправку без изменения полей.');
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-async function probeBookingApi(options) {
-  const body = await request('/api/health', { method: 'GET' }, options);
-  if (body.mode !== 'local' || body.version !== 1) throw new BookingApiError('Запущен другой сервер. Используйте start.bat из папки APEX.');
-  return body;
-}
-
-async function sendLocalBooking(payload, key, options) {
-  const body = await request('/api/bookings', {
-    method: 'POST', headers: { 'Content-Type': 'application/json', 'Idempotency-Key': key }, body: JSON.stringify(payload),
-  }, options);
-  if (typeof body.id !== 'string' || !/^[a-f\d-]{36}$/i.test(body.id)
-      || typeof body.createdAt !== 'string'
-      || !(body.estimate === null || (Number.isSafeInteger(body.estimate) && body.estimate >= 0))) {
-    throw new BookingApiError('Сервер не подтвердил заявку. Повторите отправку без изменения полей.');
-  }
-  return body;
-}
-return { isLocalBookingLocation, BookingApiError, probeBookingApi, sendLocalBooking };
-  })();
-
-  // Source: js/booking.js
-  modules["js/booking.js"] = (() => {
-const { SERVICES, CAR_TYPES, calculateTotal } = modules["js/calculator.js"];
-
-const { CAR_MODELS, findCarModel, carLabel } = modules["js/cars.js"];
-
-const { isLocalBookingLocation, probeBookingApi, sendLocalBooking } = modules["js/booking-api.js"];
-
-const SERVICE_IDS = new Set(['polish', 'ceramic', 'ppf', 'interior', 'dry', 'glass', 'engine', 'complex']);
-const currency = new Intl.NumberFormat('ru-RU');
-
-function initBooking(form) {
-  if (!form || form.dataset.initialized === 'true') return;
-  form.dataset.initialized = 'true';
-  form.noValidate = true;
-  const doc = form.ownerDocument;
-  const location = doc.defaultView.location;
-  const fileDemo = location.protocol === 'file:' || location.pathname.includes('/portfolio/apex-detailing/');
-  const status = doc.querySelector('#booking-status');
-  const reset = doc.querySelector('#booking-reset');
-  const submit = form.querySelector('[type="submit"]');
-  const field = name => form.elements.namedItem(name);
-  const names = ['name', 'phone', 'car', 'carType', 'service', 'comment', 'consent'];
-  let mode = fileDemo ? 'demo' : 'checking';
-  let busy = false;
-  let successful = false;
-  let selectedServices = [];
-  let requestKey = '';
-  let lastPayload = '';
-
-  const setStatus = (state, text) => {
-    form.dataset.state = state;
-    if (status) {
-      status.dataset.state = state;
-      status.textContent = text;
-      status.setAttribute('role', state === 'error' ? 'alert' : 'status');
-    }
-  };
-  const idleText = () => mode === 'demo'
-    ? 'Демонстрационная форма портфолио: данные не отправляются и не сохраняются.'
-    : mode === 'local' ? 'Сервер подключён. Заявка будет сохранена на этом компьютере.'
-      : 'Сервер записи недоступен. Запустите start.bat и откройте адрес из его окна.';
-  const renderMode = () => {
-    form.dataset.mode = mode;
-    const text = (selector, value) => { const node = doc.querySelector(selector); if (node) node.textContent = value; };
-    text('#booking-mode-label', mode === 'local' ? 'ЗАЯВКА НА ОСМОТР' : mode === 'demo' ? 'ПРОБНЫЙ ЗАПУСК ФОРМЫ' : mode === 'checking' ? 'ПОДКЛЮЧЕНИЕ К СЕРВЕРУ' : 'СЕРВЕР НЕДОСТУПЕН');
-    text('#booking-mode-copy', mode === 'local' ? 'Опишите автомобиль. Контакт и пожелания останутся в локальной папке заявок.'
-      : mode === 'demo' ? 'Демонстрация проекта: здесь можно проверить заполнение; данные не отправляются и не сохраняются.'
-        : 'Для приёма заявок нужен локальный сервер APEX. Запустите start.bat в папке сайта.');
-    text('#booking-consent-copy', mode === 'demo' ? 'Я понимаю, что проверяю демоформу: данные не сохраняются.'
-      : 'Согласен на сохранение указанных данных на этом компьютере для обработки заявки.');
-    text('#booking-storage-note', mode === 'local' ? 'Заявка сохраняется локально. Визит и время ещё нужно согласовать; уведомление мастеру не отправляется.' : '');
-    if (submit && !busy && !successful) submit.textContent = mode === 'demo' ? 'Проверить форму ↗' : 'Сохранить заявку ↗';
-  };
-  const checkServer = async () => {
-    if (fileDemo) return true;
-    if (!isLocalBookingLocation(location)) { mode = 'unavailable'; renderMode(); return false; }
-    try { await probeBookingApi({ location }); mode = 'local'; }
-    catch { mode = 'unavailable'; }
-    renderMode();
-    return mode === 'local';
-  };
-
-  const suggestions = doc.querySelector('#booking-car-suggestions');
-  if (suggestions) suggestions.replaceChildren(...CAR_MODELS.map(car => {
-    const option = doc.createElement('option'); option.value = carLabel(car); return option;
-  }));
-  const matchingCar = () => CAR_MODELS.find(car => carLabel(car) === field('car')?.value.trim()) ?? null;
-  const syncCarType = () => {
-    const car = matchingCar();
-    if (car && field('carType')) field('carType').value = car.carType;
-    if (field('carType')) field('carType').disabled = Boolean(car) || busy || successful;
-  };
-  const renderSelection = () => {
-    const note = doc.querySelector('#booking-selection');
-    if (!note) return;
-    const services = selectedServices.length ? selectedServices : Object.hasOwn(SERVICES, field('service')?.value) ? [field('service').value] : [];
-    const type = matchingCar()?.carType ?? field('carType')?.value ?? 'sedan';
-    note.textContent = services.length
-      ? CAR_TYPES[type]?.title + ' · ' + services.map(id => SERVICES[id].title).join(' + ') + ' · ориентир ' + currency.format(calculateTotal(type, services)) + ' ₽. Окончательная стоимость — после осмотра.'
-      : 'Стоимость этого ухода обсудим после осмотра.';
-  };
-  const errorFor = name => {
-    const control = field(name);
-    const value = control?.value?.trim() ?? '';
-    if (name === 'name') return (value.match(/\p{L}/gu) ?? []).length >= 2 && value.length <= 80 && /^[\p{L}\p{M}\s'’\-]+$/u.test(value) ? '' : 'Введите имя: минимум две буквы, без цифр.';
-    if (name === 'phone') { const digits = value.replace(/\D/g, ''); return digits.length >= 10 && digits.length <= 15 && /^\+?[\d\s()\-]+$/.test(value) ? '' : 'Введите телефон: от 10 до 15 цифр.'; }
-    if (name === 'car') return value.length >= 2 && value.length <= 100 && !/[\u0000-\u001f\u007f]/.test(value) ? '' : 'Укажите марку и модель автомобиля.';
-    if (name === 'carType') return Object.hasOwn(CAR_TYPES, value) ? '' : 'Выберите кузов.';
-    if (name === 'service') return SERVICE_IDS.has(value) ? '' : 'Выберите услугу из списка.';
-    if (name === 'consent') return control?.checked ? '' : 'Подтвердите условия формы.';
-    if (name === 'comment') return value.length <= 1000 ? '' : 'Комментарий должен быть не длиннее 1 000 символов.';
-    return '';
-  };
-  const showFieldError = (name, message = errorFor(name)) => {
-    const control = field(name);
-    const error = doc.querySelector('#error-' + name);
-    if (error) error.textContent = message;
-    if (message) control?.setAttribute('aria-invalid', 'true');
-    else control?.removeAttribute('aria-invalid');
-    return message;
-  };
-  const lock = disabled => {
-    names.forEach(name => { const control = field(name); if (control) control.disabled = disabled; });
-    if (!disabled) syncCarType();
-    if (submit) submit.disabled = disabled;
-  };
-  names.forEach(name => {
-    const control = field(name);
-    control?.addEventListener('blur', () => {
-      if (control.value?.trim() || control.getAttribute('aria-invalid') === 'true') showFieldError(name);
-    });
-    control?.addEventListener(['consent', 'service', 'carType'].includes(name) ? 'change' : 'input', event => {
-      if (control.getAttribute('aria-invalid') === 'true') showFieldError(name);
-      if (form.dataset.state === 'error') setStatus('idle', idleText());
-      if (name === 'service' && event.isTrusted) selectedServices = [];
-      if (name === 'car') syncCarType();
-      if (['car', 'carType', 'service'].includes(name)) renderSelection();
-    });
-  });
-  doc.addEventListener('apex:selection', event => {
-    if (busy || successful) return;
-    const detail = event.detail ?? {};
-    if (!Array.isArray(detail.services)) return;
-    selectedServices = [...new Set(detail.services.filter(id => Object.hasOwn(SERVICES, id)))];
-    if (!selectedServices.length) return;
-    const car = findCarModel(detail.carId);
-    if (car) field('car').value = carLabel(car);
-    else if (matchingCar()) field('car').value = '';
-    if (field('carType')) field('carType').value = car?.carType ?? (Object.hasOwn(CAR_TYPES, detail.carType) ? detail.carType : 'sedan');
-    field('service').value = selectedServices.length === 1 ? selectedServices[0] : 'complex';
-    syncCarType();
-    ['car', 'carType', 'service'].forEach(name => { if (field(name)?.hasAttribute('aria-invalid')) showFieldError(name); });
-    renderSelection();
-  });
-
-  form.addEventListener('submit', async event => {
-    event.preventDefault();
-    if (busy || successful) return;
-    const invalid = names.filter(name => showFieldError(name));
-    if (invalid.length) {
-      setStatus('error', 'Проверьте отмеченные поля. Заявка ещё не отправлена.');
-      field(invalid[0])?.focus(); return;
-    }
-    if (fileDemo) {
-      successful = true; lock(true);
-      if (submit) submit.textContent = 'Форма проверена ✓';
-      setStatus('success', 'Поля заполнены верно. Это деморежим: данные не отправлены и заявка не создана. Для записи запустите start.bat.');
-      if (reset) { reset.hidden = false; reset.focus({ preventScroll: true }); }
-      return;
-    }
-    const car = matchingCar();
-    const payload = {
-      name: field('name').value.trim(), phone: field('phone').value.trim(), car: field('car').value.trim(),
-      carId: car?.id ?? null, carType: car?.carType ?? field('carType').value,
-      service: field('service').value, services: [...selectedServices], comment: field('comment').value.trim(), consent: field('consent').checked,
-    };
-    const serialized = JSON.stringify(payload);
-    if (lastPayload !== serialized || !requestKey) {
-      requestKey = doc.defaultView.crypto.randomUUID(); lastPayload = serialized;
-    }
-    busy = true; lock(true); form.setAttribute('aria-busy', 'true');
-    if (submit) submit.textContent = 'Сохраняем…';
-    setStatus('loading', 'Проверяем сервер и сохраняем заявку…');
-    try {
-      if (!(await checkServer())) throw new Error(idleText());
-      const result = await sendLocalBooking(payload, requestKey, { location });
-      successful = true;
-      const estimate = result.estimate === null ? 'Стоимость — после осмотра.' : 'Ориентир: ' + currency.format(result.estimate) + ' ₽, уточняется после осмотра.';
-      setStatus('success', 'Заявка №' + result.id.slice(0, 8) + ' сохранена на этом компьютере. ' + estimate + ' Время визита ещё нужно согласовать.');
-      if (submit) submit.textContent = 'Заявка сохранена ✓';
-      if (reset) { reset.hidden = false; reset.focus({ preventScroll: true }); }
-    } catch (error) {
-      if (error.fields && typeof error.fields === 'object') {
-        names.forEach(name => { if (typeof error.fields[name] === 'string') showFieldError(name, error.fields[name]); });
-      }
-      setStatus('error', error.message || 'Не удалось сохранить заявку. Повторите отправку.');
-    } finally {
-      busy = false; form.removeAttribute('aria-busy');
-      if (!successful) { lock(false); renderMode(); }
-    }
-  });
-  reset?.addEventListener('click', () => {
-    if (busy) return;
-    successful = false; selectedServices = []; requestKey = ''; lastPayload = '';
-    form.reset(); lock(false);
-    names.forEach(name => showFieldError(name, ''));
-    if (reset) reset.hidden = true;
-    renderSelection(); renderMode(); setStatus('idle', idleText());
-    field('name')?.focus({ preventScroll: true });
-  });
-  renderMode(); syncCarType(); renderSelection();
-  setStatus('idle', fileDemo ? idleText() : 'Проверяем подключение к серверу…');
-  if (submit) submit.disabled = false;
-  if (!fileDemo) checkServer().then(() => {
-    if (!busy && !successful && form.dataset.state === 'idle') setStatus(mode === 'local' ? 'idle' : 'error', idleText());
-  });
-}
-return { initBooking };
-  })();
 
   // Source: js/gallery.js
   modules["js/gallery.js"] = (() => {
@@ -1234,7 +904,7 @@ function initGallery(root, { reducedMotion = false } = {}) {
       const calculator = doc.querySelector('#calculator');
       if (calculator) {
         calculator.scrollIntoView({ behavior: motionReduced() ? 'instant' : 'smooth', block: 'start' });
-        const target = calculator.querySelector('#car-make') ?? calculator.querySelector('input[name="car-type"]:checked');
+        const target = calculator.querySelector('#car-name');
         if (target) target.focus({ preventScroll: true });
         else {
           calculator.tabIndex = -1;
@@ -1305,23 +975,58 @@ return { initGallery };
   modules["js/app.js"] = (() => {
 const { initHero } = modules["js/hero.js"];
 
-const { initCleaning } = modules["js/cleaning.js"];
-
 const { initCalculator } = modules["js/calculator.js"];
-
-const { initBooking } = modules["js/booking.js"];
-
-const { initGallery } = modules["js/gallery.js"];
 
 const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
 const options = { reducedMotion: motionQuery.matches };
+function initProcessTimeline(list) {
+  if (!list) return;
+  const markers = list.querySelectorAll('li>span');
+  if (markers.length < 2) return;
+  const first = markers[0];
+  const last = markers[markers.length - 1];
+  let frame = 0;
+  let start = 0;
+  let distance = 0;
+  let viewportHeight = innerHeight;
+  let needsMeasure = true;
+  function update() {
+    frame = 0;
+    if (document.hidden) return;
+    if (needsMeasure) {
+      // Offset geometry excludes the existing reveal transforms on each row.
+      const firstY = first.parentElement.offsetTop + first.offsetTop + first.offsetHeight / 2;
+      const lastY = last.parentElement.offsetTop + last.offsetTop + last.offsetHeight / 2;
+      distance = Math.max(0, lastY - firstY);
+      start = list.getBoundingClientRect().top + scrollY + firstY;
+      viewportHeight = innerHeight;
+      list.style.setProperty('--process-track-top', `${firstY}px`);
+      list.style.setProperty('--process-track-height', `${distance}px`);
+      needsMeasure = false;
+    }
+    if (!motionQuery.matches) {
+      const progress = distance ? Math.max(0, Math.min(1, (scrollY + viewportHeight * .55 - start) / distance)) : 0;
+      list.style.setProperty('--process-runner-offset', `${progress * distance}px`);
+    }
+  }
+  function schedule() {
+    if (!frame) frame = requestAnimationFrame(update);
+  }
+  function measure() { needsMeasure = true; schedule(); }
+  list.classList.add('has-runner');
+  window.addEventListener('scroll', schedule, { passive:true });
+  window.addEventListener('resize', measure, { passive:true });
+  window.addEventListener('load', measure, { once:true });
+  motionQuery.addEventListener('change', measure);
+  document.addEventListener('visibilitychange', measure);
+  if ('ResizeObserver' in window) new ResizeObserver(measure).observe(list);
+  schedule();
+}
 // An unavailable visual effect must never disable the other page controls.
 for (const [name, initialize, selector] of [
   ['hero', initHero, '#hero'],
-  ['cleaning', initCleaning, '#cleaning-stage'],
   ['calculator', initCalculator, '#calculator'],
-  ['booking', initBooking, '#booking-form'],
-  ['gallery', initGallery, '#inspection-gallery'],
+  ['process', initProcessTimeline, '.process-steps'],
 ]) {
   try {
     initialize(document.querySelector(selector), options);
@@ -1369,14 +1074,14 @@ addEventListener('scroll', () => { if (!scrollPending) { scrollPending = true; r
 updateHeader();
 
 const serviceImages = {
-  polish: ['detail.webp', 'Студийный свет на отполированном кузове'],
-  ceramic: ['detail.webp', 'Капли воды на защищённом керамическим составом кузове'],
-  ppf: ['hero.webp', 'Линии кузова спортивного купе для демонстрации защиты PPF'],
+  polish: ['service-polishing.png', 'Мастер полирует капот графитового Kia полировальной машинкой'],
+  ceramic: ['service-ceramic.png', 'Мастер наносит керамическое покрытие на капот графитового Kia'],
+  ppf: ['service-ppf.png', 'Мастер разглаживает защитную плёнку PPF на капоте Kia Cerato'],
   interior: ['interior.webp', 'Кожаный интерьер с точной строчкой'],
-  dry: ['interior.webp', 'Деликатные материалы автомобильного салона'],
-  glass: ['glass.webp', 'Прозрачная оптика и чистое стекло фары'],
-  engine: ['engine.webp', 'Очищенные поверхности подкапотного пространства'],
-  complex: ['hero.webp', 'Полностью подготовленный серебристый спорткар'],
+  dry: ['service-dry-cleaning.png', 'Мастер очищает переднюю панель салона Kia микрофиброй'],
+  glass: ['service-glass.png', 'Мастер наносит защитный состав на лобовое стекло автомобиля'],
+  engine: ['service-engine.png', 'Мастер очищает подкапотное пространство Kia микрофиброй'],
+  complex: ['service-complex.png', 'Средства и инструменты для комплексного ухода на фоне Kia Cerato'],
 };
 const rows = [...document.querySelectorAll('.service-row')];
 const visual = document.querySelector('.service-visual');
@@ -1409,7 +1114,6 @@ function activateService(row) {
   serviceImage.alt = alt;
   visual.dataset.mode = row.dataset.service;
   addInlinePreview(row);
-  document.querySelector('#service-visual-label').textContent = row.querySelector('.service-number').textContent;
   visual.classList.remove('is-changing');
   cancelAnimationFrame(serviceAnimation);
   serviceAnimation = requestAnimationFrame(() => visual.classList.add('is-changing'));
