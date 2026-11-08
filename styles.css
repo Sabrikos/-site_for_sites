@@ -6734,3 +6734,13 @@ main.tariffs-page #other .tariffs-alien[data-contact-alien] { aspect-ratio:1244 
 .web-chat-notice { font-size:12px; line-height:1.5; opacity:.8; padding:0 16px 10px; margin:0; }
 .web-chat .web-chat-panel .web-chat-form[hidden] { display:none !important; }
 
+
+/* Landing page options */
+.landing-extras { grid-column: 1 / -1; padding: 24px; border: 1px solid rgba(151,119,241,.4); border-radius: 20px; background: rgba(24,22,52,.75); }
+.landing-extras h3 { margin: 0 0 10px; color: #fff; }
+.landing-extras p { color: #c5c1db; line-height: 1.5; }
+.landing-extras-list { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 10px; margin: 18px 0; }
+.landing-extras-list label { display:flex; align-items:center; gap:10px; padding:12px; border:1px solid rgba(151,119,241,.3); border-radius:12px; color:#fff; cursor:pointer; }
+.landing-extras-list input { accent-color:#8b6cff; width:18px; height:18px; flex:none; }
+.landing-extras-list small { margin-left:auto; color:#c7b8ff; white-space:nowrap; }
+.landing-extras-note { font-size:.875rem; margin-bottom:0; }

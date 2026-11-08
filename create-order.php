@@ -20,6 +20,7 @@ $successOrderId = null;
 $customerName = trim((string) ($_POST['customer_name'] ?? ''));
 $customerPhone = trim((string) ($_POST['customer_phone'] ?? ''));
 $projectComment = trim((string) ($_POST['project_comment'] ?? ''));
+$projectUrgency = (string) ($_POST['project_urgency'] ?? 'standard');
 $personalDataConsent = isset($_POST['personal_data_consent']);
 
 function e(string $value): string
@@ -199,6 +200,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <textarea id="project_comment" name="project_comment" placeholder="Расскажите о задаче и пожеланиях" maxlength="1000"><?= e($projectComment) ?></textarea>
                         </div>
 
+                        <div class="form-group">
+                            <label for="project_urgency">Как быстро нужен проект?</label>
+                            <select id="project_urgency" name="project_urgency">
+                                <option value="standard" <?= $projectUrgency === 'standard' ? 'selected' : '' ?>>Обычные сроки</option>
+                                <option value="urgent" <?= $projectUrgency === 'urgent' ? 'selected' : '' ?>>Срочно</option>
+                                <option value="discuss" <?= $projectUrgency === 'discuss' ? 'selected' : '' ?>>Обсудим сроки</option>
+                            </select>
+                            <small>Если задача срочная, возможную доплату согласуем после обсуждения.</small>
+                        </div>
+
                         <label class="form-consent">
                             <input type="checkbox" name="personal_data_consent" value="1" required>
                             <span>Я даю <a href="consent.php" target="_blank">согласие на обработку персональных данных</a>. С <a href="privacy.php" target="_blank">политикой обработки персональных данных</a> ознакомлен.</span>
@@ -227,6 +238,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (orderForm) {
             document.getElementById('cartJson').value = JSON.stringify(cart);
+            const comment = document.getElementById('project_comment');
+            if (!comment.value.trim()) {
+                let extras = {};
+                try { extras = JSON.parse(localStorage.getItem('vegaServiceExtras') || '{}'); } catch (_) {}
+                const allowed = ['Дополнительные страницы', 'Форма заявки', 'Онлайн-оплата', 'Интеграция с CRM', 'Чат или бот', 'Анимация'];
+                const notes = [];
+                if (extras && typeof extras === 'object' && !Array.isArray(extras)) {
+                    cart.forEach(item => {
+                        const service = String(item.service || '');
+                        const choices = Array.isArray(extras[service]) ? allowed.filter(value => extras[service].includes(value)) : [];
+                        if (choices.length) notes.push(service + ': ' + choices.join(', '));
+                    });
+                }
+                if (notes.length) comment.value = 'Дополнительные возможности: ' + notes.join('; ') + '. Стоимость уточняется.';
+            }
         }
 
         if (cart.length > 0) {
@@ -253,6 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <?php if ($successOrderId !== null): ?>
             localStorage.removeItem('webstartCart');
+            localStorage.removeItem('vegaServiceExtras');
             if (typeof updateHeaderCartCounter === 'function') {
                 updateHeaderCartCounter();
             }
