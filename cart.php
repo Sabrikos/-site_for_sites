@@ -1,6 +1,9 @@
 <?php
 
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/bd.php';
+require_once __DIR__ . '/services/ServiceCatalog.php';
+$browserTariffs = (new ServiceCatalog($pdo))->browserTariffs();
 
 $title = 'Корзина | Vega Studio';
 
@@ -212,11 +215,17 @@ $title = 'Корзина | Vega Studio';
 
     <?php renderFooter(); ?>
 
+    <script>window.VEGA_TARIFFS = <?= json_encode($browserTariffs, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;</script>
+    <script src="assets/js/service-cart.js"></script>
     <script>
-        let cart =
-            JSON.parse(
-                localStorage.getItem('webstartCart')
-            ) || [];
+        let cart = VegaCart.load();
+        if (VegaCart.removedCount()) {
+            const notice = document.createElement('p');
+            notice.className = 'catalog-cart-notice';
+            notice.setAttribute('role', 'status');
+            notice.textContent = 'Некоторые ранее выбранные услуги больше недоступны и убраны из корзины. Проверьте состав заявки.';
+            document.querySelector('main').prepend(notice);
+        }
 
         function getTariffId(item) {
             return String(item.tariff_id ?? item.id);
@@ -265,10 +274,7 @@ $title = 'Корзина | Vega Studio';
 
         function saveCart() {
 
-            localStorage.setItem(
-                'webstartCart',
-                JSON.stringify(cart)
-            );
+            cart = VegaCart.save(cart);
 
         }
 
@@ -482,6 +488,13 @@ $title = 'Корзина | Vega Studio';
 
 
 
+        window.addEventListener('storage', event => {
+            if (event.key === 'webstartCart') {
+                cart = VegaCart.load();
+                updateCartPage();
+            }
+        });
+        if (typeof updateHeaderCartCounter === 'function') updateHeaderCartCounter();
         updateCartPage();
     </script>
 

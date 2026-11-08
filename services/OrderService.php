@@ -41,17 +41,20 @@ final class OrderService
         return is_string($token) && preg_match('/^[a-f0-9]{64}$/', $token) === 1;
     }
 
-    public function createCartOrder(array $customer, array $tariffIds, string $requestToken, array $consent): array
+    public function createCartOrder(array $customer, array $tariffIds, string $requestToken, array $consent, ?array $expectedPrices = null): array
     {
         $tariffIds = array_values(array_unique(array_map('intval', $tariffIds)));
         if ($tariffIds === [] || count($tariffIds) > self::MAX_ITEMS) {
             throw new DomainException('Корзина содержит недопустимое количество тарифов.', 422);
         }
 
+        sort($tariffIds);
+        $this->pdo->beginTransaction();
+        try {
         $placeholders = implode(',', array_fill(0, count($tariffIds), '?'));
         $statement = $this->pdo->prepare("SELECT t.id, t.name AS tariff_name, t.price, s.name AS service_name
             FROM tariffs t JOIN services s ON s.id = t.service_id
-            WHERE t.active = 1 AND s.active = 1 AND t.id IN ($placeholders)");
+            WHERE t.active = 1 AND s.active = 1 AND t.id IN ($placeholders) ORDER BY t.id FOR UPDATE");
         $statement->execute($tariffIds);
         $tariffs = $statement->fetchAll();
         $byId = [];
@@ -60,6 +63,14 @@ final class OrderService
         }
         if (count($byId) !== count($tariffIds)) {
             throw new DomainException('Один из выбранных тарифов больше недоступен. Обновите страницу тарифов.', 422);
+        }
+
+        if ($expectedPrices !== null) {
+            foreach ($tariffIds as $id) {
+                if (!array_key_exists($id, $expectedPrices) || (int) $byId[$id]['price'] !== $expectedPrices[$id]) {
+                    throw new DomainException('Стоимость изменилась. Обновите страницу и проверьте заявку.', 409);
+                }
+            }
         }
 
         $items = [];
@@ -74,6 +85,10 @@ final class OrderService
         }
 
         return $this->persist($customer, $items, $requestToken, 'website_cart', $consent);
+        } catch (Throwable $error) {
+            if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+            throw $error;
+        }
     }
 
     public function createLead(array $customer, int $serviceId, string $requestToken, array $consent): array
@@ -96,7 +111,7 @@ final class OrderService
     private function persist(array $customer, array $items, string $requestToken, string $source, array $consent): array
     {
         $total = array_sum(array_column($items, 'price'));
-        $this->pdo->beginTransaction();
+        if (!$this->pdo->inTransaction()) $this->pdo->beginTransaction();
         try {
             $existing = $this->pdo->prepare('SELECT id FROM orders WHERE request_token = ? LIMIT 1');
             $existing->execute([$requestToken]);

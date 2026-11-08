@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/services/ServiceCatalog.php';
+$browserTariffs = (new ServiceCatalog($pdo))->browserTariffs();
 require_once __DIR__ . '/services/OrderService.php';
 require_once __DIR__ . '/services/SupportRelay.php';
 
@@ -32,7 +34,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!appCsrfValid('order_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
         $errors[] = 'Срок действия формы истёк. Обновите страницу и повторите отправку.';
     }
-    [$customerErrors, $customer] = OrderService::validateCustomer($_POST);
+    $urgencyLabels = ['standard' => 'Обычные сроки', 'urgent' => 'Срочно', 'discuss' => 'Сроки обсудим'];
+    if (!isset($urgencyLabels[$projectUrgency])) $errors[] = 'Выберите срок выполнения из списка.';
+    $customerInput = $_POST;
+    if (isset($urgencyLabels[$projectUrgency])) $customerInput['project_comment'] = trim($projectComment . "\nСроки: " . $urgencyLabels[$projectUrgency]);
+    [$customerErrors, $customer] = OrderService::validateCustomer($customerInput);
     $errors = array_merge($errors, $customerErrors);
 
     if (!$personalDataConsent) {
@@ -52,6 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $tariffIds = [];
+    $expectedPrices = [];
 
     foreach ($cart as $item) {
         $tariffId = filter_var(
@@ -65,7 +72,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             continue;
         }
 
+        $price = filter_var($item['price'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+        if ($price === false || $price === null) {
+            $errors[] = 'Обновите страницу, чтобы проверить актуальную стоимость.';
+            continue;
+        }
         $tariffIds[] = (int) $tariffId;
+        $expectedPrices[(int) $tariffId] = (int) $price;
     }
 
     $tariffIds = array_values(array_unique($tariffIds));
@@ -86,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($errors === []) {
         try {
             $consent = ConsentService::evidence('website_cart', $requestToken);
-            $result = (new OrderService($pdo))->createCartOrder($customer, $tariffIds, $requestToken, $consent);
+            $result = (new OrderService($pdo))->createCartOrder($customer, $tariffIds, $requestToken, $consent, $expectedPrices);
             $successOrderId = $result['id'];
             appRotateCsrf('order_csrf');
             $_SESSION['order_request_token'] = bin2hex(random_bytes(32));
@@ -95,6 +108,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 appLog('Website order notification was not delivered');
             }
 
+        } catch (DomainException $error) {
+            $errors[] = $error->getMessage();
         } catch (Throwable $error) {
             appLog('Order create failed', ['type' => get_class($error)]);
             $errors[] = 'Не удалось сохранить заказ. Попробуйте ещё раз.';
@@ -226,9 +241,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="cart-vega-nebula" id="vega-nebula-note" role="tooltip" aria-hidden="true">Созвездие Лиры — дом Веги, одной из самых ярких звёзд ночного неба.</div>
     <svg class="cart-vega-pointer" aria-hidden="true"><path class="cart-vega-pointer__curve"/><path class="cart-vega-pointer__head"/></svg>
 
+    <script>window.VEGA_TARIFFS = <?= json_encode($browserTariffs, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;</script>
+    <script src="assets/js/service-cart.js"></script>
     <script>
         const orderForm = document.getElementById('orderForm');
-        const cart = JSON.parse(localStorage.getItem('webstartCart') || '[]');
+        const cart = VegaCart.load();
+        if (VegaCart.removedCount()) {
+            const notice = document.createElement('p');
+            notice.className = 'catalog-cart-notice';
+            notice.setAttribute('role', 'status');
+            notice.textContent = 'Некоторые ранее выбранные услуги больше недоступны и убраны из корзины. Проверьте состав заявки.';
+            document.querySelector('main').prepend(notice);
+        }
+        if (typeof updateHeaderCartCounter === 'function') updateHeaderCartCounter();
         const orderItems = document.getElementById('orderItems');
         const emptyOrder = document.getElementById('emptyOrder');
 
@@ -238,21 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (orderForm) {
             document.getElementById('cartJson').value = JSON.stringify(cart);
-            const comment = document.getElementById('project_comment');
-            if (!comment.value.trim()) {
-                let extras = {};
-                try { extras = JSON.parse(localStorage.getItem('vegaServiceExtras') || '{}'); } catch (_) {}
-                const allowed = ['Дополнительные страницы', 'Форма заявки', 'Онлайн-оплата', 'Интеграция с CRM', 'Чат или бот', 'Анимация'];
-                const notes = [];
-                if (extras && typeof extras === 'object' && !Array.isArray(extras)) {
-                    cart.forEach(item => {
-                        const service = String(item.service || '');
-                        const choices = Array.isArray(extras[service]) ? allowed.filter(value => extras[service].includes(value)) : [];
-                        if (choices.length) notes.push(service + ': ' + choices.join(', '));
-                    });
-                }
-                if (notes.length) comment.value = 'Дополнительные возможности: ' + notes.join('; ') + '. Стоимость уточняется.';
-            }
+
         }
 
         if (cart.length > 0) {
@@ -279,7 +290,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <?php if ($successOrderId !== null): ?>
             localStorage.removeItem('webstartCart');
-            localStorage.removeItem('vegaServiceExtras');
             if (typeof updateHeaderCartCounter === 'function') {
                 updateHeaderCartCounter();
             }

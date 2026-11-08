@@ -4,6 +4,8 @@ require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/services/OrderService.php';
 require_once __DIR__ . '/services/SupportRelay.php';
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/services/ServiceCatalog.php';
+require_once __DIR__ . '/components/ServiceFeatures.php';
 
 appStartSession();
 $homeCsrf = appCsrfToken('home_lead_csrf');
@@ -21,42 +23,15 @@ $selectedService = null;
 $errors = [];
 $successOrderId = null;
 
-$sql = "
-
-    SELECT
-
-        s.id,
-        s.name,
-        s.slug,
-        s.description,
-        s.deadline,
-
-        MIN(t.price) AS price
-
-    FROM services s
-
-    JOIN tariffs t
-        ON t.service_id = s.id
-
-    WHERE
-        s.active = 1
-        AND t.active = 1
-
-    GROUP BY
-        s.id,
-        s.name,
-        s.slug,
-        s.description,
-        s.deadline
-
-    ORDER BY s.id
-
-";
-
-
-$stmt = $pdo->query($sql);
-
-$services = $stmt->fetchAll();
+$catalog = new ServiceCatalog($pdo);
+$services = $catalog->categories();
+$featuresByTariff = $catalog->features();
+$baseByService = [];
+foreach ($catalog->tariffs() as $tariff) {
+    if ($tariff['item_type'] !== 'service') continue;
+    $serviceId = (int) $tariff['service_id'];
+    if (!isset($baseByService[$serviceId]) || (int) $tariff['price'] < (int) $baseByService[$serviceId]['price']) $baseByService[$serviceId] = $tariff;
+}
 
 
 
@@ -301,7 +276,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="service-card__intro">
                             <span class="service-card__icon" aria-hidden="true">
                                 <svg viewBox="0 0 32 32" fill="none">
-                                <?php switch ($service['slug']): case 'landing': ?>
+                                <?php switch ($service['icon_key'] ?: $service['slug']): case 'landing': ?>
                                     <rect x="4" y="5" width="24" height="22" rx="2"/><path d="M4 11h24M8 8h1m3 0h1"/>
                                 <?php break; case 'shop': ?>
                                     <path d="M3 5h4l4 17h14l4-12H9"/><circle cx="13" cy="27" r="1.5"/><circle cx="24" cy="27" r="1.5"/>
@@ -316,6 +291,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
                             <div><h3><?= htmlspecialchars($service['name']) ?></h3><p class="service-card__description"><?= htmlspecialchars($service['description'] ?? '') ?></p></div>
                         </div>
+                        <?php $baseTariff = $baseByService[(int) $service['id']] ?? null; ?>
+                        <?php if ($baseTariff && !empty($featuresByTariff[(int) $baseTariff['id']])): ?>
+                            <?php renderServiceFeatures($featuresByTariff[(int) $baseTariff['id']], 'service-card__features', 2); ?>
+                        <?php endif; ?>
                         <div class="service-card__bottom">
                             <?php if ($service['slug'] === 'other'): ?>
                             <div class="service-card__detail service-card__detail--combined"><span class="service-card__mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3a8 8 0 1 0 9 9M5 9h5a2 2 0 0 1 0 4H7m0-4v9m-2-3h6"/><circle cx="17" cy="7" r="5"/><path d="M17 4v3l2 1"/></svg></span><span><small>Цена и срок:</small>по договорённости</span></div>
@@ -323,7 +302,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="service-card__detail"><span class="service-card__mini-icon" aria-hidden="true">₽</span><span><small>Цена:</small>от <?= number_format((int) $service['price'], 0, '', ' ') ?> ₽</span></div>
                             <div class="service-card__detail"><span class="service-card__mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></span><span><small>Срок:</small><?= htmlspecialchars($service['deadline'] ?: 'По договорённости') ?></span></div>
                             <?php endif; ?>
-                            <a class="button service-button" href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>" aria-label="Узнать подробнее: <?= htmlspecialchars($service['name']) ?>"><span class="service-button__desktop">Подробнее</span><span class="service-button__mobile">Узнать подробнее</span><span aria-hidden="true">↗</span></a>
+                            <a class="button service-button" href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>" aria-label="Узнать подробнее: <?= htmlspecialchars($service['name']) ?>"><span class="service-button__desktop">Выбрать услугу</span><span class="service-button__mobile">Выбрать услугу</span><span aria-hidden="true">↗</span></a>
                         </div>
                     </article>
                 <?php endforeach; ?>

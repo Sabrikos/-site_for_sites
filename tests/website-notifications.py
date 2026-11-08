@@ -153,9 +153,15 @@ return require '"""+ROOT.as_posix()+"""/router.php';
     service_choice=next(item['id'] for item in catalog_state['choices'] if item['id'].startswith('service:'))
     _,catalog_state=catalog_client.chat('message',choice=service_choice)
     tariff=next(item['id'].split(':')[1] for item in catalog_state['choices'] if item['id'].startswith('tariff:'))
+    catalog_prices = json.loads(re.search(r'window\.VEGA_TARIFFS = (.*?);</script>', checkout).group(1))
+    current_price = next(x['price'] for x in catalog_prices if str(x['tariff_id']) == str(tariff))
+    _,stale_result=cart_client.call('/create-order.php',dict(csrf_token=cartcsrf,request_token=cartrequest,
+        customer_name='Иван Тестовый',customer_phone='+79991234567',project_comment='PRIVATE-CART-MARKER',
+        personal_data_consent='1',cart_json=json.dumps([{'tariff_id':int(tariff), 'price':current_price+1}])))
+    check('Стоимость изменилась' in stale_result,'stale cart price requires review before order')
     code,checkout_result=cart_client.call('/create-order.php',dict(csrf_token=cartcsrf,request_token=cartrequest,
         customer_name='Иван Тестовый',customer_phone='+79991234567',project_comment='PRIVATE-CART-MARKER',
-        personal_data_consent='1',cart_json=json.dumps([{'tariff_id':int(tariff)}])))
+        personal_data_consent='1',cart_json=json.dumps([{'tariff_id':int(tariff), 'price': current_price}])))
     check(code==200 and 'Не удалось сохранить заказ' not in checkout_result,'cart order is stored with generic notification')
     failed_delivery=Client()
     _,failure_form=failed_delivery.call('/home.php')
