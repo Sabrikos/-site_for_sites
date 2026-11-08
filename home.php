@@ -16,6 +16,7 @@ $customerName = '';
 $customerPhone = '';
 $projectType = '';
 $projectTheme = '';
+$projectUrgency = 'standard';
 $selectedService = null;
 $errors = [];
 $successOrderId = null;
@@ -64,6 +65,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerPhone = trim($_POST['customer_phone'] ?? '');
     $projectType = trim($_POST['project_type'] ?? '');
     $projectTheme = trim($_POST['project_theme'] ?? '');
+    $projectUrgency = is_string($_POST['project_urgency'] ?? null) ? $_POST['project_urgency'] : 'standard';
+    $urgencyLabels = ['standard' => 'Обычные сроки', 'urgent' => 'Срочно', 'discuss' => 'Сроки обсудим'];
+    if (!isset($urgencyLabels[$projectUrgency])) { $errors[] = 'Выберите срок выполнения из списка.'; }
     $personalDataConsent = isset($_POST['personal_data_consent']);
 
     if (!appCsrfValid('home_lead_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
@@ -72,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     [$customerErrors, $customer] = OrderService::validateCustomer([
         'customer_name' => $customerName,
         'customer_phone' => $customerPhone,
-        'project_comment' => $projectTheme,
+        'project_comment' => trim($projectTheme . (isset($urgencyLabels[$projectUrgency]) ? "\nСроки: " . $urgencyLabels[$projectUrgency] : '')),
     ]);
     $errors = array_merge($errors, $customerErrors);
 
@@ -832,6 +836,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             placeholder="Например: нужен лендинг для строительной компании..."
                             required><?= htmlspecialchars($projectTheme) ?></textarea>
 
+                    </div>
+
+                    <div class="form-group">
+                        <label for="home_project_urgency">Как быстро нужен проект?</label>
+                        <select id="home_project_urgency" name="project_urgency">
+                            <option value="standard" <?= $projectUrgency === 'standard' ? 'selected' : '' ?>>Обычные сроки</option>
+                            <option value="urgent" <?= $projectUrgency === 'urgent' ? 'selected' : '' ?>>Срочно</option>
+                            <option value="discuss" <?= $projectUrgency === 'discuss' ? 'selected' : '' ?>>Обсудим сроки</option>
+                        </select>
+                        <small>Возможную доплату за срочность согласуем после обсуждения.</small>
                     </div>
 
                     <div class="form-consent">

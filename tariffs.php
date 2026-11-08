@@ -126,7 +126,7 @@ foreach ($tariffs as $tariff) {
         <div class="tariffs-page-header">
 
             <h1>
-                Наши тарифы
+                Услуги и стоимость
             </h1>
 
 
@@ -136,7 +136,7 @@ foreach ($tariffs as $tariff) {
 
         <aside class="tariffs-price-note" aria-labelledby="tariffs-price-note-title">
             <h2 id="tariffs-price-note-title">Каждый проект начинается с задачи</h2>
-            <p>Цены в тарифах — ориентир. После обсуждения согласуем объём работ и итоговую стоимость с учётом ваших целей и бюджета.</p>
+            <p>У каждой услуги есть базовая стоимость. Дополнительные функции обсудим отдельно и согласуем итоговую цену перед началом работ.</p>
         </aside>
 
         <div class="tariffs-layout">
@@ -183,6 +183,10 @@ foreach ($tariffs as $tariff) {
 
                         $serviceTariffs =
                             $tariffsByService[$service['id']] ?? [];
+                        if (in_array($service['slug'], ['landing', 'shop', 'revision'], true) && $serviceTariffs) {
+                            usort($serviceTariffs, static fn($a, $b) => (int) $a['price'] <=> (int) $b['price']);
+                            $serviceTariffs = [reset($serviceTariffs)];
+                        }
 
                         ?>
 
@@ -201,7 +205,7 @@ foreach ($tariffs as $tariff) {
                                         <span class="tariff-tier-icon"><?= tariffIcon(['start', 'business', 'premium'][$tariffIndex] ?? 'other') ?></span>
 
                                         <h3>
-                                            <?= htmlspecialchars($tariff['name']) ?>
+                                            <?= htmlspecialchars(['landing' => 'Базовый лендинг', 'shop' => 'Базовый интернет-магазин', 'revision' => 'Базовая доработка'][$service['slug']] ?? $tariff['name']) ?>
                                         </h3>
 
 
@@ -269,7 +273,7 @@ foreach ($tariffs as $tariff) {
 
                                             data-price="<?= (int) $tariff['price'] ?>">
 
-                                            Выбрать тариф
+                                            Выбрать услугу
 
                                         </button>
 
@@ -281,6 +285,19 @@ foreach ($tariffs as $tariff) {
 
 
                             <?php endforeach; ?>
+
+                            <?php if (in_array($service['slug'], ['landing', 'shop', 'revision'], true) && $serviceTariffs): ?>
+                                <div class="landing-extras" aria-labelledby="extras-title-<?= htmlspecialchars($service['slug']) ?>" data-extra-service="<?= htmlspecialchars($service['name'], ENT_QUOTES, 'UTF-8') ?>">
+                                    <h3 id="extras-title-<?= htmlspecialchars($service['slug']) ?>">Дополнительные возможности</h3>
+                                    <p>Выберите то, что может понадобиться. Стоимость каждой функции уточним после обсуждения; в базовую цену она не включена.</p>
+                                    <div class="landing-extras-list">
+                                        <?php foreach (['Дополнительные страницы', 'Форма заявки', 'Онлайн-оплата', 'Интеграция с CRM', 'Чат или бот', 'Анимация'] as $extra): ?>
+                                            <label><input type="checkbox" class="landing-extra" value="<?= htmlspecialchars($extra, ENT_QUOTES, 'UTF-8') ?>"> <span><?= htmlspecialchars($extra, ENT_QUOTES, 'UTF-8') ?></span><small>По запросу</small></label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <p class="landing-extras-note">Пожелания появятся в комментарии при оформлении заявки на эту услугу.</p>
+                                </div>
+                            <?php endif; ?>
 
                             <?php if ($service['slug'] === 'other'): ?>
                                 <div class="other-project-info" aria-labelledby="other-project-heading">
@@ -434,6 +451,23 @@ foreach ($tariffs as $tariff) {
         }
 
 
+
+        document.querySelectorAll('.landing-extras').forEach(section => {
+            const service = section.dataset.extraService;
+            let selected = {};
+            try { selected = JSON.parse(localStorage.getItem('vegaServiceExtras') || '{}'); } catch (_) {}
+            if (!selected || typeof selected !== 'object' || Array.isArray(selected)) selected = {};
+            section.querySelectorAll('.landing-extra').forEach(input => {
+                input.checked = Array.isArray(selected[service]) && selected[service].includes(input.value);
+                input.addEventListener('change', () => {
+                    let choices = {};
+                    try { choices = JSON.parse(localStorage.getItem('vegaServiceExtras') || '{}'); } catch (_) {}
+                    if (!choices || typeof choices !== 'object' || Array.isArray(choices)) choices = {};
+                    choices[service] = Array.from(section.querySelectorAll('.landing-extra:checked')).map(item => item.value);
+                    localStorage.setItem('vegaServiceExtras', JSON.stringify(choices));
+                });
+            });
+        });
 
         const buttons =
             document.querySelectorAll('.tariff-button');
@@ -611,7 +645,7 @@ foreach ($tariffs as $tariff) {
                     button.classList.add('selected');
 
                     button.textContent =
-                        'Тариф выбран';
+                        'Услуга выбрана';
 
                 } else {
 
@@ -619,7 +653,7 @@ foreach ($tariffs as $tariff) {
                     button.classList.remove('selected');
 
                     button.textContent =
-                        'Выбрать тариф';
+                        'Выбрать услугу';
 
                 }
 
