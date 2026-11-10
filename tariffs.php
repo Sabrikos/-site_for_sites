@@ -133,13 +133,13 @@ foreach ($tariffs as $tariff) $tariffsByService[$tariff['service_id']][] = $tari
                                 </div>
                             </details>
                         <?php endif; ?>
+                        <?php if ($service['slug'] === 'other' && is_file(__DIR__ . '/assets/alien/tariffs/idle-manifest.js')): ?>
+                            <div class="showcase-mascot" data-contact-alien aria-hidden="true">
+                                <img class="contact-alien__fallback" src="assets/alien/tariffs/idle-full-poster.png" width="320" height="326" alt="" loading="lazy" draggable="false">
+                                <canvas class="contact-alien__canvas" width="320" height="326" hidden></canvas>
+                            </div>
+                        <?php endif; ?>
                     </section>
-                    <?php if ($service['slug'] === 'other' && is_file(__DIR__ . '/assets/alien/tariffs/idle-manifest.js')): ?>
-                        <div class="showcase-mascot" data-contact-alien aria-hidden="true">
-                            <img class="contact-alien__fallback" src="assets/alien/tariffs/idle-full-poster.png" width="320" height="326" alt="" loading="lazy" draggable="false">
-                            <canvas class="contact-alien__canvas" width="320" height="326" hidden></canvas>
-                        </div>
-                    <?php endif; ?>
                 <?php endforeach; ?>
             </div>
 
