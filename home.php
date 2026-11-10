@@ -4,6 +4,8 @@ require_once __DIR__ . '/bd.php';
 require_once __DIR__ . '/services/OrderService.php';
 require_once __DIR__ . '/services/SupportRelay.php';
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/services/ServiceCatalog.php';
+require_once __DIR__ . '/components/ServiceFeatures.php';
 
 appStartSession();
 $homeCsrf = appCsrfToken('home_lead_csrf');
@@ -21,54 +23,34 @@ $selectedService = null;
 $errors = [];
 $successOrderId = null;
 
-$sql = "
-
-    SELECT
-
-        s.id,
-        s.name,
-        s.slug,
-        s.description,
-        s.deadline,
-
-        MIN(t.price) AS price
-
-    FROM services s
-
-    JOIN tariffs t
-        ON t.service_id = s.id
-
-    WHERE
-        s.active = 1
-        AND t.active = 1
-
-    GROUP BY
-        s.id,
-        s.name,
-        s.slug,
-        s.description,
-        s.deadline
-
-    ORDER BY s.id
-
-";
-
-
-$stmt = $pdo->query($sql);
-
-$services = $stmt->fetchAll();
+$catalog = new ServiceCatalog($pdo);
+$services = $catalog->categories();
+$featuresByTariff = $catalog->features();
+$baseByService = [];
+foreach ($catalog->tariffs() as $tariff) {
+    if ($tariff['item_type'] !== 'service') continue;
+    $serviceId = (int) $tariff['service_id'];
+    if (!isset($baseByService[$serviceId]) || (int) $tariff['price'] < (int) $baseByService[$serviceId]['price']) $baseByService[$serviceId] = $tariff;
+}
 
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $customerName = trim($_POST['customer_name'] ?? '');
-    $customerPhone = trim($_POST['customer_phone'] ?? '');
-    $projectType = trim($_POST['project_type'] ?? '');
-    $projectTheme = trim($_POST['project_theme'] ?? '');
+    if (!appSpamTrapValid($_POST)) {
+        http_response_code(422);
+        exit('Не удалось отправить заявку.');
+    }
+    foreach (['customer_name', 'customer_phone', 'project_type', 'project_theme', 'project_urgency'] as $field) {
+        if (isset($_POST[$field]) && !is_string($_POST[$field])) $errors[] = 'Проверьте данные формы.';
+    }
+    $customerName = trim(is_string($_POST['customer_name'] ?? null) ? $_POST['customer_name'] : '');
+    $customerPhone = trim(is_string($_POST['customer_phone'] ?? null) ? $_POST['customer_phone'] : '');
+    $projectType = trim(is_string($_POST['project_type'] ?? null) ? $_POST['project_type'] : '');
+    $projectTheme = trim(is_string($_POST['project_theme'] ?? null) ? $_POST['project_theme'] : '');
     $projectUrgency = is_string($_POST['project_urgency'] ?? null) ? $_POST['project_urgency'] : 'standard';
     $urgencyLabels = ['standard' => 'Обычные сроки', 'urgent' => 'Срочно', 'discuss' => 'Сроки обсудим'];
     if (!isset($urgencyLabels[$projectUrgency])) { $errors[] = 'Выберите срок выполнения из списка.'; }
-    $personalDataConsent = isset($_POST['personal_data_consent']);
+    $personalDataConsent = is_string($_POST['personal_data_consent'] ?? null) && $_POST['personal_data_consent'] === '1';
 
     if (!appCsrfValid('home_lead_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
         $errors[] = 'Форма устарела. Обновите страницу и повторите отправку.';
@@ -80,9 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]);
     $errors = array_merge($errors, $customerErrors);
 
-    $serviceId = filter_var($projectType, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    if (!$serviceId) {
-        $errors[] = 'Выберите услугу.';
+    $serviceId = null;
+    if ($projectType === '') {
+        // Check the visitor's text, not the automatically appended urgency label.
+        if ($projectTheme === '') $errors[] = 'Выберите услугу или расскажите о проекте.';
+    } elseif (isset(OrderService::LEAD_TOPICS[$projectType])) {
+        $serviceId = $projectType;
+    } else {
+        $serviceId = filter_var($projectType, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($serviceId === false) $errors[] = 'Выберите услугу из списка.';
     }
 
     if (!$personalDataConsent) {
@@ -103,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($errors === []) {
         try {
             $consent = ConsentService::evidence('website_lead', $requestToken);
-            $result = (new OrderService($pdo))->createLead($customer, (int) $serviceId, $requestToken, $consent);
+            $result = (new OrderService($pdo))->createLead($customer, $serviceId, $requestToken, $consent);
             $successOrderId = $result['id'];
             appRotateCsrf('home_lead_csrf');
             $_SESSION['home_lead_request_token'] = bin2hex(random_bytes(32));
@@ -111,6 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 appLog('Website order notification was not delivered');
             }
 
+        } catch (DomainException $error) {
+            $errors[] = $error->getMessage();
         } catch (Throwable $error) {
             appLog('Lead create failed', ['type' => get_class($error)]);
             $errors[] = 'Не удалось сохранить заявку. Попробуйте ещё раз.';
@@ -302,7 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="service-card__intro">
                             <span class="service-card__icon" aria-hidden="true">
                                 <svg viewBox="0 0 32 32" fill="none">
-                                <?php switch ($service['slug']): case 'landing': ?>
+                                <?php switch ($service['icon_key'] ?: $service['slug']): case 'landing': ?>
                                     <rect x="4" y="5" width="24" height="22" rx="2"/><path d="M4 11h24M8 8h1m3 0h1"/>
                                 <?php break; case 'shop': ?>
                                     <path d="M3 5h4l4 17h14l4-12H9"/><circle cx="13" cy="27" r="1.5"/><circle cx="24" cy="27" r="1.5"/>
@@ -317,6 +307,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </span>
                             <div><h3><?= htmlspecialchars($service['name']) ?></h3><p class="service-card__description"><?= htmlspecialchars($service['description'] ?? '') ?></p></div>
                         </div>
+                        <?php $baseTariff = $baseByService[(int) $service['id']] ?? null; ?>
+                        <?php if ($baseTariff && !empty($featuresByTariff[(int) $baseTariff['id']])): ?>
+                            <?php renderServiceFeatures($featuresByTariff[(int) $baseTariff['id']], 'service-card__features', 2); ?>
+                        <?php endif; ?>
                         <div class="service-card__bottom">
                             <?php if ($service['slug'] === 'other'): ?>
                             <div class="service-card__detail service-card__detail--combined"><span class="service-card__mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3a8 8 0 1 0 9 9M5 9h5a2 2 0 0 1 0 4H7m0-4v9m-2-3h6"/><circle cx="17" cy="7" r="5"/><path d="M17 4v3l2 1"/></svg></span><span><small>Цена и срок:</small>по договорённости</span></div>
@@ -324,7 +318,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="service-card__detail"><span class="service-card__mini-icon" aria-hidden="true">₽</span><span><small>Цена:</small>от <?= number_format((int) $service['price'], 0, '', ' ') ?> ₽</span></div>
                             <div class="service-card__detail"><span class="service-card__mini-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></span><span><small>Срок:</small><?= htmlspecialchars($service['deadline'] ?: 'По договорённости') ?></span></div>
                             <?php endif; ?>
-                            <a class="button service-button" href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>" aria-label="Узнать подробнее: <?= htmlspecialchars($service['name']) ?>"><span class="service-button__desktop">Подробнее</span><span class="service-button__mobile">Узнать подробнее</span><span aria-hidden="true">↗</span></a>
+                            <a class="button service-button" href="tariffs.php#<?= htmlspecialchars($service['slug']) ?>" aria-label="Узнать подробнее: <?= htmlspecialchars($service['name']) ?>"><span class="service-button__desktop">Выбрать услугу</span><span class="service-button__mobile">Выбрать услугу</span><span aria-hidden="true">↗</span></a>
                         </div>
                     </article>
                 <?php endforeach; ?>
@@ -341,29 +335,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <article class="work-solution-card">
                     <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M13 3 5 14h6l-1 7 9-12h-6l1-6Z"/></svg></span><h3>Автоматизация задач</h3></div>
                     <p>Поможем сократить ручной ввод, собрать данные и настроить повторяющиеся процессы.</p>
-                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Автоматизация задач">Обсудить <span aria-hidden="true">↗</span></a>
+                    <a class="work-solution-card__link" href="#application" data-lead-service="automation" aria-label="Обсудить: Автоматизация задач">Обсудить <span aria-hidden="true">↗</span></a>
                 </article>
                 <article class="work-solution-card">
                     <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M9 9v11m5-7h3m-3 4h3"/></svg></span><h3>Таблицы и отчёты</h3></div>
                     <p>Приведём данные в порядок, настроим расчёты и понятные отчёты для ежедневной работы.</p>
-                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Таблицы и отчёты">Обсудить <span aria-hidden="true">↗</span></a>
+                    <a class="work-solution-card__link" href="#application" data-lead-service="automation" aria-label="Обсудить: Таблицы и отчёты">Обсудить <span aria-hidden="true">↗</span></a>
                 </article>
                 <article class="work-solution-card">
                     <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="7" width="16" height="13" rx="4"/><path d="M12 3v4M2 12v4m20-4v4M9 16h6"/><circle cx="9" cy="12" r=".8"/><circle cx="15" cy="12" r=".8"/></svg></span><h3>Боты и заявки</h3></div>
                     <p>Создадим Telegram-бота или форму для обращений, уведомлений и типовых вопросов.</p>
-                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Боты и заявки">Обсудить <span aria-hidden="true">↗</span></a>
+                    <a class="work-solution-card__link" href="#application" data-lead-service="automation" aria-label="Обсудить: Боты и заявки">Обсудить <span aria-hidden="true">↗</span></a>
                 </article>
                 <article class="work-solution-card">
                     <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M9 9v11m4-7h4m-4 4h4M6 6.5h.01"/></svg></span><h3>Внутренние инструменты</h3></div>
                     <p>Разработаем небольшую панель, каталог или личный кабинет для задач вашей команды.</p>
-                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Внутренние инструменты">Обсудить <span aria-hidden="true">↗</span></a>
+                    <a class="work-solution-card__link" href="#application" data-lead-service="automation" aria-label="Обсудить: Внутренние инструменты">Обсудить <span aria-hidden="true">↗</span></a>
                 </article>
                 <article class="work-solution-card">
                     <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="8" width="7" height="8" rx="2"/><rect x="15" y="8" width="7" height="8" rx="2"/><path d="M9 10h6m-6 4h6m-3-7 3 3-3 3"/></svg></span><h3>Связь между сервисами</h3></div>
                     <p>Поможем передавать данные между сайтом, таблицами и другими системами при наличии доступа.</p>
-                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Связь между сервисами">Обсудить <span aria-hidden="true">↗</span></a>
+                    <a class="work-solution-card__link" href="#application" data-lead-service="automation" aria-label="Обсудить: Связь между сервисами">Обсудить <span aria-hidden="true">↗</span></a>
                 </article>
-                <article class="work-solutions__cta"><h3>Что отнимает ваше время?</h3><p>Расскажите о задаче — предложим решение и оценим объём работ.</p><a href="#application">Обсудить задачу</a></article>
+                <article class="work-solutions__cta"><h3>Что отнимает ваше время?</h3><p>Расскажите о задаче — предложим решение и оценим объём работ.</p><a href="#application" data-lead-service="automation">Обсудить задачу</a></article>
             </div>
         </section>
 
@@ -753,9 +747,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-                <form method="post">
+                <form method="post" data-single-submit>
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($homeCsrf, ENT_QUOTES, 'UTF-8') ?>">
                     <input type="hidden" name="request_token" value="<?= htmlspecialchars($_SESSION['home_lead_request_token'], ENT_QUOTES, 'UTF-8') ?>">
+                        <div class="form-spam-trap" aria-hidden="true"><label>Сайт <input type="text" name="contact_website" tabindex="-1" autocomplete="off"></label></div>
 
                     <div class="form-group">
 
@@ -801,7 +796,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <select
                             id="project_type"
                             name="project_type"
-                            required>
+                            aria-describedby="project-details-help">
 
                             <option value="">
                                 Выберите услугу
@@ -820,6 +815,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                             <?php endforeach; ?>
 
+                            <?php foreach (OrderService::LEAD_TOPICS as $topic => $label): ?>
+                                <option value="<?= htmlspecialchars($topic, ENT_QUOTES, 'UTF-8') ?>" <?= $projectType === $topic ? 'selected' : '' ?>><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+
                         </select>
 
                     </div>
@@ -835,7 +834,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             id="project_theme"
                             name="project_theme"
                             placeholder="Например: нужен лендинг для строительной компании..."
-                            required><?= htmlspecialchars($projectTheme) ?></textarea>
+                            aria-describedby="project-details-help"><?= htmlspecialchars($projectTheme) ?></textarea>
+                        <small id="project-details-help">Выберите услугу или расскажите о проекте — достаточно одного поля.</small>
 
                     </div>
 
@@ -906,13 +906,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
-<script src="service-select.js?v=2"></script>
+<script src="service-select.js?v=<?= filemtime(__DIR__ . '/service-select.js') ?>"></script>
 
 <script src="cursor-stars.js?v=native-scroll-1"></script>
 <script src="planet-panels.js?v=25"></script>
 <script src="sphere-code-loop.js?v=canvas-render-2"></script>
 <script src="assets/alien/idle-manifest.js?v=<?= filemtime(__DIR__ . '/assets/alien/idle-manifest.js') ?>" defer></script>
 <script src="contact-alien-idle.js?v=<?= filemtime(__DIR__ . '/contact-alien-idle.js') ?>" defer></script>
+    <script src="assets/js/single-submit.js?v=1" defer></script>
 </body>
 
 </html>

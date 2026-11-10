@@ -5,75 +5,16 @@ require_once __DIR__ . '/services/TariffPresentation.php';
 
 $title = 'Тарифы | Vega Studio';
 
-/*
-    Получаем услуги из базы данных
-*/
-
-$servicesStatement = $pdo->query("
-
-    SELECT
-
-        id,
-        name,
-        slug,
-        description
-
-    FROM services
-
-    WHERE active = 1
-
-    ORDER BY id
-
-");
-
-$services =
-    $servicesStatement->fetchAll();
-
-
-
-/*
-    Получаем тарифы из базы данных
-*/
-
-$tariffsStatement = $pdo->query("
-
-    SELECT
-
-        id,
-        service_id,
-        name,
-        description,
-        price
-
-    FROM tariffs
-
-    WHERE active = 1
-
-    ORDER BY service_id, id
-
-");
-
-
-$tariffs =
-    $tariffsStatement->fetchAll();
-
-
-
-/*
-    Разделяем тарифы по услугам
-*/
-
+require_once __DIR__ . '/services/ServiceCatalog.php';
+require_once __DIR__ . '/components/ServiceFeatures.php';
+$catalog = new ServiceCatalog($pdo);
+$services = $catalog->categories();
+$tariffs = $catalog->tariffs();
+$featuresByTariff = $catalog->features();
+$browserTariffs = $catalog->browserTariffs();
 $tariffsByService = [];
-
-
 foreach ($tariffs as $tariff) {
-
-    $serviceId =
-        $tariff['service_id'];
-
-
-    $tariffsByService[$serviceId][] =
-        $tariff;
+    if ($tariff['item_type'] === 'service') $tariffsByService[$tariff['service_id']][] = $tariff;
 }
 
 ?>
@@ -454,6 +395,8 @@ foreach ($tariffs as $tariff) {
      JAVASCRIPT КОРЗИНЫ
 ============================ -->
 
+    <script>window.VEGA_TARIFFS = <?= json_encode($browserTariffs, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;</script>
+    <script src="assets/js/service-cart.js"></script>
     <script>
         /*
         Получаем сохранённую корзину.

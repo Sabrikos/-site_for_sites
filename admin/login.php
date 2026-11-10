@@ -15,19 +15,22 @@ if (empty($_SESSION['login_csrf'])) {
     $_SESSION['login_csrf'] = bin2hex(random_bytes(32));
 }
 
+header('Cache-Control: no-store, private');
 $error = '';
-$username = trim((string) ($_POST['username'] ?? ''));
+$username = trim(is_string($_POST['username'] ?? null) ? $_POST['username'] : '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $loginScope = 'admin_login:' . appClientIp() . ':' . mb_strtolower($username, 'UTF-8');
     $ipScope = 'admin_login_ip:' . appClientIp();
     if (!appPersistentRateLimit($pdo, $ipScope, 30, 300)
         || !appPersistentRateLimit($pdo, $loginScope, 10, 300)) {
+        http_response_code(429);
+        header('Retry-After: ' . (300 - time() % 300));
         $error = 'Слишком много попыток входа. Попробуйте чуть позже.';
     }
 
-    $token = (string) ($_POST['csrf_token'] ?? '');
-    $password = (string) ($_POST['password'] ?? '');
+    $token = is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : '';
+    $password = is_string($_POST['password'] ?? null) ? $_POST['password'] : '';
 
     if ($error === '' && !hash_equals($_SESSION['login_csrf'], $token)) {
         $error = 'Срок действия формы истёк. Обновите страницу и попробуйте снова.';
@@ -41,7 +44,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $statement->execute([$username]);
         $admin = $statement->fetch();
 
-        if ($admin && password_verify($password, $admin['password_hash'])) {
+        // Keep verification cost similar for unknown and known usernames.
+        $dummyHash = '$2y$10$j64Kn7/mqJEBu6SIYvECdu9NikvvTJFJWNduNE0zgMTiOqPZkJffe';
+        $passwordValid = password_verify($password, $admin['password_hash'] ?? $dummyHash);
+        if ($admin && $passwordValid) {
             session_regenerate_id(true);
             unset($_SESSION['login_csrf']);
             $_SESSION['admin_id'] = (int) $admin['id'];

@@ -1,5 +1,6 @@
 """Exercise actual HTTP entry points in a disposable DB, with all HTTPS intercepted."""
 import concurrent.futures
+import copy
 import http.cookiejar
 import json
 import os
@@ -55,6 +56,12 @@ class Client:
 try:
     command('tests/concurrent-chat-fixture.php', 'create', DB)
     created = True
+    isolation = subprocess.run(
+        [PHP, '-r', "require 'bd.php'; echo (string) $pdo->query('SELECT DATABASE()')->fetchColumn();"],
+        cwd=ROOT, env=dict(os.environ, DB_NAME=DB), capture_output=True, text=True,
+    )
+    if isolation.returncode or isolation.stdout.strip() != DB:
+        raise RuntimeError('Disposable database isolation unavailable; HTTP tests aborted before migrations, fixtures or requests.')
     migration = subprocess.run([PHP, 'migrate.php'], cwd=ROOT, env=dict(os.environ, DB_NAME=DB), capture_output=True, text=True)
     if migration.returncode:
         raise RuntimeError('Disposable database migration failed: ' + migration.stdout + migration.stderr)
@@ -141,9 +148,29 @@ return require '"""+ROOT.as_posix()+"""/router.php';
     leadcsrf=re.search(r'name="csrf_token" value="([^"]+)"',home).group(1)
     request=re.search(r'name="request_token" value="([^"]+)"',home).group(1)
     service_id=re.search(r'<option\s+value="([1-9][0-9]*)"',home).group(1)
-    code,result=lead.call('/home.php',dict(csrf_token=leadcsrf,request_token=request,customer_name='Иван Тестовый',
-        customer_phone='+79991234567',project_type=service_id,project_theme='PRIVATE-ORDER-MARKER',personal_data_consent='1'))
-    check(code==200 and 'Не удалось сохранить' not in result,'website lead remains saved with generic notification')
+    lead_payload=dict(csrf_token=leadcsrf,request_token=request,customer_name='Иван Тестовый',
+        customer_phone='+79991234567',project_type=service_id,project_theme='PRIVATE-ORDER-MARKER',personal_data_consent='1')
+    check('name="contact_website"' in home, 'lead form includes anti-spam trap')
+    trap_payload=dict(lead_payload, contact_website='0')
+    trap_code,_=lead.call('/home.php',trap_payload)
+    check(trap_code==422 and command('tests/order-dedupe-fixture.php',DB,request).strip() == '0', 'filled lead trap creates no order')
+    trap_array=dict(lead_payload, **{'contact_website[]':'spam'})
+    check(lead.call('/home.php',trap_array)[0]==422, 'array-valued lead trap is rejected')
+    malformed=dict(lead_payload, **{'customer_name[]':'test'})
+    malformed.pop('customer_name')
+    malformed_code,_=lead.call('/home.php',malformed)
+    check(malformed_code != 500, 'array-valued lead input does not crash')
+    invalid_consent=dict(lead_payload, personal_data_consent='0')
+    _,consent_body=lead.call('/home.php',invalid_consent)
+    check('Подтвердите согласие' in consent_body and command('tests/order-dedupe-fixture.php',DB,request).strip() == '0', 'invalid consent is rejected without saving')
+    array_consent=dict(lead_payload, **{'personal_data_consent[]':'1'})
+    array_consent.pop('personal_data_consent')
+    _,array_body=lead.call('/home.php',array_consent)
+    check('Подтвердите согласие' in array_body and command('tests/order-dedupe-fixture.php',DB,request).strip() == '0', 'array consent is rejected without saving')
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        lead_results=list(pool.map(lambda port: lead.call('/home.php',lead_payload,port=port), [8121,8122]))
+    check(any(code==200 and 'Заявка №' in result for code,result in lead_results), 'one lead request succeeds')
+    check(command('tests/order-dedupe-fixture.php',DB,request).strip() == '1', 'simultaneous lead requests create exactly one order')
     cart_client=Client()
     _,checkout=cart_client.call('/create-order.php')
     cartcsrf=re.search(r'name="csrf_token" value="([^"]+)"',checkout).group(1)
@@ -153,10 +180,21 @@ return require '"""+ROOT.as_posix()+"""/router.php';
     service_choice=next(item['id'] for item in catalog_state['choices'] if item['id'].startswith('service:'))
     _,catalog_state=catalog_client.chat('message',choice=service_choice)
     tariff=next(item['id'].split(':')[1] for item in catalog_state['choices'] if item['id'].startswith('tariff:'))
-    code,checkout_result=cart_client.call('/create-order.php',dict(csrf_token=cartcsrf,request_token=cartrequest,
+    cart_payload=dict(csrf_token=cartcsrf,request_token=cartrequest,
         customer_name='Иван Тестовый',customer_phone='+79991234567',project_comment='PRIVATE-CART-MARKER',
-        personal_data_consent='1',cart_json=json.dumps([{'tariff_id':int(tariff)}])))
-    check(code==200 and 'Не удалось сохранить заказ' not in checkout_result,'cart order is stored with generic notification')
+        personal_data_consent='1',cart_json=json.dumps([{'tariff_id':int(tariff)}]))
+    check('name="contact_website"' in checkout, 'checkout form includes anti-spam trap')
+    trap_cart=dict(cart_payload,contact_website='https://spam.invalid')
+    trap_code,_=cart_client.call('/create-order.php',trap_cart)
+    check(trap_code==422 and command('tests/order-dedupe-fixture.php',DB,cartrequest).strip() == '0', 'filled cart trap creates no order')
+    malformed_cart=dict(cart_payload, **{'cart_json[]':'invalid'})
+    malformed_cart.pop('cart_json')
+    malformed_code,malformed_body=cart_client.call('/create-order.php',malformed_cart)
+    check(malformed_code != 500 and 'Warning' not in malformed_body and command('tests/order-dedupe-fixture.php',DB,cartrequest).strip() == '0', 'array cart input is rejected without PHP warnings')
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        cart_results=list(pool.map(lambda port: cart_client.call('/create-order.php',cart_payload,port=port), [8121,8122]))
+    check(any(code==200 and 'Заявка №' in result for code,result in cart_results), 'one cart request succeeds')
+    check(command('tests/order-dedupe-fixture.php',DB,cartrequest).strip() == '1', 'simultaneous cart requests create exactly one order')
     failed_delivery=Client()
     _,failure_form=failed_delivery.call('/home.php')
     failedcsrf=re.search(r'name="csrf_token" value="([^"]+)"',failure_form).group(1)
@@ -187,6 +225,79 @@ return require '"""+ROOT.as_posix()+"""/router.php';
     mobile=subprocess.run(['node',str(ROOT/'tests/admin-chat-mobile.cjs')],cwd=ROOT,env=mobile_env,capture_output=True,text=True,encoding='utf-8')
     print(mobile.stdout,flush=True)
     if mobile.returncode: raise RuntimeError(mobile.stderr)
+    lead_ui=subprocess.run(['node',str(ROOT/'tests/lead-form.cjs')],cwd=ROOT,env=mobile_env,capture_output=True,text=True,encoding='utf-8')
+    print(lead_ui.stdout,flush=True)
+    if lead_ui.returncode: raise RuntimeError(lead_ui.stderr)
+    # New lead paths use the same isolated DB and intercepted HTTPS as all other checks.
+    notification_offset=len(log_path.read_text().splitlines())
+    command('tests/security-rate-fixture.php',DB,'order','unused')
+    for selected,comment,label in [
+        ('automation','','Автоматизация бизнеса'),
+        ('','COMMENT-ONLY-LEAD','Без выбранной услуги'),
+        (service_id,'',None),
+    ]:
+        applicant=Client()
+        _,form=applicant.call('/home.php')
+        csrf_token=re.search(r'name="csrf_token" value="([^"]+)"',form).group(1)
+        request_token=re.search(r'name="request_token" value="([^"]+)"',form).group(1)
+        payload=dict(csrf_token=csrf_token,request_token=request_token,customer_name='Тест заявки',
+                     customer_phone='+79990001122',personal_data_consent='1',project_type=selected,project_theme=comment)
+        if selected=='':
+            for invalid_type,invalid_text in [('', '   '),('arbitrary-service','COMMENT-ONLY-LEAD')]:
+                _,invalid_body=applicant.call('/home.php',dict(payload,project_type=invalid_type,project_theme=invalid_text))
+                check('Заявка №' not in invalid_body and command('tests/order-dedupe-fixture.php',DB,request_token).strip()=='0',
+                      'empty details or unknown service are rejected on server')
+        code,result=applicant.call('/home.php',payload)
+        match=re.search(r'Заявка №\s*(\d+)',result)
+        check(code==200 and match is not None,'lead saved with '+(selected or 'comment only'))
+        _,stored=admin.call('/admin/order.php?id='+match.group(1))
+        check((not label or label in stored) and (not comment or comment in stored),'lead details are visible in administrator view')
+    extra_outgoing=[json.loads(line) for line in log_path.read_text().splitlines()][notification_offset:]
+    check(len(extra_outgoing)==3 and all(urllib.parse.parse_qs(entry['body']).get('text')==['На сайте поступила новая заявка.'] for entry in extra_outgoing),
+          'new lead paths send only three generic order notifications')
+    # Synthetic malicious content remains text, and cannot grant extra privileges.
+    xss_payload='<img src=x onerror=alert(1)>'
+    xss_client=Client(); _,xss_state=xss_client.chat('start'); xss_id=xss_state['conversation_id']
+    xss_client.chat('message',choice='human')
+    code,_=xss_client.chat('message',message=xss_payload,role='admin')
+    _,xss_thread=admin.call('/admin/chats.php?id='+str(xss_id))
+    check(code==200 and '&lt;img src=x onerror=alert(1)&gt;' in xss_thread and xss_payload not in xss_thread, 'visitor markup is escaped in admin transcript')
+    check(xss_client.call('/admin/chat-api.php',dict(action='list'))[0]==401, 'extra role field does not grant admin access')
+    # A GET or invalid CSRF must not log out a valid admin; old session cannot be replayed.
+    _,logout_page=admin.call('/admin/chats.php')
+    logout_token=re.search(r'<form method="post" action="/admin/logout.php".*?name="csrf_token" value="([^"]+)"',logout_page,re.S).group(1)
+    saved_cookies=[copy.copy(cookie) for cookie in admin.jar]
+    check(admin.call('/admin/logout.php')[0]==405, 'logout rejects GET')
+    check(admin.call('/admin/logout.php',dict(csrf_token='invalid'))[0]==403, 'logout rejects invalid CSRF')
+    admin.call('/admin/logout.php',dict(csrf_token=logout_token))
+    for cookie in saved_cookies: admin.jar.set_cookie(cookie)
+    _,replayed=admin.call('/admin/chats.php')
+    check('name="password"' in replayed, 'destroyed admin session cannot be replayed')
+    # Login SQL syntax is handled as a username, not executable SQL.
+    injection_client=Client(); _,login_html=injection_client.call('/admin/login.php')
+    injection_csrf=re.search(r'name="csrf_token" value="([^"]+)"',login_html).group(1)
+    injection_client.call('/admin/login.php',dict(username="' OR 1=1 -- ",password='not-valid',csrf_token=injection_csrf))
+    check(injection_client.call('/admin/chat-api.php',dict(action='list'))[0]==401, 'SQL-like login does not bypass authentication')
+    # Exercise rate limits only on the disposable database/server.
+    limited=Client()
+    code,poll_state=limited.chat('start')
+    check(code==200, 'chat starts before rate-limit exercise')
+    command('tests/security-rate-fixture.php',DB,'poll',str(poll_state['conversation_id']))
+    normal_code,_=limited.chat('poll')
+    blocked_code,_=limited.chat('poll')
+    check(normal_code==200 and blocked_code==429, 'excessive chat polling receives 429')
+    login_client=Client()
+    _,login_page=login_client.call('/admin/login.php')
+    login_csrf=re.search(r'name="csrf_token" value="([^"]+)"',login_page).group(1)
+    command('tests/security-rate-fixture.php',DB,'login','unused')
+    login_code,login_body=login_client.call('/admin/login.php',dict(csrf_token=login_csrf,username='unlisted-test-user',password='invalid-test-password'))
+    next_csrf=re.search(r'name="csrf_token" value="([^"]+)"',login_body).group(1)
+    blocked_login,_=login_client.call('/admin/login.php',dict(csrf_token=next_csrf,username='unlisted-test-user',password='invalid-test-password'))
+    check(login_code==200 and blocked_login==429, 'excessive login attempts receive 429')
+    command('tests/security-rate-fixture.php',DB,'control','unused')
+    normal_start,_=limited.chat('start')
+    blocked_start,_=limited.chat('start')
+    check(normal_start==200 and blocked_start==429, 'repeated chat starts receive 429')
     print('RESULT',checks,'checks passed. No real Telegram or AI requests.',flush=True)
 finally:
     for p,log in processes:

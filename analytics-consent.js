@@ -4,7 +4,9 @@
 
     const counterId = 114096795;
     const storageKey = 'vegaAnalyticsConsent';
-    const endpoint = '/api/analytics-consent.php';
+    const assetBase = new URL('.', document.currentScript?.src || document.baseURI);
+    const endpoint = new URL('api/analytics-consent.php', assetBase).href;
+    const privacyUrl = new URL('privacy.php#analytics-cookies', assetBase).href;
     const production = ['vegastud1o.ru', 'www.vegastud1o.ru'].includes(location.hostname);
     let serverState = null;
     let running = false;
@@ -116,7 +118,7 @@
             <details class="analytics-consent__details">
                 <summary>Подробнее о данных и сроках</summary>
                 <p class="analytics-consent__text">Загрузка настроек аналитики…</p>
-                <a href="/privacy.php#analytics-cookies" target="_blank" rel="noopener noreferrer">Политика обработки данных</a>
+                <a href="${privacyUrl}" target="_blank" rel="noopener noreferrer">Политика обработки данных</a>
                 · <a href="https://yandex.ru/legal/confidential/" target="_blank" rel="noopener noreferrer">Условия Яндекса</a>
             </details>
         </div>

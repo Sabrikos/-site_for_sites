@@ -1,6 +1,9 @@
 <?php
 
 require_once __DIR__ . '/layout.php';
+require_once __DIR__ . '/bd.php';
+require_once __DIR__ . '/services/ServiceCatalog.php';
+$browserTariffs = (new ServiceCatalog($pdo))->browserTariffs();
 
 $title = 'Корзина | Vega Studio';
 
@@ -212,6 +215,8 @@ $title = 'Корзина | Vega Studio';
 
     <?php renderFooter(); ?>
 
+    <script>window.VEGA_TARIFFS = <?= json_encode($browserTariffs, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;</script>
+    <script src="assets/js/service-cart.js"></script>
     <script>
         let cart = window.VegaCart.read();
 
@@ -466,6 +471,13 @@ $title = 'Корзина | Vega Studio';
 
 
 
+        window.addEventListener('storage', event => {
+            if (event.key === 'webstartCart') {
+                cart = VegaCart.load();
+                updateCartPage();
+            }
+        });
+        if (typeof updateHeaderCartCounter === 'function') updateHeaderCartCounter();
         updateCartPage();
     </script>
 

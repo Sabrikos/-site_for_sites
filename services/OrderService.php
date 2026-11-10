@@ -9,6 +9,7 @@ require_once __DIR__ . '/RetentionPolicy.php';
 final class OrderService
 {
     public const MAX_ITEMS = 12;
+    public const LEAD_TOPICS = ['automation' => 'Автоматизация бизнеса'];
 
     public function __construct(private PDO $pdo) {}
 
@@ -49,10 +50,13 @@ final class OrderService
             throw new DomainException('Корзина содержит недопустимое количество тарифов.', 422);
         }
 
+        sort($tariffIds);
+        $this->pdo->beginTransaction();
+        try {
         $placeholders = implode(',', array_fill(0, count($tariffIds), '?'));
         $statement = $this->pdo->prepare("SELECT t.id, t.name AS tariff_name, s.name AS service_name
             FROM tariffs t JOIN services s ON s.id = t.service_id
-            WHERE t.active = 1 AND s.active = 1 AND t.id IN ($placeholders)");
+            WHERE t.active = 1 AND s.active = 1 AND t.id IN ($placeholders) ORDER BY t.id FOR UPDATE");
         $statement->execute($tariffIds);
         $tariffs = $statement->fetchAll();
         $byId = [];
@@ -75,20 +79,33 @@ final class OrderService
         }
 
         return $this->persist($customer, $items, $requestToken, 'website_cart', $consent);
+        } catch (Throwable $error) {
+            if ($this->pdo->inTransaction()) $this->pdo->rollBack();
+            throw $error;
+        }
     }
 
-    public function createLead(array $customer, int $serviceId, string $requestToken, array $consent): array
+    public function createLead(array $customer, int|string|null $serviceId, string $requestToken, array $consent): array
     {
-        $statement = $this->pdo->prepare('SELECT name FROM services WHERE id = ? AND active = 1');
-        $statement->execute([$serviceId]);
-        $service = $statement->fetch();
-        if (!$service) {
-            throw new DomainException('Выбранная услуга больше недоступна. Обновите страницу.', 422);
+        if ($serviceId === null) {
+            $serviceName = 'Без выбранной услуги';
+        } elseif (is_string($serviceId) && isset(self::LEAD_TOPICS[$serviceId])) {
+            $serviceName = self::LEAD_TOPICS[$serviceId];
+        } elseif (is_int($serviceId) && $serviceId > 0) {
+            $statement = $this->pdo->prepare('SELECT name FROM services WHERE id = ? AND active = 1');
+            $statement->execute([$serviceId]);
+            $service = $statement->fetch();
+            if (!$service) {
+                throw new DomainException('Выбранная услуга больше недоступна. Обновите страницу.', 422);
+            }
+            $serviceName = (string) $service['name'];
+        } else {
+            throw new DomainException('Выберите услугу из списка.', 422);
         }
 
         return $this->persist($customer, [[
             'tariff_id' => null,
-            'service_name' => (string) $service['name'],
+            'service_name' => $serviceName,
             'tariff_name' => 'Заявка без выбранного тарифа',
             'price' => null,
         ]], $requestToken, 'website_lead', $consent);
@@ -97,7 +114,7 @@ final class OrderService
     private function persist(array $customer, array $items, string $requestToken, string $source, array $consent): array
     {
         $total = null;
-        $this->pdo->beginTransaction();
+        if (!$this->pdo->inTransaction()) $this->pdo->beginTransaction();
         try {
             $existing = $this->pdo->prepare('SELECT id, total FROM orders WHERE request_token = ? LIMIT 1');
             $existing->execute([$requestToken]);

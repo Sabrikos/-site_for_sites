@@ -17,6 +17,10 @@ CREATE TABLE services (
 
     slug VARCHAR(100) NOT NULL UNIQUE,
 
+    sort_order INT NOT NULL DEFAULT 0,
+
+    icon_key VARCHAR(100) NULL,
+
     description TEXT NULL,
 
     deadline VARCHAR(100) NULL,
@@ -47,6 +51,12 @@ CREATE TABLE tariffs (
     description TEXT NULL,
 
     price INT UNSIGNED NOT NULL,
+
+    sort_order INT NOT NULL DEFAULT 0,
+
+    price_unit VARCHAR(30) NOT NULL DEFAULT '₽',
+
+    item_type VARCHAR(20) NOT NULL DEFAULT 'service',
 
     active TINYINT(1) NOT NULL DEFAULT 1,
 
@@ -479,3 +489,62 @@ CREATE TABLE telegram_sessions (
         ON UPDATE CURRENT_TIMESTAMP
 
 ) ENGINE=InnoDB;
+
+
+CREATE TABLE IF NOT EXISTS tariff_features (
+    tariff_id INT UNSIGNED NOT NULL,
+    position INT UNSIGNED NOT NULL,
+    feature VARCHAR(500) NOT NULL,
+    PRIMARY KEY (tariff_id, position),
+    FOREIGN KEY (tariff_id) REFERENCES tariffs(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO tariff_features (tariff_id, position, feature)
+SELECT t.id, 10, CASE s.slug
+ WHEN 'landing' THEN 'Одностраничный сайт с информацией о предложении, преимуществах и контактах'
+ WHEN 'shop' THEN 'Каталог товаров и корзина'
+ WHEN 'revision' THEN 'Работы в согласованном объёме'
+ WHEN 'ai' THEN 'Настройка выбранного решения под согласованную задачу'
+ ELSE 'Состав работ определим после обсуждения задачи' END
+FROM tariffs t JOIN services s ON s.id=t.service_id;
+
+INSERT IGNORE INTO tariff_features (tariff_id, position, feature)
+SELECT t.id, 20, CASE s.slug
+ WHEN 'landing' THEN 'Адаптация для телефона, планшета и компьютера'
+ WHEN 'shop' THEN 'Состав и настройки магазина согласуются перед работой'
+ ELSE 'Две правки после реализации' END
+FROM tariffs t JOIN services s ON s.id=t.service_id;
+
+INSERT IGNORE INTO tariff_features (tariff_id, position, feature)
+SELECT t.id, 30, 'Две правки после реализации' FROM tariffs t JOIN services s ON s.id=t.service_id WHERE s.slug IN ('landing','shop');
+
+INSERT IGNORE INTO tariff_features (tariff_id, position, feature)
+SELECT id, 40, 'Обучение работе с панелью управления, если она предусмотрена проектом' FROM tariffs;
+
+INSERT IGNORE INTO tariff_features (tariff_id, position, feature)
+SELECT t.id, 15, CASE
+ WHEN s.slug='landing' AND t.name='Бизнес' THEN 'Дополнительные блоки и формы'
+ WHEN s.slug='landing' AND t.name='Премиум' THEN 'Индивидуальный дизайн и расширенная функциональность'
+ WHEN s.slug='shop' AND t.name='Бизнес' THEN 'Онлайн-оплата'
+ WHEN s.slug='shop' AND t.name='Премиум' THEN 'Дополнительные интеграции'
+ WHEN s.slug='revision' AND t.name='Расширенная доработка' THEN 'Добавление страниц, блоков и функций'
+ WHEN s.slug='revision' AND t.name='Комплексная доработка' THEN 'Комплексное изменение сайта и его функциональности'
+ ELSE NULL END
+FROM tariffs t JOIN services s ON s.id=t.service_id
+WHERE (s.slug='landing' AND t.name IN ('Бизнес','Премиум'))
+ OR (s.slug='shop' AND t.name IN ('Бизнес','Премиум'))
+ OR (s.slug='revision' AND t.name IN ('Расширенная доработка','Комплексная доработка'));
+
+UPDATE tariff_features f JOIN tariffs t ON t.id=f.tariff_id JOIN services s ON s.id=t.service_id
+SET f.feature='Уникальная структура и дизайн под ваш проект'
+WHERE s.slug='landing' AND t.name='Старт' AND f.position=10
+  AND f.feature='Одностраничный сайт с информацией о предложении, преимуществах и контактах';
+
+INSERT IGNORE INTO tariff_features (tariff_id,position,feature)
+SELECT t.id,25,'Необходимые блоки: о компании, преимущества, услуги, кейсы и контакты' FROM tariffs t JOIN services s ON s.id=t.service_id WHERE s.slug='landing' AND t.name='Старт';
+
+INSERT IGNORE INTO tariff_features (tariff_id,position,feature)
+SELECT t.id,27,'Формы заявок и подключение способов связи' FROM tariffs t JOIN services s ON s.id=t.service_id WHERE s.slug='landing' AND t.name='Старт';
+
+INSERT IGNORE INTO tariff_features (tariff_id,position,feature)
+SELECT t.id,35,'Базовая SEO-оптимизация: структура и метатеги' FROM tariffs t JOIN services s ON s.id=t.service_id WHERE s.slug='landing' AND t.name='Старт';

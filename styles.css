@@ -6769,3 +6769,92 @@ main.tariffs-page .tariff-card {
     border-width:1px;
     border-style:solid;
 }
+/* Service details */
+.service-included { margin-top: 20px; color: #d7d3ec; font-size: 14px; line-height: 1.5; }
+.service-included h4 { margin: 0 0 10px; color: #fff; font-size: 15px; }
+.service-included ul { margin: 0; padding-left: 20px; }
+.service-included li + li { margin-top: 8px; }
+.service-included p { margin: 14px 0 0; color: #bcb6d8; }
+
+main.tariffs-page .tariffs-grid--single { grid-template-columns: minmax(0, 1fr) !important; }
+main.tariffs-page .tariff-intro .service-included { grid-column: 1 / -1; min-width: 0; text-align: left; overflow-wrap: break-word; }
+
+/* Single-service sections: one surface, one title and a clear price. */
+main.tariffs-page .service-tariffs--simple .service-title { margin-bottom: 22px; align-items: center; }
+main.tariffs-page .service-tariffs--simple .service-title h2 { margin: 0; }
+main.tariffs-page .service-tariffs--simple .tariff-card,
+main.tariffs-page .service-tariffs--simple .tariff-card:hover,
+main.tariffs-page .service-tariffs--simple .tariff-card:focus-within {
+    display: flex !important; flex-direction: column; padding: 0 !important;
+    border: 0; border-radius: 0; background: transparent !important;
+    box-shadow: none; transform: none;
+}
+main.tariffs-page .service-tariffs--simple .tariff-intro { display: block; }
+main.tariffs-page .service-tariffs--simple .service-included { margin-top: 0; font-size: 15px; }
+main.tariffs-page .service-tariffs--simple .service-included h4 { font-size: 16px; }
+main.tariffs-page .service-tariffs--simple .service-included ul { list-style: none; padding: 0; display: grid; gap: 10px; }
+main.tariffs-page .service-tariffs--simple .service-included li { position: relative; margin: 0; padding-left: 23px; }
+main.tariffs-page .service-tariffs--simple .service-included li::before { content: '✓'; position: absolute; left: 0; color: #a99bff; font-weight: 700; }
+main.tariffs-page .service-tariffs--simple .service-included p { margin: 16px 0 0; }
+main.tariffs-page .service-tariffs--simple .tariff-bottom { display: flex !important; flex-direction: row; align-items: center; gap: 22px; flex-wrap: wrap; margin-top: 22px !important; padding-top: 20px; border-top: 1px solid #8278d530; }
+main.tariffs-page .service-tariffs--simple .tariff-price { border: 0; padding: 0; margin: 0; text-align: left !important; }
+main.tariffs-page .service-tariffs--simple .tariff-button { width: auto !important; min-width: 190px; max-width: 100% !important; margin: 0 0 0 auto !important; padding: 12px 24px; }
+@media (max-width: 600px) {
+    main.tariffs-page .service-tariffs--simple .tariff-bottom { align-items: stretch; flex-direction: column; gap: 16px; }
+    main.tariffs-page .service-tariffs--simple .tariff-button { width: 100% !important; margin: 0 !important; }
+}
+
+.service-card__features { padding: 0; margin: 14px 0; list-style: none; color: #c9c4df; font-size: 13px; line-height: 1.45; }
+.service-card__features li { position: relative; padding-left: 18px; }
+.service-card__features li + li { margin-top: 6px; }
+.service-card__features li::before { content: '✓'; position: absolute; left: 0; color: #a99bff; }
+
+@media (min-width: 601px) {
+  body.home-page .studio-services .service-card__bottom { grid-template-columns: auto 1fr; gap: 8px 12px; }
+  body.home-page .studio-services .service-button { grid-column: 1 / -1; justify-self: start; }
+}
+
+.catalog-cart-notice { max-width: 1100px; margin: 12px auto 20px; padding: 14px 18px; color: #f4e9cb; background: #403427; border: 1px solid #a48754; border-radius: 12px; line-height: 1.5; }
+
+@media (max-width: 600px) { body.home-page .studio-services .service-card__detail:first-child { display: flex; } }
+
+/* Service showcase */
+main.tariffs-page .service-showcase { position: relative; overflow: hidden; min-width: 0; padding: 28px; margin-bottom: 36px; border: 1px solid rgba(152,120,255,.55); border-radius: 24px; background: radial-gradient(ellipse at 3% 4%,rgba(115,56,212,.17),transparent 42%),linear-gradient(135deg,#17152f,#0e1024 75%); box-shadow: inset 0 1px 0 rgba(216,190,255,.1), 0 14px 40px rgba(4,3,20,.2); scroll-margin-top: 100px; }
+.showcase-header { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: center; gap: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(154,136,215,.22); }
+.showcase-image { min-width: 0; display: flex; align-items: center; justify-content: center; }
+.showcase-image img { display: block; width: 100%; max-width: 350px; height: auto; object-fit: contain; }
+.showcase-heading { min-width: 0; }
+.showcase-title-row { display: flex; align-items: center; gap: 16px; }
+.showcase-title-row h2 { margin: 0; color: #f1ebff; font-size: clamp(27px, 2.7vw, 40px); line-height: 1.15; overflow-wrap: break-word; }
+.showcase-icon { display: grid; flex: 0 0 52px; width: 52px; height: 52px; place-items: center; border: 1px solid #8c6bd277; border-radius: 14px; background: #33225d; color: #c4a5ff; }
+.showcase-icon svg { width: 29px; height: 29px; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.showcase-heading > p { margin: 13px 0 16px; color: #d2cbe7; line-height: 1.5; font-size: 15px; }
+.showcase-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.showcase-tags span { padding: 7px 12px; border: 1px solid rgba(165,127,247,.26); border-radius: 999px; background: rgba(117,78,192,.2); color: #e1d4fa; font-size: 12px; line-height: 1.35; }
+.showcase-content { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; padding: 25px 0; }
+.showcase-column { min-width: 0; }
+.showcase-column + .showcase-column { border-left: 1px solid rgba(154,136,215,.2); padding-left: 28px; }
+.showcase-column h3 { margin: 0 0 16px; color: #f5f1ff; font-size: 18px; }
+.showcase-column ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.showcase-column li { position: relative; padding-left: 24px; color: #d8d2e9; font-size: 14px; line-height: 1.5; overflow-wrap: break-word; }
+.showcase-column li::before { content: '✓'; position: absolute; left: 0; color: #ae91ff; font-weight: 700; }
+.showcase-support { margin: 16px 0 0; color: #b8b0d1; font-size: 13px; line-height: 1.5; }
+.showcase-footer { display: flex; align-items: center; gap: 18px; padding-top: 22px; border-top: 1px solid rgba(154,136,215,.22); }
+.showcase-price { flex: 0 0 auto; margin: 0; color: #c8bfdd; font-size: 14px; white-space: nowrap; }
+.showcase-price strong { color: #f2eaff; font-size: clamp(22px,2vw,29px); }
+.showcase-price-note { flex: 1; margin: 0; padding-left: 17px; border-left: 1px solid rgba(154,136,215,.22); color: #b5accd; font-size: 12px; line-height: 1.45; }
+main.tariffs-page .showcase-button { flex: 0 0 auto; width: auto !important; min-width: 170px; min-height: 48px; padding: 12px 20px; border: 1px solid rgba(195,159,255,.45); border-radius: 13px; background: linear-gradient(115deg,#5e4cf3,#9450ec) !important; color: #fff; font-size: 14px; font-weight: 700; box-shadow: 0 6px 22px rgba(102,58,228,.28); cursor: pointer; }
+main.tariffs-page .showcase-button:hover, main.tariffs-page .showcase-variant-button:hover { filter: brightness(1.13); }
+main.tariffs-page .tariff-button:focus-visible, .showcase-variants summary:focus-visible { outline: 2px solid #d2bdff; outline-offset: 3px; }
+.showcase-variants { margin-top: 20px; border-top: 1px solid rgba(154,136,215,.18); padding-top: 14px; }
+.showcase-variants summary { color: #c7b3ff; cursor: pointer; font-size: 14px; font-weight: 600; }
+.showcase-variant-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-top: 16px; }
+.showcase-variant { min-width: 0; padding: 18px; border: 1px solid rgba(154,136,215,.25); border-radius: 14px; background: rgba(14,12,32,.35); color: #d8d2e9; }
+.showcase-variant h3 { margin: 0 0 8px; color: #f5f1ff; font-size: 17px; }.showcase-variant p,.showcase-variant li { font-size: 13px; line-height: 1.45; }.showcase-variant ul { padding-left: 18px; }
+main.tariffs-page .showcase-variant-button { width: 100%; min-height: 44px; border-radius: 10px; }
+@container tariff-content (max-width: 600px) { .showcase-header { grid-template-columns: 1fr; gap: 8px; } .showcase-image img { max-width: 290px; } .showcase-content { grid-template-columns: 1fr; gap: 22px; } .showcase-column + .showcase-column { border-left: 0; border-top: 1px solid rgba(154,136,215,.2); padding: 22px 0 0; } .showcase-footer { flex-wrap: wrap; } .showcase-price-note { min-width: 0; } }
+@container tariff-content (max-width: 400px) { main.tariffs-page .service-showcase { padding: 20px 16px; border-radius: 18px; } .showcase-header { padding-bottom: 20px; } .showcase-title-row { gap: 12px; } .showcase-title-row h2 { font-size: 27px; } .showcase-icon { flex-basis: 44px; width: 44px; height: 44px; } .showcase-footer { flex-direction: column; align-items: stretch; gap: 12px; } .showcase-price-note { padding: 0; border: 0; } main.tariffs-page .showcase-button { width: 100% !important; } .showcase-variant-grid { grid-template-columns: 1fr; } }
+
+.showcase-mascot { position: relative; width: min(220px, 60%); aspect-ratio: 1244 / 1264; margin: -28px auto 25px; pointer-events: none; }
+
+.form-spam-trap { position: absolute !important; left: -10000px !important; top: auto !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }

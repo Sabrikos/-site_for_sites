@@ -13,7 +13,7 @@ const initial = () => ({choice:null,receipt:null,version,expiresAt:null,csrf:'sy
 (async () => {
     const browser = await chromium.launch({headless:true,channel:'msedge'});
     try {
-        async function fixture({state=initial(), local=null, fail=false, hold=false, width=1440, height=900}={}) {
+        async function fixture({state=initial(), local=null, fail=false, hold=false, width=1440, height=900, basePath='/'}={}) {
             const context = await browser.newContext({viewport:{width,height}});
             if (local) await context.addInitScript(value => localStorage.setItem('vegaAnalyticsConsent',JSON.stringify(value)), local);
             const page = await context.newPage();
@@ -29,7 +29,7 @@ const initial = () => ({choice:null,receipt:null,version,expiresAt:null,csrf:'sy
                     // Stub the script without loading any real third-party code.
                     return route.fulfill({contentType:'application/javascript',body:'window.__metricStubLoaded=true;'});
                 }
-                if (url.pathname === '/api/analytics-consent.php') {
+                if (url.pathname === basePath+'api/analytics-consent.php') {
                     if (fail) return route.fulfill({status:503,json:{error:'Synthetic outage'}});
                     if (route.request().method() === 'POST') {
                         postStarted=true;
@@ -39,12 +39,12 @@ const initial = () => ({choice:null,receipt:null,version,expiresAt:null,csrf:'sy
                     }
                     return route.fulfill({json:state});
                 }
-                if (url.pathname === '/analytics-consent.js' || url.pathname === '/analytics-consent.css') {
-                    return route.fulfill({contentType:url.pathname.endsWith('.js')?'application/javascript':'text/css',body:fs.readFileSync(path.join(root,url.pathname.slice(1)),'utf8')});
+                if (url.pathname === basePath+'analytics-consent.js' || url.pathname === basePath+'analytics-consent.css') {
+                    return route.fulfill({contentType:url.pathname.endsWith('.js')?'application/javascript':'text/css',body:fs.readFileSync(path.join(root,url.pathname.slice(basePath.length)),'utf8')});
                 }
-                return route.fulfill({contentType:'text/html',body:`<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="/analytics-consent.css"><style>body{margin:0}body>*:not(.stars-canvas){position:relative;z-index:auto!important}main{height:5000px}</style><script defer src="/analytics-consent.js"></script></head><body><main>Test content</main><footer>Footer</footer></body></html>`});
+                return route.fulfill({contentType:'text/html',body:`<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="${basePath}analytics-consent.css"><style>body{margin:0}body>*:not(.stars-canvas){position:relative;z-index:auto!important}main{height:5000px}</style><script defer src="${basePath}analytics-consent.js"></script></head><body><main>Test content</main><footer>Footer</footer></body></html>`});
             });
-            await page.goto(origin+'/test');
+            await page.goto(origin+basePath+'test');
             await page.locator('#analytics-preferences').waitFor({state:'attached'});
             return {page,context,external,errors,release,postStarted:()=>postStarted};
         }
@@ -84,6 +84,17 @@ const initial = () => ({choice:null,receipt:null,version,expiresAt:null,csrf:'sy
             await f.context.close();
         }
         console.log('PASS forged local consent, API outage and expiry stay disabled');
+
+        const nested=await fixture({basePath:'/vega/'});
+        await nested.page.waitForFunction(()=>!document.querySelector('[data-choice="accepted"]').disabled);
+        assert.equal(await nested.page.locator('#analytics-preferences').evaluate(e=>getComputedStyle(e).position),'fixed');
+        assert.equal(await nested.page.locator('a[href*="privacy.php"]').getAttribute('href'),origin+'/vega/privacy.php#analytics-cookies');
+        await nested.page.locator('[data-choice="rejected"]').click();
+        await nested.page.locator('#analytics-preferences').waitFor({state:'hidden'});
+        assert.deepEqual(nested.external,[]);
+        assert.deepEqual(nested.errors,[]);
+        await nested.context.close();
+        console.log('PASS stylesheet, preferences API and privacy link work from a project subdirectory');
 
         const f=await fixture({hold:true});
         await f.page.waitForFunction(()=>!document.querySelector('[data-choice="accepted"]').disabled);

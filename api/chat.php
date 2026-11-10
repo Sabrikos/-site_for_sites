@@ -64,6 +64,13 @@ try {
         chatJson(['error' => 'Неизвестное действие.'], 400);
     }
     $ipKey = hash('sha256', $_SERVER['REMOTE_ADDR'] ?? 'local');
+    // Bound requests before loading a conversation. Polling has a larger allowance.
+    $ipScope = $action === 'poll' ? 'chat_poll_ip:' : 'chat_control_ip:';
+    $ipMaximum = $action === 'poll' ? 600 : 180;
+    if (!assistantLimit($pdo, $ipScope . $ipKey, $ipMaximum, 60)) {
+        header('Retry-After: ' . (60 - time() % 60));
+        chatJson(['error' => 'Слишком много запросов. Попробуйте позже.'], 429);
+    }
     $service = new ChatService($pdo);
     if ($action === 'start') {
         if (empty($_SESSION['chat_session_key'])) {
@@ -94,7 +101,8 @@ try {
     if ($afterId === false) {
         chatJson(['error' => 'Некорректный номер сообщения.'], 422);
     }
-    if ($action === 'cancel_waiting' || ($action === 'message' && $conversation['status'] === 'waiting_human' && preg_match('/^(?:отмена|отменить|отменить вызов)[.!\s]*$/ui', trim((string) ($_POST['message'] ?? ''))))) {
+    $rawMessage = is_string($_POST['message'] ?? null) ? $_POST['message'] : '';
+    if ($action === 'cancel_waiting' || ($action === 'message' && $conversation['status'] === 'waiting_human' && preg_match('/^(?:отмена|отменить|отменить вызов)[.!\s]*$/ui', trim($rawMessage)))) {
         $service->cancelWaiting($id);
         $_SESSION['chat_menu_node'] = 'root';
         session_write_close();
@@ -106,6 +114,11 @@ try {
         session_write_close();
     }
     if ($action === 'poll') {
+        // A normal open chat polls every 2.5 seconds. Keep room for multiple tabs.
+        if (!assistantLimit($pdo, 'chat_poll_conversation:' . $id, 180, 60)) {
+            header('Retry-After: ' . (60 - time() % 60));
+            chatJson(['error' => 'Слишком много запросов. Попробуйте позже.'], 429);
+        }
         chatJson(chatMenuSnapshot($pdo, $service->snapshot($id, $afterId), $node));
     }
 
