@@ -6876,3 +6876,18 @@ body.home-page .contact-alien { display: block; left: calc(25% - 115px); bottom:
 }
 
 .form-spam-trap { position: absolute !important; left: -10000px !important; top: auto !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }
+
+/* Keep the home contact mascot seated on the panel edge without stretching the panel. */
+html { min-height: 100%; background-color: #0b0b1d; }
+body { background-color: #0b0b1d; }
+body.home-page .contact-section { position: relative; isolation: isolate; overflow: visible; margin-bottom: 48px; padding-bottom: 45px !important; }
+body.home-page .contact-info { padding-bottom: 0 !important; }
+body.home-page .contact-alien { display: block; left: 24px; bottom: -16px; width: 230px; }
+@media (max-width: 900px) {
+    body.home-page .contact-section { padding-bottom: 24px !important; }
+    body.home-page .contact-alien { display: none; }
+}
+
+.main-footer .footer-bottom a { color: #aaa8cf; text-underline-offset: 3px; }
+.main-footer .footer-bottom a:hover { color: #fff; }
+.main-footer .footer-bottom a:focus-visible { outline: 2px solid #c4b1ff; outline-offset: 4px; }

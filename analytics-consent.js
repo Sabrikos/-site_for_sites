@@ -129,17 +129,15 @@
         <p class="analytics-consent__status" role="status"></p>`;
     const status = panel.querySelector('.analytics-consent__status');
     const accept = panel.querySelector('[data-choice="accepted"]');
-    const settings = document.createElement('button');
-    settings.type = 'button';
-    settings.id = 'analytics-settings';
-    settings.className = 'analytics-settings';
-    settings.textContent = 'Настройки cookie';
-    settings.setAttribute('aria-controls', panel.id);
+    const settings = document.querySelector('[data-analytics-settings]');
+    settings?.setAttribute('aria-controls', panel.id);
 
     function showPanel(show) {
         panel.hidden = !show;
-        settings.hidden = show;
-        settings.setAttribute('aria-expanded', String(show));
+        if (settings) {
+            settings.hidden = show;
+            settings.setAttribute('aria-expanded', String(show));
+        }
     }
 
     function scheduleExpiry(expiresAt) {
@@ -199,7 +197,8 @@
         }
     }
 
-    settings.addEventListener('click', () => {
+    settings?.addEventListener('click', (event) => {
+        event.preventDefault();
         showPanel(true);
         panel.querySelector('button:not(:disabled)').focus();
         refresh(true);
@@ -229,7 +228,7 @@
             saveChoice({choice: state.choice, receipt: state.receipt, version: state.version});
             applyState(state);
             status.textContent = '';
-            settings.focus();
+            settings?.focus();
         } catch (error) {
             if (currentGeneration === generation) {
                 stopCounter();
@@ -253,7 +252,7 @@
     document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible' && !busy) refresh();
     });
-    document.body.append(panel, settings);
+    document.body.append(panel);
     showPanel(true);
     refresh();
 })();

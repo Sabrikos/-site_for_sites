@@ -315,6 +315,8 @@ function renderFooter()
                 Разработка цифровых решений
             </span>
 
+            <a href="#analytics-preferences" data-analytics-settings aria-controls="analytics-preferences" hidden>Настройки cookie</a>
+
         </div>
 
     </footer>
