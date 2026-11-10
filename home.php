@@ -62,9 +62,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ]);
     $errors = array_merge($errors, $customerErrors);
 
-    $serviceId = filter_var($projectType, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
-    if (!$serviceId) {
-        $errors[] = 'Выберите услугу.';
+    $serviceId = null;
+    if ($projectType === '') {
+        // Check the visitor's text, not the automatically appended urgency label.
+        if ($projectTheme === '') $errors[] = 'Выберите услугу или расскажите о проекте.';
+    } elseif (isset(OrderService::LEAD_TOPICS[$projectType])) {
+        $serviceId = $projectType;
+    } else {
+        $serviceId = filter_var($projectType, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        if ($serviceId === false) $errors[] = 'Выберите услугу из списка.';
     }
 
     if (!$personalDataConsent) {
@@ -85,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($errors === []) {
         try {
             $consent = ConsentService::evidence('website_lead', $requestToken);
-            $result = (new OrderService($pdo))->createLead($customer, (int) $serviceId, $requestToken, $consent);
+            $result = (new OrderService($pdo))->createLead($customer, $serviceId, $requestToken, $consent);
             $successOrderId = $result['id'];
             appRotateCsrf('home_lead_csrf');
             $_SESSION['home_lead_request_token'] = bin2hex(random_bytes(32));
@@ -93,6 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 appLog('Website order notification was not delivered');
             }
 
+        } catch (DomainException $error) {
+            $errors[] = $error->getMessage();
         } catch (Throwable $error) {
             appLog('Lead create failed', ['type' => get_class($error)]);
             $errors[] = 'Не удалось сохранить заявку. Попробуйте ещё раз.';
@@ -326,29 +334,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <article class="work-solution-card">
                     <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M13 3 5 14h6l-1 7 9-12h-6l1-6Z"/></svg></span><h3>Автоматизация задач</h3></div>
                     <p>Поможем сократить ручной ввод, собрать данные и настроить повторяющиеся процессы.</p>
-                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Автоматизация задач">Обсудить <span aria-hidden="true">↗</span></a>
+                    <a class="work-solution-card__link" href="#application" data-lead-service="automation" aria-label="Обсудить: Автоматизация задач">Обсудить <span aria-hidden="true">↗</span></a>
                 </article>
                 <article class="work-solution-card">
                     <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M9 9v11m5-7h3m-3 4h3"/></svg></span><h3>Таблицы и отчёты</h3></div>
                     <p>Приведём данные в порядок, настроим расчёты и понятные отчёты для ежедневной работы.</p>
-                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Таблицы и отчёты">Обсудить <span aria-hidden="true">↗</span></a>
+                    <a class="work-solution-card__link" href="#application" data-lead-service="automation" aria-label="Обсудить: Таблицы и отчёты">Обсудить <span aria-hidden="true">↗</span></a>
                 </article>
                 <article class="work-solution-card">
                     <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="7" width="16" height="13" rx="4"/><path d="M12 3v4M2 12v4m20-4v4M9 16h6"/><circle cx="9" cy="12" r=".8"/><circle cx="15" cy="12" r=".8"/></svg></span><h3>Боты и заявки</h3></div>
                     <p>Создадим Telegram-бота или форму для обращений, уведомлений и типовых вопросов.</p>
-                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Боты и заявки">Обсудить <span aria-hidden="true">↗</span></a>
+                    <a class="work-solution-card__link" href="#application" data-lead-service="automation" aria-label="Обсудить: Боты и заявки">Обсудить <span aria-hidden="true">↗</span></a>
                 </article>
                 <article class="work-solution-card">
                     <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M9 9v11m4-7h4m-4 4h4M6 6.5h.01"/></svg></span><h3>Внутренние инструменты</h3></div>
                     <p>Разработаем небольшую панель, каталог или личный кабинет для задач вашей команды.</p>
-                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Внутренние инструменты">Обсудить <span aria-hidden="true">↗</span></a>
+                    <a class="work-solution-card__link" href="#application" data-lead-service="automation" aria-label="Обсудить: Внутренние инструменты">Обсудить <span aria-hidden="true">↗</span></a>
                 </article>
                 <article class="work-solution-card">
                     <div class="work-solution-card__heading"><span class="service-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="2" y="8" width="7" height="8" rx="2"/><rect x="15" y="8" width="7" height="8" rx="2"/><path d="M9 10h6m-6 4h6m-3-7 3 3-3 3"/></svg></span><h3>Связь между сервисами</h3></div>
                     <p>Поможем передавать данные между сайтом, таблицами и другими системами при наличии доступа.</p>
-                    <a class="work-solution-card__link" href="#application" aria-label="Обсудить: Связь между сервисами">Обсудить <span aria-hidden="true">↗</span></a>
+                    <a class="work-solution-card__link" href="#application" data-lead-service="automation" aria-label="Обсудить: Связь между сервисами">Обсудить <span aria-hidden="true">↗</span></a>
                 </article>
-                <article class="work-solutions__cta"><h3>Что отнимает ваше время?</h3><p>Расскажите о задаче — предложим решение и оценим объём работ.</p><a href="#application">Обсудить задачу</a></article>
+                <article class="work-solutions__cta"><h3>Что отнимает ваше время?</h3><p>Расскажите о задаче — предложим решение и оценим объём работ.</p><a href="#application" data-lead-service="automation">Обсудить задачу</a></article>
             </div>
         </section>
 
@@ -787,7 +795,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <select
                             id="project_type"
                             name="project_type"
-                            required>
+                            aria-describedby="project-details-help">
 
                             <option value="">
                                 Выберите услугу
@@ -806,6 +814,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                             <?php endforeach; ?>
 
+                            <?php foreach (OrderService::LEAD_TOPICS as $topic => $label): ?>
+                                <option value="<?= htmlspecialchars($topic, ENT_QUOTES, 'UTF-8') ?>" <?= $projectType === $topic ? 'selected' : '' ?>><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></option>
+                            <?php endforeach; ?>
+
                         </select>
 
                     </div>
@@ -821,7 +833,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             id="project_theme"
                             name="project_theme"
                             placeholder="Например: нужен лендинг для строительной компании..."
-                            required><?= htmlspecialchars($projectTheme) ?></textarea>
+                            aria-describedby="project-details-help"><?= htmlspecialchars($projectTheme) ?></textarea>
+                        <small id="project-details-help">Выберите услугу или расскажите о проекте — достаточно одного поля.</small>
 
                     </div>
 
@@ -892,7 +905,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </main>
 
     <?php renderFooter(); ?>
-<script src="service-select.js?v=2"></script>
+<script src="service-select.js?v=<?= filemtime(__DIR__ . '/service-select.js') ?>"></script>
 
 <script src="cursor-stars.js?v=native-scroll-1"></script>
 <script src="planet-panels.js?v=25"></script>

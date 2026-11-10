@@ -1,6 +1,7 @@
 (() => {
     const select = document.getElementById('project_type');
     if (!select) return;
+    const comment = document.getElementById('project_theme');
     const wrapper = document.createElement('div');
     wrapper.className = 'service-select';
     select.before(wrapper);
@@ -12,6 +13,7 @@
     trigger.setAttribute('aria-haspopup', 'listbox');
     trigger.setAttribute('aria-expanded', 'false');
     trigger.setAttribute('aria-controls', 'service-select-options');
+    if (select.getAttribute('aria-describedby')) trigger.setAttribute('aria-describedby', select.getAttribute('aria-describedby'));
     const label = document.querySelector('label[for="project_type"]');
     if (label) { label.id = 'service-select-label'; label.htmlFor = trigger.id; }
     trigger.setAttribute('aria-labelledby', 'service-select-label service-select-trigger');
@@ -21,21 +23,26 @@
     list.setAttribute('role', 'listbox');
     list.setAttribute('aria-labelledby', 'service-select-label');
     list.hidden = true;
-    const options = Array.from(select.options).filter(option => option.value !== '');
+    const options = Array.from(select.options);
     const rows = options.map(option => {
         const row = document.createElement('div');
         row.className = 'service-select__option';
         row.setAttribute('role', 'option');
         row.tabIndex = -1;
-        row.textContent = option.textContent.trim();
+        row.textContent = option.value === '' ? 'Не выбирать услугу' : option.textContent.trim();
         row.addEventListener('click', () => choose(option.value));
         list.append(row);
         return row;
     });
     function sync() {
+        if (comment) {
+            select.required = comment.value.trim() === '';
+            comment.required = select.value === '';
+        }
+        trigger.setAttribute('aria-required', String(select.required));
         trigger.textContent = select.selectedOptions[0]?.textContent.trim() || 'Выберите услугу';
         rows.forEach((row, index) => row.setAttribute('aria-selected', String(options[index].value === select.value)));
-        if (select.value) trigger.removeAttribute('aria-invalid');
+        if (select.value || !select.required) trigger.removeAttribute('aria-invalid');
     }
     function close(restoreFocus = false) {
         list.hidden = true;
@@ -83,6 +90,17 @@
     });
     wrapper.addEventListener('focusout', () => setTimeout(() => { if (!wrapper.contains(document.activeElement)) close(); }, 0));
     select.addEventListener('change', sync);
+    comment?.addEventListener('input', sync);
+    document.querySelectorAll('[data-lead-service]').forEach(link => {
+        link.addEventListener('click', () => {
+            const value = link.dataset.leadService;
+            if (options.some(option => option.value === value)) {
+                select.value = value;
+                select.dispatchEvent(new Event('change', {bubbles: true}));
+                close();
+            }
+        });
+    });
     select.addEventListener('invalid', () => { trigger.setAttribute('aria-invalid', 'true'); });
     select.addEventListener('focus', () => trigger.focus());
     select.form?.addEventListener('reset', () => setTimeout(sync, 0));

@@ -8,6 +8,7 @@ require_once __DIR__ . '/ConsentService.php';
 final class OrderService
 {
     public const MAX_ITEMS = 12;
+    public const LEAD_TOPICS = ['automation' => 'Автоматизация бизнеса'];
 
     public function __construct(private PDO $pdo) {}
 
@@ -91,18 +92,27 @@ final class OrderService
         }
     }
 
-    public function createLead(array $customer, int $serviceId, string $requestToken, array $consent): array
+    public function createLead(array $customer, int|string|null $serviceId, string $requestToken, array $consent): array
     {
-        $statement = $this->pdo->prepare('SELECT name FROM services WHERE id = ? AND active = 1');
-        $statement->execute([$serviceId]);
-        $service = $statement->fetch();
-        if (!$service) {
-            throw new DomainException('Выбранная услуга больше недоступна. Обновите страницу.', 422);
+        if ($serviceId === null) {
+            $serviceName = 'Без выбранной услуги';
+        } elseif (is_string($serviceId) && isset(self::LEAD_TOPICS[$serviceId])) {
+            $serviceName = self::LEAD_TOPICS[$serviceId];
+        } elseif (is_int($serviceId) && $serviceId > 0) {
+            $statement = $this->pdo->prepare('SELECT name FROM services WHERE id = ? AND active = 1');
+            $statement->execute([$serviceId]);
+            $service = $statement->fetch();
+            if (!$service) {
+                throw new DomainException('Выбранная услуга больше недоступна. Обновите страницу.', 422);
+            }
+            $serviceName = (string) $service['name'];
+        } else {
+            throw new DomainException('Выберите услугу из списка.', 422);
         }
 
         return $this->persist($customer, [[
             'tariff_id' => null,
-            'service_name' => (string) $service['name'],
+            'service_name' => $serviceName,
             'tariff_name' => 'Заявка без выбранного тарифа',
             'price' => 0,
         ]], $requestToken, 'website_lead', $consent);

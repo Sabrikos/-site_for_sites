@@ -225,6 +225,36 @@ return require '"""+ROOT.as_posix()+"""/router.php';
     mobile=subprocess.run(['node',str(ROOT/'tests/admin-chat-mobile.cjs')],cwd=ROOT,env=mobile_env,capture_output=True,text=True,encoding='utf-8')
     print(mobile.stdout,flush=True)
     if mobile.returncode: raise RuntimeError(mobile.stderr)
+    lead_ui=subprocess.run(['node',str(ROOT/'tests/lead-form.cjs')],cwd=ROOT,env=mobile_env,capture_output=True,text=True,encoding='utf-8')
+    print(lead_ui.stdout,flush=True)
+    if lead_ui.returncode: raise RuntimeError(lead_ui.stderr)
+    # New lead paths use the same isolated DB and intercepted HTTPS as all other checks.
+    notification_offset=len(log_path.read_text().splitlines())
+    command('tests/security-rate-fixture.php',DB,'order','unused')
+    for selected,comment,label in [
+        ('automation','','Автоматизация бизнеса'),
+        ('','COMMENT-ONLY-LEAD','Без выбранной услуги'),
+        (service_id,'',None),
+    ]:
+        applicant=Client()
+        _,form=applicant.call('/home.php')
+        csrf_token=re.search(r'name="csrf_token" value="([^"]+)"',form).group(1)
+        request_token=re.search(r'name="request_token" value="([^"]+)"',form).group(1)
+        payload=dict(csrf_token=csrf_token,request_token=request_token,customer_name='Тест заявки',
+                     customer_phone='+79990001122',personal_data_consent='1',project_type=selected,project_theme=comment)
+        if selected=='':
+            for invalid_type,invalid_text in [('', '   '),('arbitrary-service','COMMENT-ONLY-LEAD')]:
+                _,invalid_body=applicant.call('/home.php',dict(payload,project_type=invalid_type,project_theme=invalid_text))
+                check('Заявка №' not in invalid_body and command('tests/order-dedupe-fixture.php',DB,request_token).strip()=='0',
+                      'empty details or unknown service are rejected on server')
+        code,result=applicant.call('/home.php',payload)
+        match=re.search(r'Заявка №\s*(\d+)',result)
+        check(code==200 and match is not None,'lead saved with '+(selected or 'comment only'))
+        _,stored=admin.call('/admin/order.php?id='+match.group(1))
+        check((not label or label in stored) and (not comment or comment in stored),'lead details are visible in administrator view')
+    extra_outgoing=[json.loads(line) for line in log_path.read_text().splitlines()][notification_offset:]
+    check(len(extra_outgoing)==3 and all(urllib.parse.parse_qs(entry['body']).get('text')==['На сайте поступила новая заявка.'] for entry in extra_outgoing),
+          'new lead paths send only three generic order notifications')
     # Synthetic malicious content remains text, and cannot grant extra privileges.
     xss_payload='<img src=x onerror=alert(1)>'
     xss_client=Client(); _,xss_state=xss_client.chat('start'); xss_id=xss_state['conversation_id']
