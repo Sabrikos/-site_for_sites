@@ -84,6 +84,11 @@ if ($chatId) {
                         <a class="admin-chat-back" href="#adminChatList">К списку диалогов</a>
                         <h2>Диалог #<?= (int) $chatId ?></h2>
                         <p class="admin-chat-status"><?= appEscape($allowedStatuses[$currentChat['status']] ?? '') ?></p>
+                        <?php if (!empty($currentChat['linked_order_id'])): ?>
+                            <p><a href="order.php?id=<?= (int) $currentChat['linked_order_id'] ?>">Переписка по заказу №<?= (int) $currentChat['linked_order_id'] ?></a></p>
+                        <?php else: ?>
+                            <p class="web-chat-notice">Консультация: до 3 месяцев после последнего содержательного общения. Нужную переписку можно связать с заказом в его карточке.</p>
+                        <?php endif; ?>
                         <div class="admin-chat-actions">
                             <?php foreach (['human' => 'Подключиться', 'bot' => 'Вернуть ассистенту', 'closed' => 'Завершить диалог'] as $status => $label): ?>
                                 <form method="post" class="admin-chat-status-form">

@@ -110,18 +110,26 @@
     panel.className = 'analytics-consent';
     panel.setAttribute('aria-labelledby', 'analytics-heading');
     panel.innerHTML = `
-        <h2 id="analytics-heading">Настройки аналитики</h2>
-        <p class="analytics-consent__text">Загрузка настроек аналитики…</p>
-        <a href="https://yandex.ru/legal/confidential/" target="_blank" rel="noopener noreferrer">Обработка данных Яндексом</a>
+        <div class="analytics-consent__copy">
+            <h2 id="analytics-heading">Cookie и аналитика</h2>
+            <p>С вашего разрешения Яндекс Метрика поможет улучшать сайт. Без согласия аналитика не работает.</p>
+            <details class="analytics-consent__details">
+                <summary>Подробнее о данных и сроках</summary>
+                <p class="analytics-consent__text">Загрузка настроек аналитики…</p>
+                <a href="/privacy.php#analytics-cookies" target="_blank" rel="noopener noreferrer">Политика обработки данных</a>
+                · <a href="https://yandex.ru/legal/confidential/" target="_blank" rel="noopener noreferrer">Условия Яндекса</a>
+            </details>
+        </div>
         <div class="analytics-consent__actions">
-            <button type="button" data-choice="accepted" disabled>Разрешить аналитику</button>
-            <button type="button" data-choice="rejected">Отказаться</button>
+            <button type="button" data-choice="accepted" disabled>Согласиться</button>
+            <button type="button" data-choice="rejected">Отклонить</button>
         </div>
         <p class="analytics-consent__status" role="status"></p>`;
     const status = panel.querySelector('.analytics-consent__status');
     const accept = panel.querySelector('[data-choice="accepted"]');
     const settings = document.createElement('button');
     settings.type = 'button';
+    settings.id = 'analytics-settings';
     settings.className = 'analytics-settings';
     settings.textContent = 'Настройки cookie';
     settings.setAttribute('aria-controls', panel.id);

@@ -6,16 +6,31 @@ require_once __DIR__ . '/TariffPresentation.php';
 
 final class DecisionTree
 {
-    public function __construct(private array $catalog) {}
+    public function __construct(private array $catalog)
+    {
+        // Match the base services shown on tariffs.php while retaining real database IDs.
+        $base = [];
+        foreach ($catalog as $row) {
+            if (in_array($row['slug'], ['landing', 'shop', 'revision'], true)) {
+                $serviceId = (int) $row['service_id'];
+                if (!isset($base[$serviceId]) || (int) $row['price'] < (int) $base[$serviceId]['price']) {
+                    $base[$serviceId] = $row;
+                }
+            }
+        }
+        $this->catalog = array_values(array_filter($catalog, static fn(array $row): bool =>
+            !isset($base[(int) $row['service_id']]) || (int) $row['id'] === (int) $base[(int) $row['service_id']]['id']
+        ));
+    }
 
     private function serviceReply(array $row): string
     {
         return match ($row['slug']) {
-            'landing' => "Какой сайт Вам нужен?\n\n• Для одной услуги или товара.\n• Для подробного рассказа о компании.\n• С индивидуальным дизайном и функциями.\n\nВыберите подходящий тариф ниже.",
-            'shop' => "Какой интернет-магазин Вам нужен?\n\n• Небольшой каталог и корзина.\n• Магазин с онлайн-оплатой.\n• Магазин с подключением внешних сервисов.\n\nВыберите подходящий тариф ниже.",
-            'revision' => "Что нужно изменить на сайте?\n\n• Исправить отдельный элемент или ошибку.\n• Добавить страницы, блоки или функции.\n• Переработать несколько разделов.\n\nВыберите подходящий вариант ниже.",
-            'ai' => "Что именно Вас интересует?\n\n• Telegram-боты\n• AI-ассистенты и интеграции искусственного интеллекта",
-            'other' => "Нужна помощь с другой задачей?\n\nВыберите «Индивидуальный проект», чтобы узнать подробнее, или нажмите «Позвать специалиста», чтобы обсудить задачу.",
+            'landing' => "Какой сайт Вам нужен?\n\n• Старт — сайт для одной услуги или товара.\n• Бизнес — сайт для подробного рассказа о компании.\n• Премиум — сайт с индивидуальным дизайном и функциями.\n\nВыберите подходящий тариф ниже.",
+            'shop' => "Какой интернет-магазин Вам нужен?\n\n• Старт — небольшой каталог и корзина.\n• Бизнес — магазин с онлайн-оплатой.\n• Премиум — магазин с подключением внешних сервисов.\n\nВыберите подходящий тариф ниже.",
+            'revision' => "Что нужно изменить на сайте?\n\n• Мелкая доработка — исправить отдельный элемент или ошибку.\n• Расширенная доработка — добавить страницы, блоки или функции.\n• Комплексная доработка — переработать несколько разделов.\n\nВыберите подходящий вариант ниже.",
+            'ai' => "Что именно Вас интересует?\n\n• Telegram-бот — приём заявок, уведомления и автоматические действия в Telegram.\n• AI-ассистент — ответы на вопросы клиентов о Ваших услугах.\n• AI для бизнеса — автоматизация рабочих задач с помощью ИИ и подключение сервисов.\n\nВыберите подходящий вариант ниже.",
+            'other' => "Нужна помощь с другой задачей?\n\n• Индивидуальный проект — решение под Вашу задачу. Состав работ, стоимость и сроки обсудим отдельно.\n\nЕсли Вас интересует это решение, можете добавить его в корзину или позвать специалиста.",
             default => trim((string) ($row['service_description'] ?? '')) . "\n\nВыберите подходящий вариант ниже.",
         };
     }
@@ -84,6 +99,11 @@ final class DecisionTree
 
         $row = $rows[0];
         if ($isService) {
+            if (count($rows) === 1) {
+                $reply = $this->resolve('tariff:' . $row['id']);
+                $reply['label'] = $row['service_name'];
+                return $reply;
+            }
             $choices = array_map(static fn (array $tariff) => [
                 'id' => 'tariff:' . $tariff['id'],
                 'label' => $tariff['tariff_name'],
@@ -102,10 +122,23 @@ final class DecisionTree
         $text = $description
             ? implode("\n", array_map(static fn (string $item): string => count($description) > 1 ? '• ' . $item : $item, $description))
             : trim((string) $row['description']);
+        $cartChoice = [
+            'id' => 'cart:' . $row['id'],
+            'label' => 'Добавить в корзину',
+            'cart_item' => [
+                'tariff_id' => (string) $row['id'],
+                'service' => $row['service_name'],
+                'tariff' => $row['tariff_name'],
+                'price' => $row['price'] === null || $row['price'] === '' ? 0 : (int) $row['price'],
+            ],
+        ];
+        $siblings = array_filter($this->catalog, static fn (array $item): bool => (string) $item['service_id'] === (string) $row['service_id']);
+        $back = count($siblings) > 1 ? [['id' => 'service:' . $row['service_id'], 'label' => 'Другие варианты']] : [];
         return [
             'label' => $row['tariff_name'],
-            'text' => $text . "\n\nСтоимость: " . $price . "\nСрок: " . $deadline,
-            'choices' => [['id' => 'service:' . $row['service_id'], 'label' => 'Другие варианты'], $menu, $human],
+            'text' => $text . ($row['slug'] === 'other' ? '' : "\n\nСтоимость: " . $price . "\nСрок: " . $deadline)
+                . "\n\nЕсли Вас интересует это решение, можете добавить его в корзину или позвать специалиста.",
+            'choices' => [...$back, $menu, $human, $cartChoice],
         ];
     }
 }

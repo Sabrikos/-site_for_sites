@@ -20,7 +20,8 @@ $successOrderId = null;
 $customerName = trim((string) ($_POST['customer_name'] ?? ''));
 $customerPhone = trim((string) ($_POST['customer_phone'] ?? ''));
 $projectComment = trim((string) ($_POST['project_comment'] ?? ''));
-$projectUrgency = (string) ($_POST['project_urgency'] ?? 'standard');
+$projectUrgency = is_string($_POST['project_urgency'] ?? null) ? $_POST['project_urgency'] : 'standard';
+$urgencyLabels = ['standard' => 'Обычные сроки', 'urgent' => 'Срочно', 'discuss' => 'Сроки обсудим'];
 $personalDataConsent = isset($_POST['personal_data_consent']);
 
 function e(string $value): string
@@ -32,7 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!appCsrfValid('order_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
         $errors[] = 'Срок действия формы истёк. Обновите страницу и повторите отправку.';
     }
-    [$customerErrors, $customer] = OrderService::validateCustomer($_POST);
+    if (!isset($urgencyLabels[$projectUrgency])) {
+        $errors[] = 'Выберите срок выполнения из списка.';
+    }
+    $customerInput = $_POST;
+    $customerInput['project_comment'] = trim($projectComment . (isset($urgencyLabels[$projectUrgency]) ? "\nСроки: " . $urgencyLabels[$projectUrgency] : ''));
+    [$customerErrors, $customer] = OrderService::validateCustomer($customerInput);
     $errors = array_merge($errors, $customerErrors);
 
     if (!$personalDataConsent) {
@@ -137,6 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <section class="cart-products">
                 <div class="cart-products-header">
                     <h2>Выбранные услуги</h2>
+                    <p>Стоимость согласуем после обсуждения задачи.</p>
                 </div>
                 <div id="orderItems"></div>
                 <div id="emptyOrder" class="cart-page-empty">
@@ -228,7 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script>
         const orderForm = document.getElementById('orderForm');
-        const cart = JSON.parse(localStorage.getItem('webstartCart') || '[]');
+        let cart = window.VegaCart.read();
         const orderItems = document.getElementById('orderItems');
         const emptyOrder = document.getElementById('emptyOrder');
 
@@ -236,8 +243,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             return item.tariff ?? item.name ?? '';
         }
 
+        function updateCheckoutCart() {
+            cart = window.VegaCart.read();
         if (orderForm) {
-            document.getElementById('cartJson').value = JSON.stringify(cart);
+            document.getElementById('cartJson').value = JSON.stringify(cart.map(item => ({tariff_id: item.tariff_id ?? item.id})));
             const comment = document.getElementById('project_comment');
             if (!comment.value.trim()) {
                 let extras = {};
@@ -255,6 +264,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        orderItems.replaceChildren();
+        emptyOrder.style.display = cart.length ? 'none' : 'block';
         if (cart.length > 0) {
             emptyOrder.style.display = 'none';
 
@@ -268,17 +279,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 service.textContent = item.service ?? '';
                 const name = document.createElement('h3');
                 name.textContent = tariffName(item);
-                const price = document.createElement('span');
-                price.className = 'checkout-item-price';
-                price.textContent = 'от ' + new Intl.NumberFormat('ru-RU').format(Number(item.price) || 0) + ' ₽';
                 info.append(service, name);
-                row.append(info, price);
+                row.append(info);
                 orderItems.appendChild(row);
             });
         }
 
+        }
+        window.addEventListener('vega:cart-changed', updateCheckoutCart);
+        updateCheckoutCart();
+
         <?php if ($successOrderId !== null): ?>
-            localStorage.removeItem('webstartCart');
+            window.VegaCart.write([]);
             localStorage.removeItem('vegaServiceExtras');
             if (typeof updateHeaderCartCounter === 'function') {
                 updateHeaderCartCounter();

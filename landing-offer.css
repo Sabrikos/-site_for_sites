@@ -1,0 +1,218 @@
+/* Shared reference-card structure, scoped to the service offers. */
+main.tariffs-page :is(#landing,#shop,#revision,#ai,#other).landing-offer {
+    container-type: inline-size; position: relative; padding: 0; overflow: hidden;
+    border: 1px solid rgba(123,130,255,.65); border-radius: 10px; color: #ded7ef;
+    background: linear-gradient(110deg,#111127 10%,#141432 62%,#0b0b1d);
+    background-image: linear-gradient(110deg,#111127 10%,#141432 62%,#0b0b1d) !important;
+    background-clip: border-box; box-shadow: inset 0 1px 0 #d8d5ff0d,0 15px 45px #0b0b1d33;
+}
+:is(#landing,#shop,#revision,#ai,#other).landing-offer * { box-sizing: border-box; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__hero { display:grid; grid-template-columns:33% minmax(0,1fr); align-items:center; min-height:23cqw; padding:2.4cqw 3cqw 1.8cqw 0; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__visual { position:relative; align-self:stretch; display:flex; align-items:flex-end; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__visual img { display:block; width:114%; max-width:none; height:auto; margin:0 0 -1.5cqw -2.2cqw; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__intro { min-width:0; padding-left:1.5cqw; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__title-row { display:block; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__title-row > div { min-width:0; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__title-icon { display:grid; place-items:center; width:6.3cqw; height:6.3cqw; border:1px solid #a873df70; border-radius:1.7cqw; color:#c28aff; background:radial-gradient(ellipse,#803ccc32,#25143e); box-shadow:inset 0 0 14px #a764e924,0 0 10px #a14bde14; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__title-icon svg { width:58%; height:58%; filter:drop-shadow(0 0 4px #a35bed70); }
+:is(#landing,#shop,#revision,#ai,#other) :is(#landing-offer-title,#shop-offer-title,#revision-offer-title,#ai-offer-title,#other-offer-title) { margin:.2cqw 0 .7cqw; font-size:clamp(30px,4.8cqw,58px); line-height:1.12; font-weight:700; color:#e3d6fa; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__title-row p { margin:0; font-size:clamp(16px,2.05cqw,25px); line-height:1.35; color:#d4cce2; text-align:left; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__badges { display:flex; gap:2.2cqw; margin-top:2.3cqw; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__badges > span { display:flex; align-items:center; justify-content:center; gap:.8cqw; flex:1; white-space:nowrap; padding:1cqw 1.25cqw; border:1px solid #7b82ff30; border-radius:10px; background:radial-gradient(circle at 45% 40%,#4e55ff35,#222247 75%); box-shadow:inset 0 1px 8px #7b82ff15; font-size:clamp(12px,1.65cqw,20px); line-height:1.25; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__badges svg { flex:none; width:2.7cqw; height:2.7cqw; color:#b9a3ff; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__body { display:grid; grid-template-columns:52% minmax(0,1fr); margin:0 3.5cqw 0 4.8cqw; padding:2.3cqw 0; border-top:1px solid #7b82ff30; border-bottom:1px solid #7b82ff30; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__body h3 { margin:0 0 1.5cqw; font-size:clamp(21px,2.4cqw,30px); line-height:1.2; font-weight:700; color:#f0ebf7; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__body ul { list-style:none; padding:0; margin:0; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__body li { font-size:clamp(14px,1.7cqw,21px); line-height:1.35; color:#ded6e9; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__benefits { padding-right:2cqw; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__benefits li { position:relative; padding-left:4cqw; margin:0 0 1cqw; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__benefits li:last-child { margin-bottom:0; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__benefits li::before { content:'✓'; position:absolute; left:.5cqw; top:-.2cqw; color:#b9a3ff; font-size:2.8cqw; line-height:1.3; font-weight:500; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__included { border-left:1px solid #7b82ff30; padding-left:5.5cqw; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__included li { display:grid; grid-template-columns:4.5cqw minmax(0,1fr); gap:1.9cqw; align-items:center; margin-bottom:2cqw; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__included li:last-child { margin-bottom:0; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__included li > span { color:#b9a3ff; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__included svg { width:3.6cqw; height:3.6cqw; display:block; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__included small { display:block; font:inherit; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__footer { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:2.4cqw; padding:2.3cqw 3cqw 3.6cqw 4.8cqw; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__price { margin:0; white-space:nowrap; font-size:clamp(17px,2.1cqw,26px); color:#cbbde3; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__price strong { font-size:clamp(27px,3.4cqw,43px); color:#e7dcf7; font-weight:700; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__note { border-left:1px solid #7b82ff30; padding-left:2.3cqw; margin:0; font-size:clamp(12px,1.5cqw,19px); line-height:1.3; color:#c9bfdc; }
+main.tariffs-page :is(#landing,#shop,#revision,#ai,#other) .landing-offer__button { display:flex; justify-content:center; align-items:center; gap:1.8cqw; width:auto; min-height:5.7cqw; margin:0; padding:1.3cqw 3.5cqw; border:1px solid #7b82ff8f; border-radius:999px; background:linear-gradient(135deg,var(--color-accent),#3b41d9) !important; box-shadow:0 0 22px #4e55ff47; color:#fff; font-size:clamp(16px,2.1cqw,26px); font-weight:700; white-space:nowrap; }
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__button::after { content:none; }
+main.tariffs-page .landing-offer__button.tariff-button { position:relative; isolation:isolate; overflow:hidden; }
+main.tariffs-page .landing-offer__button.tariff-button::before {
+    content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none; z-index:0; opacity:0;
+    background:linear-gradient(135deg,#6268ba,#565b9e);
+}
+main.tariffs-page .landing-offer__button.tariff-button.selected { border-color:#a4a9ee; }
+main.tariffs-page .landing-offer__button.tariff-button.selected::before { opacity:1; }
+.landing-offer__button .offer-button-label { position:relative; z-index:1; }
+.landing-offer__button .offer-button-icons { position:relative; z-index:1; display:block; flex:none; width:1.3em; height:1.3em; }
+.landing-offer__button .offer-button-icons svg { position:absolute; inset:0; display:block; width:100%; height:100%; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.landing-offer__button .offer-button-arrow { opacity:1; transform:translate(0,0); }
+.landing-offer__button .offer-button-check { opacity:0; transform:translateY(5px) scale(.88); }
+.landing-offer__button.selected .offer-button-arrow { opacity:0; transform:translate(5px,-5px); }
+.landing-offer__button.selected .offer-button-check { opacity:1; transform:translateY(0) scale(1); }
+@media (prefers-reduced-motion:no-preference) {
+    main.tariffs-page .landing-offer__button.selection-ready::before { transition:opacity .38s ease; }
+    main.tariffs-page .landing-offer__button.selection-ready { transition:border-color .38s ease,background .2s,box-shadow .2s,transform .2s; }
+    .landing-offer__button.selection-ready .offer-button-icons svg { transition:opacity .24s ease,transform .32s cubic-bezier(.22,1,.36,1); }
+}
+@media (prefers-reduced-motion:reduce) {
+    main.tariffs-page .landing-offer__button.tariff-button,
+    main.tariffs-page .landing-offer__button.tariff-button::before,
+    .landing-offer__button .offer-button-icons svg { transition:none !important; animation:none !important; }
+}
+:is(#landing,#shop,#revision,#ai,#other) .landing-offer__button:focus-visible { outline:2px solid #e5c5ff; outline-offset:4px; }
+@container tariff-content (max-width:740px) {
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__hero { grid-template-columns:30% minmax(0,1fr); padding-block:24px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__title-row { gap:14px; grid-template-columns:42px minmax(0,1fr); }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__title-icon { width:42px; height:42px; border-radius:12px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__badges { flex-wrap:wrap; gap:8px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__badges > span { flex:auto; justify-content:flex-start; padding:8px 12px; white-space:normal; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__badges svg { width:22px; height:22px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__body { margin-inline:24px; padding-block:22px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__body h3 { margin-bottom:18px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__desktop-break { display:none; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__benefits li { margin-bottom:12px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__included li { margin-bottom:18px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__footer { grid-template-columns:auto 1fr; gap:18px; padding:22px 24px 26px; }
+    main.tariffs-page :is(#landing,#shop,#revision,#ai,#other) .landing-offer__button { grid-column:1 / -1; min-height:52px; border-radius:999px; }
+}
+@container tariff-content (max-width:520px) {
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__hero { display:flex; flex-direction:column; padding:20px 20px 22px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__visual { align-self:center; width:85%; max-width:300px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__visual img { width:100%; margin:-14px 0 -12px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__intro { padding-left:0; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__title-row { gap:14px; }
+    :is(#landing,#shop,#revision,#ai,#other) :is(#landing-offer-title,#shop-offer-title,#revision-offer-title,#ai-offer-title,#other-offer-title) { margin:0 0 8px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__badges { margin-top:18px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__badges > span { font-size:13px; gap:9px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__body { grid-template-columns:minmax(0,1fr); margin-inline:20px; gap:24px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__body li { font-size:15px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__benefits { padding:0; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__benefits li { padding-left:28px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__benefits li::before { font-size:24px; top:-3px; left:0; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__included { padding:22px 0 0; border-left:0; border-top:1px solid #7b82ff30; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__included li { grid-template-columns:30px 1fr; gap:16px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__included svg { width:30px; height:32px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__footer { grid-template-columns:minmax(0,1fr); padding-inline:20px; gap:14px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__note { font-size:14px; padding-left:0; border-left:0; }
+}
+@container tariff-content (max-width:350px) {
+    :is(#landing,#shop,#revision,#ai,#other) :is(#landing-offer-title,#shop-offer-title,#revision-offer-title,#ai-offer-title,#other-offer-title) { font-size:27px; }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__title-row { gap:10px; grid-template-columns:36px minmax(0,1fr); }
+    :is(#landing,#shop,#revision,#ai,#other) .landing-offer__title-icon { width:36px; height:36px; }
+}
+
+/* Internet shop reference: its own title length, illustration and contents. */
+#shop #shop-offer-title { font-size:clamp(23px,4.1cqw,52px); }
+#shop .landing-offer__visual img { width:134%; margin-left:-5cqw; margin-bottom:-1cqw; }
+#shop .landing-offer__included { padding-left:4.5cqw; }
+#shop .landing-offer__included li { margin-bottom:1cqw; gap:1.3cqw; font-size:clamp(13.5px,1.7cqw,21px); }
+#shop .landing-offer__included li:last-child { margin-bottom:0; }
+#shop .landing-offer__benefits li { margin-bottom:1.5cqw; }
+#shop .landing-offer__benefits li:last-child { margin-bottom:0; }
+#shop .shop-offer__button { text-decoration:none; }
+@container tariff-content (max-width:520px) {
+    #shop .landing-offer__title-row { grid-template-columns:36px minmax(0,1fr); gap:10px; }
+    #shop .landing-offer__title-icon { width:36px; height:36px; }
+    #shop #shop-offer-title { font-size:clamp(22px,7.7cqw,30px); overflow-wrap:anywhere; }
+    #shop .landing-offer__visual img { width:116%; margin:-14px 0 -8px -8%; }
+    #shop .landing-offer__benefits li { margin-bottom:12px; }
+    #shop .landing-offer__included li { margin-bottom:18px; }
+    #shop .landing-offer__included { padding-left:0; }
+    #shop .landing-offer__included li { gap:16px; font-size:15px; }
+}
+
+/* Website revision reference. */
+#revision #revision-offer-title { font-size:clamp(25px,4.4cqw,54px); }
+#revision .landing-offer__visual img { width:116%; margin-left:-1.7cqw; margin-bottom:-1cqw; }
+#revision .landing-offer__benefits li { margin-bottom:1.5cqw; }
+#revision .landing-offer__benefits li:last-child { margin-bottom:0; }
+#revision .landing-offer__included { padding-left:4.5cqw; }
+#revision .landing-offer__included li { gap:1.3cqw; font-size:clamp(13.5px,1.7cqw,21px); }
+@container tariff-content (max-width:520px) {
+    #revision #revision-offer-title { font-size:clamp(22px,8cqw,30px); }
+    #revision .landing-offer__visual img { width:100%; margin:-14px 0 -8px; }
+    #revision .landing-offer__benefits li { margin-bottom:12px; }
+    #revision .landing-offer__included { padding-left:0; }
+    #revision .landing-offer__included li { gap:16px; font-size:15px; }
+}
+
+/* AI reference: five benefits and four illustrated examples. */
+#ai .landing-offer__visual img { width:116%; margin-left:-1.7cqw; margin-bottom:-1cqw; }
+#ai .landing-offer__benefits li { margin-bottom:1.5cqw; }
+#ai .landing-offer__benefits li:last-child { margin-bottom:0; }
+#ai .landing-offer__included { padding-left:4.5cqw; }
+#ai .landing-offer__included li { margin-bottom:1cqw; gap:1.3cqw; font-size:clamp(13.5px,1.7cqw,21px); }
+#ai .landing-offer__included li:last-child { margin-bottom:0; }
+@container tariff-content (max-width:520px) {
+    #ai #ai-offer-title { font-size:clamp(22px,8cqw,30px); }
+    #ai .landing-offer__visual img { width:100%; margin:-14px 0 -8px; }
+    #ai .landing-offer__benefits li { margin-bottom:12px; }
+    #ai .landing-offer__included { padding-left:0; }
+    #ai .landing-offer__included li { margin-bottom:18px; gap:16px; font-size:15px; }
+}
+
+main.tariffs-page #other.other-offer { overflow:visible; padding:0; }
+#other .other-offer__header { padding:3cqw 4.8cqw 2.5cqw; }
+#other .landing-offer__title-row { align-items:center; gap:2.4cqw; }
+#other .landing-offer__badges { margin-top:2.6cqw; margin-inline:3cqw; }
+#other .other-offer__body { display:grid; grid-template-columns:56% minmax(0,1fr); margin:0 4cqw 0 4.8cqw; padding:2.5cqw 0; border-block:1px solid #7b82ff30; }
+#other .other-offer__body h3 { margin:0 0 2.2cqw; color:#f0ebf7; font-size:clamp(21px,2.5cqw,32px); line-height:1.2; }
+#other .other-offer__catalog { padding-right:2.6cqw; }
+#other .other-offer__catalog ul { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.3cqw 1.5cqw; padding:0; margin:0; list-style:none; }
+#other .other-offer__catalog li { display:flex; align-items:center; gap:1.5cqw; min-height:5.6cqw; padding:1cqw 1.4cqw; border:1px solid #7b82ff30; border-radius:10px; color:#eee6fa; background:linear-gradient(110deg,#111127 10%,#141432 62%,#0b0b1d); font-size:clamp(14px,1.7cqw,22px); line-height:1.25; }
+#other .other-offer__catalog svg { width:3.5cqw; height:3.5cqw; flex:none; color:#b9a3ff; }
+#other .other-offer__process { border-left:1px solid #7b82ff30; padding-left:3.4cqw; padding-bottom:12cqw; }
+#other .other-offer__process ol { margin:0; padding:0; list-style:none; }
+#other .other-offer__process li { position:relative; display:grid; grid-template-columns:3.5cqw minmax(0,1fr); gap:2cqw; align-items:start; margin-bottom:1.8cqw; }
+#other .other-offer__process li:last-child { margin-bottom:0; }
+#other .other-offer__process li:not(:last-child)::after { content:''; position:absolute; left:1.7cqw; top:3.5cqw; bottom:-1.8cqw; width:1px; background:linear-gradient(#7b82ff90,#7b82ff30); }
+#other .other-offer__process li > span { display:grid; place-items:center; width:3.5cqw; height:3.5cqw; border:1px solid #7b82ff80; border-radius:50%; color:#edddff; background:radial-gradient(circle at 45% 40%,#4e55ff35,#222247 75%); box-shadow:inset 0 1px 8px #7b82ff15; font-size:clamp(16px,2cqw,25px); }
+#other .other-offer__process p { margin:0; font-size:clamp(14px,1.75cqw,22px); line-height:1.35; color:#ded6e9; }
+#other .landing-offer__footer { grid-template-columns:auto minmax(0,1fr); padding-right:36cqw; gap:2cqw; }
+#other .landing-offer__note { min-width:0; font-size:clamp(14px,1.65cqw,20px); line-height:1.45; }
+#other .landing-offer__note .landing-offer__desktop-break { display:none; }
+main.tariffs-page #other .landing-offer__button { grid-column:1 / -1; justify-self:start; min-height:48px; padding-inline:3cqw; font-size:clamp(15px,1.9cqw,24px); text-decoration:none; }
+main.tariffs-page #other.other-offer .tariffs-alien { display:block; width:33cqw; max-width:none; left:auto; right:1.2cqw; bottom:-5.9cqw; transform:none; }
+@container tariff-content (max-width:740px) {
+    #other .landing-offer__footer { padding-right:36cqw; }
+    main.tariffs-page #other .landing-offer__button { grid-column:1 / -1; }
+    #other .other-offer__catalog li { gap:9px; padding:12px; }
+}
+@container tariff-content (max-width:520px) {
+    #other .other-offer__header { padding:24px 20px; }
+    #other .landing-offer__badges { margin:20px 0 0; }
+    #other .other-offer__body { grid-template-columns:minmax(0,1fr); margin-inline:20px; padding:24px 0; gap:24px; }
+    #other .other-offer__body h3 { font-size:21px; margin-bottom:18px; }
+    #other .other-offer__catalog { padding:0; }
+    #other .other-offer__catalog ul { gap:10px; }
+    #other .other-offer__catalog li { border-radius:10px; min-height:64px; padding:12px 10px; gap:9px; font-size:14px; }
+    #other .other-offer__catalog svg { width:24px; height:24px; }
+    #other .other-offer__process { border-left:0; border-top:1px solid #7b82ff30; padding:24px 0 0; }
+    #other .other-offer__process li { grid-template-columns:32px minmax(0,1fr); gap:16px; margin-bottom:20px; }
+    #other .other-offer__process li > span { width:32px; height:32px; font-size:18px; }
+    #other .other-offer__process p { font-size:15px; }
+    #other .other-offer__process li:not(:last-child)::after { left:15px; top:32px; bottom:-20px; }
+    #other .landing-offer__footer { grid-template-columns:minmax(0,1fr); padding:24px 20px; gap:16px; }
+    main.tariffs-page #other .landing-offer__button { justify-self:stretch; }
+    main.tariffs-page #other.other-offer .tariffs-alien { display:none; }
+}
+@container tariff-content (max-width:350px) {
+    #other .other-offer__catalog ul { grid-template-columns:minmax(0,1fr); }
+}
+
+/* Match the main hero CTA while keeping the cart selection transition. */
+main.tariffs-page :is(#landing,#shop,#revision,#ai,#other) .landing-offer__button:hover {
+    background:linear-gradient(135deg,var(--color-accent-light),var(--color-accent-pink)) !important;
+    box-shadow:0 0 30px #7b82ff73; transform:translateY(-1px); color:#fff;
+}
+@media (max-width:600px) {
+    main.tariffs-page :is(#landing,#shop,#revision,#ai,#other) .landing-offer__button { border-radius:12px; }
+}
+@media (prefers-reduced-motion:reduce) {
+    main.tariffs-page :is(#landing,#shop,#revision,#ai,#other) .landing-offer__button:hover { transform:none; }
+}

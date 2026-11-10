@@ -5,7 +5,7 @@ declare(strict_types=1);
 final class AnalyticsConsentService
 {
     public const VERSION = '2026-11-05-v3';
-    public const POLICY_VERSION = '2026-10-31';
+    public const POLICY_VERSION = '2026-11-10-draft-1';
     public const COUNTER_ID = 114096795;
     public const CHOICE_MONTHS = 6;
     public const EVIDENCE_MONTHS = 12;

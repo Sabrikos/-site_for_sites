@@ -81,8 +81,8 @@ function pass(text) { checks++; console.log('PASS:', text); }
         }});
         assert.equal(orderResponse.status(), 200);
         const orders = fixture({action: 'order', marker: credentials.username});
-        assert(orders.length === 1 && Number(orders[0].total) === Number(orders[0].current_price) && Number(orders[0].price) !== 1);
-        pass('site order saved with DB price despite forged price');
+        assert(orders.length === 1 && orders[0].total === null && orders[0].price === null);
+        pass('site application saved without a price despite forged client amount');
         await page.goto(base + '/');
         await page.locator('.web-chat-toggle').click();
         await page.waitForFunction(() => document.querySelector('.web-chat-message'));

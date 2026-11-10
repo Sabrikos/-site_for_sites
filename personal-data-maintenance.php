@@ -16,4 +16,5 @@ $analyticsEvents = (new AnalyticsConsentService($pdo))->eraseExpired();
 echo 'Erased expired personal data: orders=' . $result['orders']
     . ', conversations=' . $result['conversations']
     . ', telegram_profiles=' . $result['telegram_profiles']
+    . ', request_consent_evidence=' . $result['consent_evidence']
     . ', analytics_consents=' . $analyticsEvents . ".\n";

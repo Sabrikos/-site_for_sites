@@ -119,6 +119,7 @@ function renderHeader()
     <div class="mobile-menu-shade" hidden></div>
     <script src="mobile-navigation.js?v=2" defer></script>
 
+    <script src="cart-store.js?v=<?= filemtime(__DIR__ . '/cart-store.js') ?>"></script>
     <script src="web-chat.js?v=<?= filemtime(__DIR__ . '/web-chat.js') ?>" defer></script>
     <?php require __DIR__ . '/analytics.php'; ?>
 
@@ -375,6 +376,7 @@ function renderFooter()
 
 
         updateHeaderCartCounter();
+        window.addEventListener('vega:cart-changed', updateHeaderCartCounter);
 
 
         /*

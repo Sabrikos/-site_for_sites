@@ -119,7 +119,6 @@ $title = 'Корзина | Vega Studio';
                 </div>
 
 
-                <div class="cart-vega-constellation" tabindex="0" role="img" aria-label="Созвездие Лиры" aria-describedby="vega-nebula-note"></div>
             </section>
 
 
@@ -129,6 +128,7 @@ $title = 'Корзина | Vega Studio';
         ================================= -->
 
             <aside class="cart-summary">
+                <div class="cart-vega-constellation" tabindex="0" role="img" aria-label="Созвездие Лиры" aria-describedby="vega-nebula-note"></div>
                 <div class="cart-canis-major" tabindex="0" role="img" aria-label="Созвездие Большого Пса, Сириус — самая яркая звезда" aria-describedby="canis-major-note"></div>
 
                 <svg class="cart-vega-pointer" aria-hidden="true" focusable="false"><path class="cart-vega-pointer__curve"/><path class="cart-vega-pointer__head"/></svg>
@@ -163,11 +163,11 @@ $title = 'Корзина | Vega Studio';
                 <div class="summary-total">
 
                     <span>
-                        Итого
+                        Стоимость
                     </span>
 
                     <strong id="cartPageTotal">
-                        0 ₽
+                        Обсудим после заявки
                     </strong>
 
                 </div>
@@ -213,10 +213,12 @@ $title = 'Корзина | Vega Studio';
     <?php renderFooter(); ?>
 
     <script>
-        let cart =
-            JSON.parse(
-                localStorage.getItem('webstartCart')
-            ) || [];
+        let cart = window.VegaCart.read();
+
+        window.addEventListener('vega:cart-changed', () => {
+            cart = window.VegaCart.read();
+            updateCartPage();
+        });
 
         function getTariffId(item) {
             return String(item.tariff_id ?? item.id);
@@ -265,10 +267,7 @@ $title = 'Корзина | Vega Studio';
 
         function saveCart() {
 
-            localStorage.setItem(
-                'webstartCart',
-                JSON.stringify(cart)
-            );
+            window.VegaCart.write(cart);
 
         }
 
@@ -354,9 +353,6 @@ $title = 'Корзина | Vega Studio';
                     const actions = document.createElement('div');
                     actions.className = 'cart-product-actions';
 
-                    const price = document.createElement('strong');
-                    price.textContent = formatPrice(Number(item.price) || 0);
-
                     const removeButton = document.createElement('button');
                     removeButton.type = 'button';
                     removeButton.className = 'cart-product-remove';
@@ -364,7 +360,7 @@ $title = 'Корзина | Vega Studio';
                     removeButton.textContent = 'Удалить';
                     removeButton.setAttribute('aria-label', `Удалить: ${item.service || 'Услуга'} — ${getTariffName(item) || 'Тариф'}`);
 
-                    actions.append(price, removeButton);
+                    actions.append(removeButton);
                     element.append(info, actions);
 
 
@@ -383,19 +379,7 @@ $title = 'Корзина | Vega Studio';
                 ОБЩАЯ ЦЕНА
             */
 
-            const total =
-                cart.reduce(
-
-                    (sum, item) =>
-                    sum + item.price,
-
-                    0
-
-                );
-
-
-            cartPageTotal.textContent =
-                formatPrice(total);
+            cartPageTotal.textContent = 'Обсудим после заявки';
 
 
 

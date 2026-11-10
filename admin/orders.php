@@ -5,11 +5,12 @@ declare(strict_types=1);
 require_once __DIR__ . '/../app.php';
 require_once __DIR__ . '/../bd.php';
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/../services/OrderLifecycleService.php';
 
 requireAdmin();
 appCsrfToken('admin_csrf');
 
-$allowedStatuses = ['new', 'processing', 'completed'];
+$allowedStatuses = array_keys(RetentionPolicy::STATUSES);
 $message = '';
 $error = '';
 
@@ -23,10 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($orderId === false || !in_array($status, $allowedStatuses, true)) {
         $error = 'Некорректные данные статуса.';
     } else {
-        $statement = $pdo->prepare('UPDATE orders SET status = ? WHERE id = ?');
-        $statement->execute([$status, (int) $orderId]);
-        $message = 'Статус заказа обновлён.';
-        appRotateCsrf('admin_csrf');
+        try {
+            (new OrderLifecycleService($pdo))->update((int) $orderId, $status);
+            $message = 'Статус заказа обновлён.';
+            appRotateCsrf('admin_csrf');
+        } catch (DomainException $exception) {
+            $error = $exception->getMessage();
+        }
     }
 }
 
@@ -39,7 +43,7 @@ $statement = $pdo->query(
         o.total,
         o.status,
         o.created_at,
-        GROUP_CONCAT(CONCAT(oi.service_name, ": ", oi.tariff_name, " (", oi.price, " ₽)") SEPARATOR ", ") AS items
+        GROUP_CONCAT(CONCAT(oi.service_name, ": ", oi.tariff_name) SEPARATOR ", ") AS items
      FROM orders o
      LEFT JOIN order_items oi ON oi.order_id = o.id
      GROUP BY o.id, o.customer_name, o.phone, o.project_comment, o.total, o.status, o.created_at
@@ -49,12 +53,7 @@ $orders = $statement->fetchAll();
 
 function adminOrderStatusLabel(string $status): string
 {
-    return match ($status) {
-        'new' => 'Новый',
-        'processing' => 'В работе',
-        'completed' => 'Завершён',
-        default => $status,
-    };
+    return RetentionPolicy::STATUSES[$status] ?? $status;
 }
 
 ?>
@@ -96,7 +95,7 @@ function adminOrderStatusLabel(string $status): string
                                 <small><?= appEscape($order['created_at']) ?></small>
                             </div>
                             <div class="cart-product-actions">
-                                <strong><?= appMoney((int) $order['total']) ?></strong>
+                                <strong><?= $order['total'] === null ? 'Стоимость не согласована' : appMoney((int) $order['total']) ?></strong>
                                 <form method="post" class="admin-inline-form">
                                     <input type="hidden" name="csrf_token" value="<?= appEscape(appCsrfToken('admin_csrf')) ?>">
                                     <input type="hidden" name="order_id" value="<?= (int) $order['id'] ?>">

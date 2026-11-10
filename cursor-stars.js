@@ -318,10 +318,11 @@
                 const layout = document.querySelector('.tariffs-layout');
                 const offset = config.anchor.includes('cassiopeia') ? -180 : 60;
                 if (revision) ursaMinor.style.top = `${revision.getBoundingClientRect().top - layout.getBoundingClientRect().top + offset}px`;
-            } else ursaMinor.style.top = `${tariffBasket.offsetHeight + 40}px`;
+            }
+            // Other tariff decorations use their CSS background position,
+            // independent of the number of items in the basket.
             requestDraw();
         };
-        new ResizeObserver(placeUrsa).observe(tariffBasket);
         new ResizeObserver(placeUrsa).observe(document.querySelector('.tariffs-content'));
         placeUrsa();
     }

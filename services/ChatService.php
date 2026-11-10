@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../app.php';
+require_once __DIR__ . '/ConsentService.php';
 
 function assistantLimit(PDO $pdo, string $scope, int $maximum, int $seconds): bool
 {
@@ -30,7 +31,7 @@ final class ChatService
         $statement->execute([$sessionKey]);
         $conversation = $statement->fetch();
         if (!$conversation) {
-            $this->pdo->prepare('INSERT INTO chat_conversations (session_key, personal_data_expires_at) VALUES (?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR))')->execute([$sessionKey]);
+            $this->pdo->prepare('INSERT INTO chat_conversations (session_key, last_contact_at, personal_data_expires_at) VALUES (?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL 3 MONTH))')->execute([$sessionKey]);
             $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
             $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Я помощник Vega Studio. Выберите услугу в меню или подключите специалиста.');
         }
@@ -40,19 +41,34 @@ final class ChatService
 
     public function startFreshConversation(string $sessionKey): array
     {
-        $this->pdo->prepare('INSERT INTO chat_conversations (session_key, status, personal_data_expires_at) VALUES (?, ?, DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR))')->execute([$sessionKey, 'bot']);
+        $this->pdo->prepare('INSERT INTO chat_conversations (session_key, status, last_contact_at, personal_data_expires_at) VALUES (?, ?, UTC_TIMESTAMP(), DATE_ADD(UTC_TIMESTAMP(), INTERVAL 3 MONTH))')->execute([$sessionKey, 'bot']);
         $conversation = ['id' => (int) $this->pdo->lastInsertId(), 'status' => 'bot'];
         $this->add((int) $conversation['id'], 'bot', 'Здравствуйте! Выберите услугу в меню или подключите специалиста.');
         $this->pdo->prepare('INSERT IGNORE INTO chat_assistant_state (conversation_id) VALUES (?)')->execute([$conversation['id']]);
         return $conversation;
     }
 
-    public function add(int $id, string $sender, string $text): int
+    public function add(int $id, string $sender, string $text, bool $meaningful = false): int
     {
         $this->pdo->prepare('INSERT INTO chat_messages (conversation_id, sender, message) VALUES (?, ?, ?)')->execute([$id, $sender, $text]);
         $messageId = (int) $this->pdo->lastInsertId();
-        $this->pdo->prepare('UPDATE chat_conversations SET updated_at = CURRENT_TIMESTAMP,
-            personal_data_expires_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 1 YEAR) WHERE id = ?')->execute([$id]);
+        $this->pdo->prepare('UPDATE chat_conversations SET updated_at = CURRENT_TIMESTAMP WHERE id = ?')->execute([$id]);
+        if ($meaningful && in_array($sender, ['user', 'admin'], true)) {
+            $this->pdo->prepare("UPDATE chat_conversations c LEFT JOIN orders o ON o.id = c.linked_order_id
+                SET c.last_contact_at = UTC_TIMESTAMP(), c.personal_data_expires_at = CASE
+                WHEN o.id IS NOT NULL AND o.status NOT IN ('new', 'discussion', 'closed') THEN NULL
+                WHEN o.status = 'closed' THEN LEAST(DATE_ADD(UTC_TIMESTAMP(), INTERVAL 3 MONTH), o.personal_data_expires_at)
+                ELSE DATE_ADD(UTC_TIMESTAMP(), INTERVAL 3 MONTH) END WHERE c.id = ?")->execute([$id]);
+            $this->pdo->prepare("UPDATE orders o JOIN chat_conversations c ON c.linked_order_id = o.id
+                LEFT JOIN personal_data_consents p ON p.order_id = o.id AND p.purpose_code = 'project_request'
+                SET o.last_contact_at = UTC_TIMESTAMP(), o.personal_data_expires_at = CASE
+                WHEN o.status IN ('new', 'discussion') THEN LEAST(DATE_ADD(UTC_TIMESTAMP(), INTERVAL 6 MONTH),
+                    CASE WHEN p.consent_version = 'project-request-v1' THEN p.consent_expires_at ELSE DATE_ADD(UTC_TIMESTAMP(), INTERVAL 6 MONTH) END)
+                ELSE o.personal_data_expires_at END WHERE c.id = ? AND o.personal_data_erased_at IS NULL")->execute([$id]);
+            $linked = $this->pdo->prepare('SELECT linked_order_id FROM chat_conversations WHERE id = ?');
+            $linked->execute([$id]);
+            if ($orderId = $linked->fetchColumn()) ConsentService::sync($this->pdo, (int) $orderId);
+        }
         return $messageId;
     }
 
@@ -174,7 +190,7 @@ final class ChatService
             if (!$human && $state['status'] === 'bot' && $state['generation_key'] && $state['pending']) {
                 throw new DomainException('Дождитесь ответа на предыдущее сообщение.', 409);
             }
-            $this->add($id, 'user', $text);
+            $this->add($id, 'user', $text, in_array($state['status'], ['waiting_human', 'human'], true));
             $key = null;
             if ($human) {
                 $this->handoff($id);
@@ -236,9 +252,14 @@ final class ChatService
                     if (trim($value) === '' || mb_strlen($value) > 4000) {
                         throw new DomainException('Ответ должен содержать от 1 до 4000 символов.', 422);
                     }
-                    $this->add($id, 'admin', trim($value));
+                    $this->add($id, 'admin', trim($value), true);
                 }
-                $this->pdo->prepare('UPDATE chat_conversations SET status = ? WHERE id = ?')->execute([$status, $id]);
+                $this->pdo->prepare("UPDATE chat_conversations SET status = ?, closed_at = CASE WHEN ? = 'closed' THEN COALESCE(closed_at, UTC_TIMESTAMP()) ELSE NULL END WHERE id = ?")->execute([$status, $status, $id]);
+                if ($status === 'closed') {
+                    $this->pdo->prepare("UPDATE chat_conversations c LEFT JOIN orders o ON o.id = c.linked_order_id
+                        SET c.personal_data_expires_at = LEAST(c.personal_data_expires_at, DATE_ADD(c.closed_at, INTERVAL 30 DAY))
+                        WHERE c.id = ? AND (o.id IS NULL OR o.status IN ('new', 'discussion', 'closed'))")->execute([$id]);
+                }
                 $this->clearGeneration($id);
                 $this->pdo->prepare('UPDATE chat_admin_presence SET typing_until = NULL WHERE conversation_id = ?')->execute([$id]);
             }

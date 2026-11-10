@@ -81,7 +81,9 @@ CREATE TABLE orders (
 
     project_comment TEXT NULL,
 
-    total INT UNSIGNED NOT NULL,
+    total INT UNSIGNED NULL DEFAULT NULL,
+
+    price_agreed_at DATETIME NULL DEFAULT NULL,
 
     status VARCHAR(30) NOT NULL DEFAULT 'new',
 
@@ -173,7 +175,7 @@ CREATE TABLE order_items (
 
     tariff_name VARCHAR(100) NOT NULL,
 
-    price INT UNSIGNED NOT NULL,
+    price INT UNSIGNED NULL DEFAULT NULL,
 
     CONSTRAINT fk_order_items_order
 

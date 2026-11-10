@@ -129,6 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $title ?></title>
     <link rel="stylesheet" href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
+    <link rel="stylesheet" href="home-services.css?v=<?= filemtime(__DIR__ . '/home-services.css') ?>">
 
     <script src="assets/vendor/gsap.min.js?v=3.15.0" defer></script>
     <script src="assets/vendor/ScrollTrigger.min.js?v=3.15.0" defer></script>

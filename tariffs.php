@@ -97,6 +97,8 @@ foreach ($tariffs as $tariff) {
     <link
         rel="stylesheet"
         href="styles.css?v=<?= filemtime(__DIR__ . '/styles.css') ?>">
+    <link rel="stylesheet" href="landing-offer.css?v=<?= filemtime(__DIR__ . '/landing-offer.css') ?>">
+    <link rel="stylesheet" href="tariff-cart.css?v=<?= filemtime(__DIR__ . '/tariff-cart.css') ?>">
 
     <script src="assets/vendor/gsap.min.js?v=3.15.0" defer></script>
     <script src="assets/vendor/ScrollTrigger.min.js?v=3.15.0" defer></script>
@@ -134,11 +136,6 @@ foreach ($tariffs as $tariff) {
 
 
 
-        <aside class="tariffs-price-note" aria-labelledby="tariffs-price-note-title">
-            <h2 id="tariffs-price-note-title">Каждый проект начинается с задачи</h2>
-            <p>У каждой услуги есть базовая стоимость. Дополнительные функции обсудим отдельно и согласуем итоговую цену перед началом работ.</p>
-        </aside>
-
         <div class="tariffs-layout">
 
 
@@ -151,6 +148,44 @@ foreach ($tariffs as $tariff) {
 
 
                 <?php foreach ($services as $service): ?>
+
+                    <?php
+                    if ($service['slug'] === 'landing' && !empty($tariffsByService[$service['id']])) {
+                        $landingTariffs = $tariffsByService[$service['id']];
+                        usort($landingTariffs, static fn($a, $b) => (int) $a['price'] <=> (int) $b['price']);
+                        $landingTariff = $landingTariffs[0];
+                        require __DIR__ . '/partials/landing-tariff.php';
+                        continue;
+                    }
+                    if ($service['slug'] === 'shop' && !empty($tariffsByService[$service['id']])) {
+                        $shopTariffs = $tariffsByService[$service['id']];
+                        usort($shopTariffs, static fn($a, $b) => (int) $a['price'] <=> (int) $b['price']);
+                        $shopTariff = $shopTariffs[0];
+                        require __DIR__ . '/partials/shop-tariff.php';
+                        continue;
+                    }
+                    if ($service['slug'] === 'revision' && !empty($tariffsByService[$service['id']])) {
+                        $revisionTariffs = $tariffsByService[$service['id']];
+                        usort($revisionTariffs, static fn($a, $b) => (int) $a['price'] <=> (int) $b['price']);
+                        $revisionTariff = $revisionTariffs[0];
+                        require __DIR__ . '/partials/revision-tariff.php';
+                        continue;
+                    }
+                    if ($service['slug'] === 'ai' && !empty($tariffsByService[$service['id']])) {
+                        $aiTariffs = $tariffsByService[$service['id']];
+                        usort($aiTariffs, static fn($a, $b) => (int) $a['price'] <=> (int) $b['price']);
+                        $aiTariff = $aiTariffs[0];
+                        require __DIR__ . '/partials/ai-tariff.php';
+                        continue;
+                    }
+                    if ($service['slug'] === 'other' && !empty($tariffsByService[$service['id']])) {
+                        $otherTariffs = $tariffsByService[$service['id']];
+                        usort($otherTariffs, static fn($a, $b) => (int) $a['price'] <=> (int) $b['price']);
+                        $otherTariff = $otherTariffs[0];
+                        require __DIR__ . '/partials/other-tariff.php';
+                        continue;
+                    }
+                    ?>
 
 
                     <section
@@ -273,7 +308,7 @@ foreach ($tariffs as $tariff) {
 
                                             data-price="<?= (int) $tariff['price'] ?>">
 
-                                            Выбрать услугу
+                                            Обсудить проект
 
                                         </button>
 
@@ -311,7 +346,7 @@ foreach ($tariffs as $tariff) {
                                         <li>Нестандартный функционал</li>
                                     </ul>
                                     <p class="other-project-message"><strong>Не нашли подходящий тариф?</strong><br>Соберём решение под вашу задачу.</p>
-                                    <a class="other-project-cta" href="index.php#application">Обсудить задачу <span aria-hidden="true">↗</span></a>
+                                    <a class="other-project-cta" href="index.php#application">Обсудить проект <span aria-hidden="true">↗</span></a>
                                 </div>
                             <?php endif; ?>
 
@@ -344,7 +379,7 @@ foreach ($tariffs as $tariff) {
         ============================ -->
 
             <aside
-                class="cart"
+                class="cart cart--reference"
                 id="cart">
                 <div class="tariff-cart-heading">
                 <span class="tariff-basket-icon" aria-hidden="true"><?= tariffIcon('shop') ?></span>
@@ -366,7 +401,7 @@ foreach ($tariffs as $tariff) {
 
                 <!-- Сюда JS добавляет выбранные тарифы -->
 
-                <div id="cartItems">
+                <div id="cartItems" aria-live="polite">
 
                     <p class="cart-empty">
                         Вы пока ничего не выбрали
@@ -376,25 +411,13 @@ foreach ($tariffs as $tariff) {
 
 
 
-                <div class="cart-total">
-
-                    <span>
-                        Итого:
-                    </span>
-
-                    <strong id="cartTotal">
-                        0 ₽
-                    </strong>
-
-                </div>
-
 
 
                 <button
                     type="button"
                     class="checkout-button"
                     id="checkoutButton">
-                    Оставить заявку
+                    <span>Оставить заявку</span><span aria-hidden="true">↗</span>
                 </button>
 
 
@@ -403,7 +426,8 @@ foreach ($tariffs as $tariff) {
                     type="button"
                     class="clear-cart-button"
                     id="clearCartButton">
-                    Очистить корзину
+                    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></svg>
+                    <span>Очистить корзину</span>
                 </button>
 
 
@@ -438,9 +462,12 @@ foreach ($tariffs as $tariff) {
         останутся даже после обновления страницы.
     */
 
-        let cart = JSON.parse(
-            localStorage.getItem('webstartCart')
-        ) || [];
+        let cart = window.VegaCart.read();
+
+        window.addEventListener('vega:cart-changed', () => {
+            cart = window.VegaCart.read();
+            updateCart();
+        });
 
         function getTariffId(item) {
             return String(item.tariff_id ?? item.id);
@@ -475,14 +502,35 @@ foreach ($tariffs as $tariff) {
         const cartItems =
             document.getElementById('cartItems');
 
-        const cartTotal =
-            document.getElementById('cartTotal');
-
         const cartCounter =
             document.getElementById('cartCounter');
 
         const clearCartButton =
             document.getElementById('clearCartButton');
+        const checkoutButton = document.getElementById('checkoutButton');
+        const cartCatalog = <?php
+            $cartCatalog = [];
+            $cartSummaries = ['landing' => 'Разработка сайта под задачу', 'shop' => 'Онлайн-магазин для вашего бизнеса', 'revision' => 'Изменения и улучшения сайта', 'ai' => 'Интеграция AI в ваш бизнес', 'other' => 'Решение вашей индивидуальной задачи'];
+            foreach ($services as $catalogService) {
+                foreach ($tariffsByService[$catalogService['id']] ?? [] as $catalogTariff) {
+                    $cartCatalog[(string) $catalogTariff['id']] = [
+                        'service' => $catalogService['name'],
+                        'description' => $catalogService['slug'] === 'ai' ? $catalogTariff['name'] : ($cartSummaries[$catalogService['slug']] ?? $catalogTariff['name']),
+                        'icon' => tariffIcon($catalogService['slug']),
+                    ];
+                }
+            }
+            echo json_encode($cartCatalog, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+        ?>;
+        const cartFallbackIcon = <?= json_encode(tariffIcon('other'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+
+        // Refresh this base offer after the cart DOM references are initialized.
+        const aiBaseButton = document.querySelector('#ai .tariff-button');
+        const selectedAi = aiBaseButton && cart.find(item => getTariffId(item) === aiBaseButton.dataset.id);
+        if (selectedAi && Number(selectedAi.price) !== Number(aiBaseButton.dataset.price)) {
+            selectedAi.price = Number(aiBaseButton.dataset.price);
+            window.VegaCart.write(cart);
+        }
 
 
 
@@ -506,10 +554,7 @@ foreach ($tariffs as $tariff) {
 
         function saveCart() {
 
-            localStorage.setItem(
-                'webstartCart',
-                JSON.stringify(cart)
-            );
+            window.VegaCart.write(cart);
 
         }
 
@@ -541,6 +586,8 @@ foreach ($tariffs as $tariff) {
             */
 
             cartCounter.textContent = cart.length;
+            checkoutButton.disabled = cart.length === 0;
+            clearCartButton.disabled = cart.length === 0;
 
 
 
@@ -578,30 +625,33 @@ foreach ($tariffs as $tariff) {
 
 
                     cartItem.classList.add('cart-item');
+                    const catalog = cartCatalog[getTariffId(item)];
+                    const itemIcon = document.createElement('span');
+                    itemIcon.className = 'cart-item-icon';
+                    itemIcon.setAttribute('aria-hidden', 'true');
+                    // Icon markup comes only from the server's fixed SVG set.
+                    itemIcon.innerHTML = catalog?.icon ?? cartFallbackIcon;
                     const itemInfo = document.createElement('div');
                     itemInfo.className = 'cart-item-info';
 
                     const service = document.createElement('span');
                     service.className = 'cart-item-service';
-                    service.textContent = item.service ?? '';
+                    service.textContent = catalog?.service ?? item.service ?? '';
 
                     const title = document.createElement('strong');
-                    title.textContent = getTariffName(item);
+                    title.textContent = catalog?.description ?? getTariffName(item);
 
-                    const price = document.createElement('span');
-                    price.className = 'cart-item-price';
-                    price.textContent = formatPrice(item.price);
 
                     const removeButton = document.createElement('button');
                     removeButton.className = 'cart-remove';
                     removeButton.dataset.id = getTariffId(item);
                     removeButton.type = 'button';
-                    removeButton.textContent = '×';
+                    removeButton.innerHTML = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></svg>';
                     removeButton.setAttribute('aria-label', `Удалить: ${item.service ?? ''} — ${getTariffName(item)}`);
                     removeButton.title = 'Удалить из корзины';
 
-                    itemInfo.append(service, title, price);
-                    cartItem.append(itemInfo, removeButton);
+                    itemInfo.append(service, title);
+                    cartItem.append(itemIcon, itemInfo, removeButton);
                     cartItems.appendChild(cartItem);
 
                 });
@@ -614,17 +664,6 @@ foreach ($tariffs as $tariff) {
                 Подсчёт общей стоимости
             */
 
-            const total = cart.reduce(
-
-                (sum, item) => sum + item.price,
-
-                0
-
-            );
-
-
-            cartTotal.textContent =
-                formatPrice(total);
 
 
 
@@ -633,30 +672,37 @@ foreach ($tariffs as $tariff) {
             */
 
             buttons.forEach(button => {
+                const selected = tariffIsSelected(button.dataset.id);
+                const initialized = button.dataset.selectionReady === 'true';
+                const wasSelected = button.getAttribute('aria-pressed') === 'true';
 
-
-                const id =
-                    button.dataset.id;
-
-
-                if (tariffIsSelected(id)) {
-
-
-                    button.classList.add('selected');
-
-                    button.textContent =
-                        'Услуга выбрана';
-
-                } else {
-
-
-                    button.classList.remove('selected');
-
-                    button.textContent =
-                        'Выбрать услугу';
-
+                if (!initialized) {
+                    const label = document.createElement('span');
+                    label.className = 'offer-button-label';
+                    label.textContent = 'Обсудить проект';
+                    const icons = document.createElement('span');
+                    icons.className = 'offer-button-icons';
+                    icons.setAttribute('aria-hidden', 'true');
+                    icons.innerHTML = '<svg class="offer-button-arrow" viewBox="0 0 24 24" fill="none"><path d="M6 18 18 6M6 6h12v12"/></svg><svg class="offer-button-check" viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4L19 6" pathLength="1" stroke-dasharray="1"/></svg>';
+                    button.replaceChildren(label, icons);
+                    button.dataset.selectionReady = 'true';
+                    requestAnimationFrame(() => button.classList.add('selection-ready'));
                 }
 
+                button.classList.toggle('selected', selected);
+                button.setAttribute('aria-pressed', String(selected));
+                const check = button.querySelector('.offer-button-check path');
+                const gsap = window.VegaMotion?.gsap;
+                if (initialized && wasSelected !== selected) {
+                    gsap?.killTweensOf(check);
+                    if (selected && gsap && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                        gsap.fromTo(check, {strokeDashoffset: 1}, {
+                            strokeDashoffset: 0, duration: .32, delay: .08, ease: 'power2.out',
+                        });
+                    } else {
+                        check.style.strokeDashoffset = '0';
+                    }
+                }
             });
 
 
@@ -791,9 +837,6 @@ foreach ($tariffs as $tariff) {
 
         updateCart();
 
-        const checkoutButton =
-            document.getElementById('checkoutButton');
-
         checkoutButton.addEventListener(
             'click',
             function() {
@@ -809,7 +852,7 @@ foreach ($tariffs as $tariff) {
     <div class="cart-vega-nebula tariffs-cassiopeia-nebula" id="cassiopeia-note" role="tooltip" aria-hidden="true">Кассиопея</div>
     <div class="cart-vega-nebula tariffs-ursa-major-nebula" id="ursa-major-note" role="tooltip" aria-hidden="true">Большая медведица</div>
     <div class="cart-vega-nebula tariffs-reference-nebula" id="reference-constellation-note" role="tooltip" aria-hidden="true">Орион</div>
-    <script src="cursor-stars.js?v=constellations-7"></script>
+    <script src="cursor-stars.js?v=<?= filemtime(__DIR__ . '/cursor-stars.js') ?>"></script>
     <?php if (is_file(__DIR__ . '/assets/alien/tariffs/idle-manifest.js')): ?>
         <script src="assets/alien/tariffs/idle-manifest.js?v=<?= filemtime(__DIR__ . '/assets/alien/tariffs/idle-manifest.js') ?>" defer></script>
         <script src="contact-alien-idle.js?v=<?= filemtime(__DIR__ . '/contact-alien-idle.js') ?>" defer></script>

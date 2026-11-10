@@ -169,3 +169,11 @@
 }
 
 .admin-chat-document { scroll-padding-top:0; scroll-behavior:auto; }
+.admin-order-lifecycle form { display:grid; gap:10px; margin:16px 0; }
+.admin-order-lifecycle input,.admin-order-lifecycle select { min-width:0; width:100%; box-sizing:border-box; padding:10px; font:inherit; color:#eee9ff; background:#17162d; border:1px solid #716494; border-radius:8px; }
+.admin-order-lifecycle button { min-height:44px; padding:8px 14px; font:inherit; cursor:pointer; }
+.admin-order-lifecycle .admin-order-lifecycle-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.admin-order-pricing { display:grid; gap:12px; margin:22px 0; padding:20px; border:1px solid #71649466; border-radius:12px; }
+.admin-order-pricing input { width:100%; max-width:360px; min-width:0; box-sizing:border-box; padding:12px; font:inherit; color:#eee9ff; background:#17162d; border:1px solid #716494; border-radius:8px; }
+.admin-order-pricing p { margin:0; line-height:1.5; }
+.admin-order-pricing button { justify-self:start; min-height:44px; padding:10px 16px; font:inherit; cursor:pointer; }

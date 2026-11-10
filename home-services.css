@@ -1,0 +1,34 @@
+/* Shared About palette without changing the original layouts. */
+body.home-page main #services,
+body.home-page main #services .service-card,
+body.home-page main .work-solutions,
+body.home-page main .work-solutions .work-solution-card,
+body.home-page main .studio-stack,
+body.home-page main .studio-stack .technology-group,
+body.home-page main .contact-section,
+body.home-page main .contact-section .contact-form-wrapper {
+    background-color:#111127 !important;
+    background-image:linear-gradient(110deg,#111127 10%,#141432 62%,#0b0b1d) !important;
+}
+body.home-page main #services .service-card__icon {
+    border-color:#7b82ff30;
+    background:radial-gradient(circle at 45% 40%,#4e55ff35,#222247 75%);
+    box-shadow:inset 0 1px 8px #7b82ff15;
+}
+body.home-page main #services .service-card__icon svg {
+    stroke:#b9a3ff;
+    filter:drop-shadow(0 0 4px #7b55ff88);
+}
+
+/* Business automation CTA follows the main hero button. */
+body.home-page .work-solutions__cta a { transition:background .2s,box-shadow .2s,transform .2s; }
+body.home-page .work-solutions__cta a:hover {
+    box-shadow:0 0 30px #7b82ff73; transform:translateY(-1px);
+}
+@media (max-width:600px) {
+    body.home-page .work-solutions__cta a { border-radius:12px; }
+}
+@media (prefers-reduced-motion:reduce) {
+    body.home-page .work-solutions__cta a { transition:none; }
+    body.home-page .work-solutions__cta a:hover { transform:none; }
+}

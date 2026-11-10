@@ -71,6 +71,7 @@
         button.value = id;
         button.dataset.label = label;
         button.classList.toggle("is-specialist", id === "human");
+        button.classList.toggle("is-cart-action", id.startsWith("cart:"));
         const icons = {
           landing: '<rect x="4" y="3" width="16" height="12" rx="2"/><path d="m4 15-2 5h20l-2-5M9 17h6"/>',
           shop: '<path d="M2 3h3l3 12h11l3-9H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>',
@@ -82,6 +83,7 @@
         };
         let icon = "layers";
         if (id === "human") icon = "human";
+        else if (id.startsWith("cart:")) icon = "shop";
         else if (id === "root") icon = "grid";
         else if (/\u043b\u0435\u043d\u0434\u0438\u043d\u0433/i.test(label)) icon = "landing";
         else if (/\u043c\u0430\u0433\u0430\u0437\u0438\u043d/i.test(label)) icon = "shop";
@@ -99,12 +101,20 @@
       }));
     }
     choices.hidden = items.length === 0;
-    for (const button of choices.children) button.disabled = sending || starting;
+    for (const button of choices.children) {
+      let selected = false;
+      if (button.value.startsWith("cart:")) {
+        try { selected = window.VegaCart.contains(button.value.slice(5)); } catch (_) { /* Show storage errors when adding. */ }
+        button.querySelector(".web-chat-choice-label").textContent = selected ? "В корзине" : button.dataset.label;
+        button.classList.toggle("is-in-cart", selected);
+      }
+      button.disabled = sending || starting || selected;
+    }
   }
 
   function updateStatus() {
     renderChoices();
-    let text = "Vega Assistant в сети";
+    let text = "В сети";
     let typing = false;
     if (state.status === "closed") text = "Диалог завершён";
     else if (state.admin_typing && state.status === "human") {
@@ -135,6 +145,46 @@
     return list.scrollHeight - list.scrollTop - list.clientHeight < 65;
   }
 
+  let followLatest = false;
+  let scrollFrame = 0;
+  let previousScrollTime = 0;
+  function scrollToLatest() {
+    if (!followLatest || scrollFrame || !root.classList.contains("is-open")) return;
+    previousScrollTime = performance.now();
+    function frame(now) {
+      scrollFrame = 0;
+      if (!followLatest || !root.classList.contains("is-open")) return;
+      const bottom = Math.max(0, list.scrollHeight - list.clientHeight);
+      const distance = bottom - list.scrollTop;
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        list.scrollTop = bottom;
+        return;
+      }
+      const elapsed = Math.min(64, Math.max(1, now - previousScrollTime));
+      previousScrollTime = now;
+      list.scrollTop = Math.abs(distance) < 4 ? bottom : list.scrollTop + distance * (1 - Math.exp(-elapsed / 95));
+      if (Math.abs(bottom - list.scrollTop) >= 1 || animated.size) scrollFrame = requestAnimationFrame(frame);
+    }
+    scrollFrame = requestAnimationFrame(frame);
+  }
+
+  function stopFollowing() {
+    followLatest = false;
+    cancelAnimationFrame(scrollFrame);
+    scrollFrame = 0;
+  }
+  list.addEventListener("wheel", stopFollowing, {passive: true});
+  list.addEventListener("touchstart", stopFollowing, {passive: true});
+  list.addEventListener("pointerdown", event => {
+    const bounds = list.getBoundingClientRect();
+    if (event.clientX >= bounds.left + list.clientWidth) stopFollowing();
+  });
+  list.addEventListener("keydown", event => {
+    if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) stopFollowing();
+  });
+  const messageResizeObserver = new ResizeObserver(() => scrollToLatest());
+  messageResizeObserver.observe(list);
+
   function chatBrandText(value) {
     return String(value)
       .replace(/WebStart Assistant/gi, "Vega Assistant")
@@ -146,13 +196,13 @@
     const id = Number(message.id);
     if (id <= lastId) return;
     lastId = id;
-    const follow = nearBottom();
     const item = document.createElement("div");
     item.className =
       "web-chat-message is-" +
       ({ user: "user", admin: "admin", bot: "bot" }[message.sender] || "bot");
     item.dataset.messageId = String(id);
     list.appendChild(item);
+    messageResizeObserver.observe(item);
     const text = chatBrandText(message.message);
     if (
       !animate ||
@@ -160,7 +210,6 @@
       matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       item.textContent = text;
-      if (follow) list.scrollTop = list.scrollHeight;
       return;
     }
     const words = text.match(/\S+\s*/g) || [text];
@@ -169,12 +218,11 @@
     animated.set(id, { item, text });
     function frame(now) {
       if (!animated.has(id)) return;
-      const scroll = nearBottom();
       const progress = Math.min(1, (now - started) / duration);
       item.textContent = words
         .slice(0, Math.ceil(words.length * progress))
         .join("");
-      if (scroll) list.scrollTop = list.scrollHeight;
+      scrollToLatest();
       if (progress < 1 && root.classList.contains("is-open"))
         requestAnimationFrame(frame);
       else {
@@ -182,6 +230,7 @@
         animated.delete(id);
         announcer.textContent = text;
         updateStatus();
+        scrollToLatest();
       }
     }
     requestAnimationFrame(frame);
@@ -210,10 +259,13 @@
       throw new Error(data.error || "Не удалось отправить сообщение.");
     if (data.csrf_token) csrf = data.csrf_token;
     if (data.max_input_length) textarea.maxLength = data.max_input_length;
+    const hasNewMessages = (data.messages || []).some(message => Number(message.id) > lastId);
+    if (hasNewMessages) followLatest = action === "start" || action === "message" || action === "cancel_waiting" || followLatest || nearBottom();
     state = data;
     for (const message of data.messages || [])
       addMessage(message, action !== "start");
     updateStatus();
+    if (hasNewMessages) scrollToLatest();
     return data;
   }
 
@@ -241,6 +293,7 @@
   }
 
   function closeChat() {
+    stopFollowing();
     root.classList.remove("is-open");
     toggle.setAttribute("aria-expanded", "false");
     panel.setAttribute("aria-hidden", "true");
@@ -256,6 +309,18 @@
   choices.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
     if (!button || sending || starting || !csrf) return;
+    if (button.value.startsWith("cart:")) {
+      showError();
+      try {
+        const item = (state.choices || []).find(choice => choice.id === button.value)?.cart_item;
+        window.VegaCart.add(item);
+        announcer.textContent = "Тариф добавлен в корзину.";
+        renderChoices();
+      } catch (_) {
+        showError("Не удалось добавить тариф. Проверьте доступ к хранилищу браузера и свободное место в корзине.");
+      }
+      return;
+    }
     sending = true;
     updateStatus();
     showError();
@@ -272,6 +337,8 @@
       updateStatus();
     }
   });
+
+  window.addEventListener("vega:cart-changed", renderChoices);
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();

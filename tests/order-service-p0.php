@@ -4,6 +4,13 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../bd.php';
 require_once __DIR__ . '/../services/OrderService.php';
+// Every test write targets connection-local tables, never real applications.
+foreach (['orders', 'order_items', 'personal_data_consents'] as $table) {
+    $definition = $pdo->query('SHOW CREATE TABLE ' . $table)->fetch(PDO::FETCH_NUM)[1];
+    $definition = preg_replace('/^\s*CONSTRAINT[^\n]*\n?/m', '', $definition);
+    $definition = preg_replace('/,\s*\)/', "\n)", $definition);
+    $pdo->exec(preg_replace('/^CREATE TABLE/', 'CREATE TEMPORARY TABLE', $definition));
+}
 
 $tokens = [bin2hex(random_bytes(32)), bin2hex(random_bytes(32))];
 
@@ -26,15 +33,15 @@ try {
 
     $lead = $orders->createLead($customer, (int) $service['id'], $tokens[0], $leadConsent);
     $leadRepeat = $orders->createLead($customer, (int) $service['id'], $tokens[0], $leadConsent);
-    if (!$lead['created'] || $leadRepeat['created'] || $lead['id'] !== $leadRepeat['id'] || $lead['total'] !== 0) {
+    if (!$lead['created'] || $leadRepeat['created'] || $lead['id'] !== $leadRepeat['id'] || $lead['total'] !== null) {
         throw new RuntimeException('Lead idempotency failed.');
     }
 
     $cart = $orders->createCartOrder($customer, [(int) $tariff['id']], $tokens[1], $cartConsent);
     $cartRepeat = $orders->createCartOrder($customer, [(int) $tariff['id']], $tokens[1], $cartConsent);
     if (!$cart['created'] || $cartRepeat['created'] || $cart['id'] !== $cartRepeat['id']
-        || $cart['total'] !== (int) $tariff['price']) {
-        throw new RuntimeException('Cart idempotency or server-side price failed.');
+        || $cart['total'] !== null) {
+        throw new RuntimeException('Cart idempotency or unpriced application failed.');
     }
 
     $consentCheck = $pdo->prepare(
@@ -51,7 +58,7 @@ try {
         throw new RuntimeException('Consent evidence persistence failed.');
     }
 
-    echo "PASS: orders, idempotency, database price, and consent evidence.\n";
+    echo "PASS: unpriced orders, idempotency, and consent evidence in temporary tables.\n";
 } finally {
     $placeholders = implode(',', array_fill(0, count($tokens), '?'));
     $ids = $pdo->prepare("SELECT id FROM orders WHERE request_token IN ($placeholders)");
