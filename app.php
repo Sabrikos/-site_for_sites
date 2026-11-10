@@ -118,6 +118,13 @@ function appRotateCsrf(string $key): string
     return $_SESSION[$key];
 }
 
+/** A hidden form field catches unsophisticated automated submissions. */
+function appSpamTrapValid(array $input): bool
+{
+    if (!array_key_exists('contact_website', $input)) return true;
+    return is_string($input['contact_website']) && trim($input['contact_website']) === '';
+}
+
 function appRateLimit(string $scope, int $limit, int $windowSeconds): bool
 {
     appStartSession();

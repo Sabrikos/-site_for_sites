@@ -2,7 +2,16 @@
 
 declare(strict_types=1);
 
-session_start();
+require_once __DIR__ . '/auth.php';
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    header('Allow: POST');
+    exit('Метод не поддерживается.');
+}
+if (!appAdminSessionActive() || !appCsrfValid('admin_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
+    http_response_code(403);
+    exit('Обновите страницу и попробуйте снова.');
+}
 $_SESSION = [];
 
 if (ini_get('session.use_cookies')) {

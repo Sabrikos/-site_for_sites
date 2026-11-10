@@ -36,14 +36,21 @@ foreach ($catalog->tariffs() as $tariff) {
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $customerName = trim($_POST['customer_name'] ?? '');
-    $customerPhone = trim($_POST['customer_phone'] ?? '');
-    $projectType = trim($_POST['project_type'] ?? '');
-    $projectTheme = trim($_POST['project_theme'] ?? '');
+    if (!appSpamTrapValid($_POST)) {
+        http_response_code(422);
+        exit('Не удалось отправить заявку.');
+    }
+    foreach (['customer_name', 'customer_phone', 'project_type', 'project_theme', 'project_urgency'] as $field) {
+        if (isset($_POST[$field]) && !is_string($_POST[$field])) $errors[] = 'Проверьте данные формы.';
+    }
+    $customerName = trim(is_string($_POST['customer_name'] ?? null) ? $_POST['customer_name'] : '');
+    $customerPhone = trim(is_string($_POST['customer_phone'] ?? null) ? $_POST['customer_phone'] : '');
+    $projectType = trim(is_string($_POST['project_type'] ?? null) ? $_POST['project_type'] : '');
+    $projectTheme = trim(is_string($_POST['project_theme'] ?? null) ? $_POST['project_theme'] : '');
     $projectUrgency = is_string($_POST['project_urgency'] ?? null) ? $_POST['project_urgency'] : 'standard';
     $urgencyLabels = ['standard' => 'Обычные сроки', 'urgent' => 'Срочно', 'discuss' => 'Сроки обсудим'];
     if (!isset($urgencyLabels[$projectUrgency])) { $errors[] = 'Выберите срок выполнения из списка.'; }
-    $personalDataConsent = isset($_POST['personal_data_consent']);
+    $personalDataConsent = is_string($_POST['personal_data_consent'] ?? null) && $_POST['personal_data_consent'] === '1';
 
     if (!appCsrfValid('home_lead_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
         $errors[] = 'Форма устарела. Обновите страницу и повторите отправку.';
@@ -731,9 +738,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
 
-                <form method="post">
+                <form method="post" data-single-submit>
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($homeCsrf, ENT_QUOTES, 'UTF-8') ?>">
                     <input type="hidden" name="request_token" value="<?= htmlspecialchars($_SESSION['home_lead_request_token'], ENT_QUOTES, 'UTF-8') ?>">
+                        <div class="form-spam-trap" aria-hidden="true"><label>Сайт <input type="text" name="contact_website" tabindex="-1" autocomplete="off"></label></div>
 
                     <div class="form-group">
 
@@ -891,6 +899,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <script src="sphere-code-loop.js?v=canvas-render-2"></script>
 <script src="assets/alien/idle-manifest.js?v=<?= filemtime(__DIR__ . '/assets/alien/idle-manifest.js') ?>" defer></script>
 <script src="contact-alien-idle.js?v=<?= filemtime(__DIR__ . '/contact-alien-idle.js') ?>" defer></script>
+    <script src="assets/js/single-submit.js?v=1" defer></script>
 </body>
 
 </html>

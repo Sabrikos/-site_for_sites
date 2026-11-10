@@ -6822,3 +6822,5 @@ main.tariffs-page .showcase-variant-button { width: 100%; min-height: 44px; bord
 @container tariff-content (max-width: 400px) { main.tariffs-page .service-showcase { padding: 20px 16px; border-radius: 18px; } .showcase-header { padding-bottom: 20px; } .showcase-title-row { gap: 12px; } .showcase-title-row h2 { font-size: 27px; } .showcase-icon { flex-basis: 44px; width: 44px; height: 44px; } .showcase-footer { flex-direction: column; align-items: stretch; gap: 12px; } .showcase-price-note { padding: 0; border: 0; } main.tariffs-page .showcase-button { width: 100% !important; } .showcase-variant-grid { grid-template-columns: 1fr; } }
 
 .showcase-mascot { position: relative; width: min(220px, 60%); aspect-ratio: 1244 / 1264; margin: -28px auto 25px; pointer-events: none; }
+
+.form-spam-trap { position: absolute !important; left: -10000px !important; top: auto !important; width: 1px !important; height: 1px !important; overflow: hidden !important; }

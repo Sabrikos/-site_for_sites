@@ -169,3 +169,9 @@
 }
 
 .admin-chat-document { scroll-padding-top:0; scroll-behavior:auto; }
+
+.admin-logout-form { margin: 0; }
+.admin-sidebar .admin-logout-button { display: block; padding: 10px 12px; border: 1px solid #515984; border-radius: 8px; background: #191d35; color: #e2e8ff; font: inherit; cursor: pointer; }
+.admin-sidebar .admin-logout-button:hover { border-color: #a3c9ff; background: #292f50; }
+.admin-sidebar .admin-logout-button:focus-visible { outline: 2px solid #b3d7ff; outline-offset: -3px; }
+@media (max-width: 600px) { .admin-sidebar .admin-logout-button { padding: 8px; } }

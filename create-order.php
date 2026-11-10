@@ -19,11 +19,11 @@ if (empty($_SESSION['order_request_token'])) {
 $title = 'Оформление заявки | Vega Studio';
 $errors = [];
 $successOrderId = null;
-$customerName = trim((string) ($_POST['customer_name'] ?? ''));
-$customerPhone = trim((string) ($_POST['customer_phone'] ?? ''));
-$projectComment = trim((string) ($_POST['project_comment'] ?? ''));
-$projectUrgency = (string) ($_POST['project_urgency'] ?? 'standard');
-$personalDataConsent = isset($_POST['personal_data_consent']);
+$customerName = trim(is_string($_POST['customer_name'] ?? null) ? $_POST['customer_name'] : '');
+$customerPhone = trim(is_string($_POST['customer_phone'] ?? null) ? $_POST['customer_phone'] : '');
+$projectComment = trim(is_string($_POST['project_comment'] ?? null) ? $_POST['project_comment'] : '');
+$projectUrgency = is_string($_POST['project_urgency'] ?? null) ? $_POST['project_urgency'] : 'standard';
+$personalDataConsent = is_string($_POST['personal_data_consent'] ?? null) && $_POST['personal_data_consent'] === '1';
 
 function e(string $value): string
 {
@@ -31,12 +31,19 @@ function e(string $value): string
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!appSpamTrapValid($_POST)) {
+        http_response_code(422);
+        exit('Не удалось отправить заявку.');
+    }
+    foreach (['customer_name', 'customer_phone', 'project_comment', 'project_urgency', 'cart_json'] as $field) {
+        if (isset($_POST[$field]) && !is_string($_POST[$field])) $errors[] = 'Проверьте данные формы.';
+    }
     if (!appCsrfValid('order_csrf', is_string($_POST['csrf_token'] ?? null) ? $_POST['csrf_token'] : null)) {
         $errors[] = 'Срок действия формы истёк. Обновите страницу и повторите отправку.';
     }
     $urgencyLabels = ['standard' => 'Обычные сроки', 'urgent' => 'Срочно', 'discuss' => 'Сроки обсудим'];
     if (!isset($urgencyLabels[$projectUrgency])) $errors[] = 'Выберите срок выполнения из списка.';
-    $customerInput = $_POST;
+    $customerInput = ['customer_name' => $customerName, 'customer_phone' => $customerPhone, 'project_comment' => $projectComment];
     if (isset($urgencyLabels[$projectUrgency])) $customerInput['project_comment'] = trim($projectComment . "\nСроки: " . $urgencyLabels[$projectUrgency]);
     [$customerErrors, $customer] = OrderService::validateCustomer($customerInput);
     $errors = array_merge($errors, $customerErrors);
@@ -46,12 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $cart = json_decode(
-        (string) ($_POST['cart_json'] ?? ''),
+        is_string($_POST['cart_json'] ?? null) ? $_POST['cart_json'] : '',
         true
     );
 
     if (!is_array($cart) || $cart === []) {
         $errors[] = 'Корзина пуста.';
+        $cart = [];
     } elseif (count($cart) > OrderService::MAX_ITEMS) {
         $errors[] = 'В одном заказе можно оформить не более ' . OrderService::MAX_ITEMS . ' тарифов.';
         $cart = [];
@@ -61,6 +69,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $expectedPrices = [];
 
     foreach ($cart as $item) {
+        if (!is_array($item)) {
+            $errors[] = 'В корзине найден некорректный тариф.';
+            continue;
+        }
         $tariffId = filter_var(
             $item['tariff_id'] ?? $item['id'] ?? null,
             FILTER_VALIDATE_INT,
@@ -193,9 +205,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <a href="tariffs.php" class="cart-back-button">Вернуться к тарифам</a>
                 <?php else: ?>
-                    <form method="post" id="orderForm">
+                    <form method="post" id="orderForm" data-single-submit>
                         <input type="hidden" name="csrf_token" value="<?= e($csrfToken) ?>">
                         <input type="hidden" name="request_token" value="<?= e($_SESSION['order_request_token']) ?>">
+                        <div class="form-spam-trap" aria-hidden="true"><label>Сайт <input type="text" name="contact_website" tabindex="-1" autocomplete="off"></label></div>
                         <input type="hidden" name="cart_json" id="cartJson">
 
                         <div class="form-group">
@@ -302,6 +315,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?php endif; ?>
     </script>
     <script src="cursor-stars.js?v=canis-major-5"></script>
+    <script src="assets/js/single-submit.js?v=1" defer></script>
 </body>
 
 </html>
